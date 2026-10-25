@@ -1,0 +1,47 @@
+/* Light theme tokens, from jeib-color-system.md §2 and §5. Components never use hex values directly. */
+.root {
+    -bg-app: #FAF7F3;
+    -bg-surface: #FFFFFF;
+    -bg-surface-alt: #F3EEE8;
+    -bg-sidebar: #F3EEE8;
+    -nav-hover: #FFFFFF;
+    -border: #E6DED5;
+    -border-strong: #A39A91;
+    -text-primary: #1F1A17;
+    -text-secondary: #6B625A;
+    -text-disabled: #A39A91;
+    -primary: #FF751F;
+    -primary-hover: #F0620D;
+    -primary-pressed: #D9540A;
+    -on-primary: #1F1A17;
+    -primary-text: #C2410C;
+    -primary-tint: #FFEFE4;
+    -success: #137A3E;
+    -success-tint: #E6F4EA;
+    -warning-text: #8A5A00;
+    -warning-bar: #F2B01E;
+    -warning-tint: #FFF4D6;
+    -danger-text: #C62828;
+    -danger-bar: #D32F2F;
+    -danger-tint: #FDE8E8;
+    -focus-ring: #2563EB;
+
+    -chart-0: #FF751F;
+    -chart-1: #3B82C4;
+    -chart-2: #8B5CF6;
+    -chart-3: #14A38B;
+    -chart-4: #D6336C;
+    -chart-5: #A16207;
+    -chart-6: #64748B;
+    -chart-7: #84A816;
+    -chart-8: #0891B2;
+    -chart-9: #C026D3;
+    -chart-10: #881337;
+    -chart-11: #8B5E3C;
+    -chart-12: #7C2D6B;
+    -chart-13: #7C6F64;
+}
+
+.card {
+    -fx-effect: dropshadow(gaussian, rgba(31, 26, 23, 0.08), 12, 0, 0, 4);
+}

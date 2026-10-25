@@ -1,0 +1,47 @@
+/* Dark theme tokens, from jeib-color-system.md §3 and §5. Dark mode separates layers with borders, not shadows. */
+.root {
+    -bg-app: #14110F;
+    -bg-surface: #1E1A17;
+    -bg-surface-alt: #27221E;
+    -bg-sidebar: #181513;
+    -nav-hover: #27221E;
+    -border: #3A332D;
+    -border-strong: #6F665E;
+    -text-primary: #F5F0EB;
+    -text-secondary: #B5ABA1;
+    -text-disabled: #6F665E;
+    -primary: #FF751F;
+    -primary-hover: #FF8A42;
+    -primary-pressed: #E8620F;
+    -on-primary: #1A120B;
+    -primary-text: #FF8A42;
+    -primary-tint: #3A2416;
+    -success: #4CC38A;
+    -success-tint: #12281C;
+    -warning-text: #F5C542;
+    -warning-bar: #F5C542;
+    -warning-tint: #33290E;
+    -danger-text: #FF6B6B;
+    -danger-bar: #FF6B6B;
+    -danger-tint: #3A1717;
+    -focus-ring: #6EA8FE;
+
+    -chart-0: #FF751F;
+    -chart-1: #5BA4E6;
+    -chart-2: #A78BFA;
+    -chart-3: #2DD4BF;
+    -chart-4: #F472B6;
+    -chart-5: #E5B84B;
+    -chart-6: #94A3B8;
+    -chart-7: #A3C93A;
+    -chart-8: #22D3EE;
+    -chart-9: #E879F9;
+    -chart-10: #FDA4AF;
+    -chart-11: #C49A6C;
+    -chart-12: #D58BC7;
+    -chart-13: #BFB3A8;
+}
+
+.card {
+    -fx-effect: null;
+}

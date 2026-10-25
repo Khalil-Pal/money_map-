@@ -1,0 +1,19 @@
+# Build output
+target/
+dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Local databases (the app keeps its real database in the user's app-data folder)
+*.db
+*.db-journal
+
+# Personal career plan; keep it out of the public repo
+developer-roadmap.docx

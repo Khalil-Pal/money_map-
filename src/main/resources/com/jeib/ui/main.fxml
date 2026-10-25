@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<!-- App shell from the Round 1 mockup: sidebar, top bar, page content. Icons are Lucide paths (24 px grid). -->
+<BorderPane fx:id="root" styleClass="app-root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.jeib.ui.MainController">
+
+    <fx:define>
+        <ToggleGroup fx:id="navGroup"/>
+    </fx:define>
+
+    <left>
+        <VBox styleClass="sidebar">
+            <HBox styleClass="brand">
+                <ImageView fitWidth="32" fitHeight="32" preserveRatio="true" smooth="true">
+                    <Image url="@logo.png"/>
+                </ImageView>
+                <Label text="Jeib" styleClass="brand-name"/>
+            </HBox>
+
+            <ToggleButton text="Dashboard" toggleGroup="$navGroup" selected="true" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M4 3h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 3h5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM15 12h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1zM4 16h5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z"/></Group></graphic>
+            </ToggleButton>
+            <ToggleButton text="Transactions" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></Group></graphic>
+            </ToggleButton>
+            <ToggleButton text="Budgets" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12zM12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4z"/></Group></graphic>
+            </ToggleButton>
+            <ToggleButton text="Reports" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></Group></graphic>
+            </ToggleButton>
+            <ToggleButton text="Accounts" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 0 0 0 4h4v-4z"/></Group></graphic>
+            </ToggleButton>
+            <ToggleButton text="Recurring" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"/></Group></graphic>
+            </ToggleButton>
+            <ToggleButton text="Goals" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></Group></graphic>
+            </ToggleButton>
+
+            <Region VBox.vgrow="ALWAYS"/>
+
+            <ToggleButton text="Settings" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6z"/></Group></graphic>
+            </ToggleButton>
+            <Button fx:id="themeToggle" text="Dark mode" styleClass="button-secondary,theme-toggle" maxWidth="Infinity">
+                <graphic><Group><SVGPath fx:id="themeIcon" styleClass="icon" scaleX="0.75" scaleY="0.75"/></Group></graphic>
+            </Button>
+        </VBox>
+    </left>
+
+    <center>
+        <BorderPane>
+            <top>
+                <HBox styleClass="topbar">
+                    <Button styleClass="icon-button" accessibleText="Previous month">
+                        <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M15 18l-6-6 6-6"/></Group></graphic>
+                    </Button>
+                    <Label text="October 2026" styleClass="month-label"/>
+                    <Button styleClass="icon-button" accessibleText="Next month">
+                        <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M9 18l6-6-6-6"/></Group></graphic>
+                    </Button>
+                    <TextField promptText="Quick add — type 12.50 food lunch and press Enter" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <Button text="New transaction" styleClass="button-primary">
+                        <graphic><Group><SVGPath styleClass="icon" scaleX="0.67" scaleY="0.67" content="M5 12h14M12 5v14"/></Group></graphic>
+                    </Button>
+                </HBox>
+            </top>
+            <center>
+                <ScrollPane fitToWidth="true" styleClass="page-scroll">
+                    <VBox styleClass="page">
+                        <Label fx:id="pageTitle" styleClass="page-title"/>
+                        <Label fx:id="pageSubtitle" styleClass="muted"/>
+                        <Label fx:id="comingSoon" styleClass="coming-soon" wrapText="true" maxWidth="Infinity"/>
+                        <VBox fx:id="dashboardCards" spacing="16">
+                            <VBox styleClass="card">
+                                <Label text="Database" styleClass="card-title"/>
+                                <Label fx:id="databaseStatus" styleClass="muted" wrapText="true"/>
+                            </VBox>
+                            <VBox styleClass="card">
+                                <Label text="Default categories" styleClass="card-title"/>
+                                <Label text="Expenses" styleClass="section-label"/>
+                                <FlowPane fx:id="expenseChips" hgap="8" vgap="8"/>
+                                <Label text="Income" styleClass="section-label">
+                                    <VBox.margin><Insets top="4"/></VBox.margin>
+                                </Label>
+                                <FlowPane fx:id="incomeChips" hgap="8" vgap="8"/>
+                            </VBox>
+                        </VBox>
+                    </VBox>
+                </ScrollPane>
+            </center>
+        </BorderPane>
+    </center>
+</BorderPane>
