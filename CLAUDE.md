@@ -176,7 +176,8 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   `main`). Phase 1 skeleton done: Maven project, V1 schema + V2 default categories, themed app shell
   (light/dark) matching the mockups, jpackage app image builds. Week 3 step 1 done: `Transaction`
   record, `TransactionRepository` (insert, findById, findByMonth, softDelete), `Timestamps`
-  (fixed-width UTC text); 40 tests passing. Both are on branch `feature/skeleton` (PR to `main`).
+  (fixed-width UTC text); 40 tests passing. Both merged into `main` via PR #1 (Oct 25).
+  For session history, decisions, and pending items, see `HANDOFF.md`.
   `developer-roadmap.docx` is git-ignored (personal).
 - Week 3 next: categories create/rename/delete (built-ins protected, first free color, case-insensitive
   unique names, deleting moves its transactions to "Other"), then `TransactionService` validation,
