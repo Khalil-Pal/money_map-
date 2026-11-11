@@ -232,8 +232,16 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   under its field. Opened by the New transaction button, Ctrl+N, or clicking / Enter on a list row.
   View-models keep DB work in plain methods (`loadData`/`apply`, `request`/`perform`) so tests run
   without JavaFX. `tools/Snap.java` clicks through setup → new → errors → rate → save → dark edit.
-  141 tests passing.
-  Next (Nov 16-21): delete with undo, undo/redo (Command pattern), quick-add bar.
+  Then undo/redo (Command pattern, `service/`): `Command`, `UndoManager` (undo + redo stacks, per
+  session, last 100, failed commands not recorded, new change clears redo), `TransactionCommands`
+  (Add/Edit/Delete; the UI saves through these, never `TransactionService` directly). Undo of a
+  delete = `TransactionService.restore` (repository `restore`: deleted 0, version + 1, PENDING);
+  undo of an add = soft delete, its redo = restore of the same row; undo of an edit re-applies the
+  old values through normal validation. Delete: red Delete button in the edit dialog (no
+  confirmation) or Delete/Backspace on a focused row → `Toasts` "Transaction deleted · Undo".
+  Ctrl+Z / Ctrl+Y (also Ctrl+Shift+Z) via `HistoryViewModel`, as a root key handler so text fields
+  keep their own undo; ignored while a dialog is open. 153 tests passing.
+  Next: quick-add bar ("250 food lunch"), then limits + dashboard (Nov 23-28).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a

@@ -596,6 +596,54 @@
     -fx-text-fill: -on-primary;
 }
 
+/* Destructive button: danger text, no fill; deletes are undoable, so no confirmation (§6.2). */
+.button-danger {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-text-fill: -danger-text;
+    -fx-font-weight: 500;
+    -fx-pref-height: 36;
+    -fx-padding: 0 12 0 12;
+    -fx-cursor: hand;
+}
+
+.button-danger:hover {
+    -fx-background-color: -danger-tint;
+}
+
+.button-danger:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+}
+
+/* ---- Toasts ------------------------------------------------------------ */
+
+.toast {
+    -fx-background-color: -toast-bg;
+    -fx-background-radius: 10;
+    -fx-padding: 10 10 10 16;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+    -fx-effect: dropshadow(gaussian, -dialog-shadow, 20, 0, 0, 4);
+}
+
+.toast-text {
+    -fx-text-fill: -toast-text;
+}
+
+.toast-action {
+    -fx-background-color: transparent;
+    -fx-text-fill: -toast-action;
+    -fx-font-weight: 600;
+    -fx-padding: 4 8 4 8;
+    -fx-cursor: hand;
+}
+
+.toast-action:hover {
+    -fx-underline: true;
+}
+
 /* ---- Scroll bars ------------------------------------------------------ */
 
 .scroll-bar {

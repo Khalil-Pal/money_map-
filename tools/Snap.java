@@ -65,14 +65,18 @@ public class Snap {
                         fire(scene, "#saveButton");
                     });
                     step(() -> save(scene, out + "-06b-light-saved.png"));
+                    step(() -> clickFirstRow(scene));
+                    step(() -> fire(scene, "#deleteButton"));
+                    step(() -> save(scene, out + "-06c-deleted-toast.png"));
+                    step(() -> fire(scene, "#toastAction"));
+                    step(() -> save(scene, out + "-06d-undo-clicked.png"));
+                    step(() -> javafx.event.Event.fireEvent(scene.getRoot(), new javafx.scene.input.KeyEvent(
+                            javafx.scene.input.KeyEvent.KEY_PRESSED, "", "", javafx.scene.input.KeyCode.Z,
+                            false, true, false, false)));
+                    step(() -> save(scene, out + "-06e-ctrl-z.png"));
                     step(vm::toggleTheme);
                     step(() -> save(scene, out + "-07-dark-transactions.png"));
-                    step(() -> {
-                        Node row = scene.lookup(".tx-row-clickable");
-                        if (row != null) {
-                            row.getOnMouseClicked().handle(null);
-                        }
-                    });
+                    step(() -> clickFirstRow(scene));
                     step(() -> save(scene, out + "-08-dark-edit.png"));
                     step(() -> fire(scene, "#cancelButton"));
                     step(vm::previousMonth);
@@ -101,6 +105,13 @@ public class Snap {
             button.fire();
         } else {
             System.out.println("not found: " + selector);
+        }
+    }
+
+    static void clickFirstRow(Scene scene) {
+        Node row = scene.lookup(".tx-row-clickable");
+        if (row != null) {
+            row.getOnMouseClicked().handle(null);
         }
     }
 

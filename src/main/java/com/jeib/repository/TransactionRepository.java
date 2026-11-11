@@ -133,6 +133,25 @@ public final class TransactionRepository {
         }
     }
 
+    /**
+     * Brings back a soft-deleted transaction (undo of a delete). Like every change it bumps version
+     * and updated_at and marks the row for the next sync push, so other devices see it come back.
+     *
+     * @return false if there was no deleted transaction with that id
+     */
+    public boolean restore(String id) throws SQLException {
+        String sql = """
+                UPDATE transactions
+                SET deleted = 0, version = version + 1, updated_at = ?, sync_state = 'PENDING'
+                WHERE id = ? AND deleted = 1""";
+        try (Connection connection = database.connect();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, Timestamps.now(clock));
+            statement.setString(2, id);
+            return statement.executeUpdate() == 1;
+        }
+    }
+
     private static Transaction map(ResultSet row) throws SQLException {
         return new Transaction(
                 row.getString("id"),

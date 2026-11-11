@@ -6,12 +6,16 @@ import com.jeib.repository.SettingsRepository;
 import com.jeib.repository.TransactionRepository;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
+import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
+import com.jeib.service.UndoManager;
 import com.jeib.ui.DialogHost;
 import com.jeib.ui.Dialogs;
+import com.jeib.ui.HistoryViewModel;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
 import com.jeib.ui.SetupViewModel;
+import com.jeib.ui.Toasts;
 import com.jeib.ui.TransactionDialogViewModel;
 import com.jeib.ui.TransactionsController;
 import com.jeib.ui.TransactionsViewModel;
@@ -43,24 +47,28 @@ public class JeibApp extends Application {
         CurrencyService currencyService = new CurrencyService(new SettingsRepository(database));
         TransactionService transactionService = new TransactionService(
                 new TransactionRepository(database, clock), categoryRepository, currencyService, clock);
+        // One undo history for the session; every UI change goes through these commands.
+        TransactionCommands transactionCommands = new TransactionCommands(transactionService, new UndoManager());
 
         MainViewModel main = new MainViewModel(database, categoryRepository, currencyService, clock);
-        TransactionsViewModel transactions = new TransactionsViewModel(
-                transactionService, categoryService, main.monthProperty(), main.readyProperty());
+        TransactionsViewModel transactions = new TransactionsViewModel(transactionService, transactionCommands,
+                categoryService, main.monthProperty(), main.readyProperty());
+        Toasts toasts = new Toasts();
+        HistoryViewModel history = new HistoryViewModel(transactionCommands.history(), transactions::load, toasts::show);
         DialogHost dialogHost = new DialogHost();
         Dialogs dialogs = new Dialogs(dialogHost,
                 () -> new SetupViewModel(currencyService),
-                () -> new TransactionDialogViewModel(transactionService, categoryService, currencyService, clock),
-                transactions::load);
+                () -> new TransactionDialogViewModel(transactionCommands, categoryService, currencyService, clock),
+                transactions::load, toasts, history);
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
-                return new MainController(main, dialogHost, dialogs);
+                return new MainController(main, dialogHost, dialogs, toasts, history);
             }
             if (type == TransactionsController.class) {
-                return new TransactionsController(transactions, dialogs);
+                return new TransactionsController(transactions, dialogs, toasts, history);
             }
             throw new IllegalArgumentException("No controller for " + type);
         });

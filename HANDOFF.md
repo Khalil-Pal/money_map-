@@ -150,6 +150,12 @@ showing all at once is a possible later polish. The DatePicker uses the OS date 
 12.11.2026 on a Russian locale) while the list uses "Thu, Nov 12". Exchange rates are global (not
 per transaction): changing a rate changes how all past amounts in that currency are counted.
 
+Nov 12, evening: delete + undo/redo done (see CLAUDE.md status). Known edge: undoing a transaction
+delete after its category was deleted brings it back into the deleted category (shown as "Unknown
+category"); category deletion has no UI yet, so this is rare. Undo history is per app session.
+Week 4 (add/edit dialog, delete, undo/redo) is done on Nov 12, ahead of the Nov 16-21 milestone;
+only quick-add is left from it.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

@@ -15,7 +15,9 @@ import com.jeib.repository.SettingsRepository;
 import com.jeib.repository.TransactionRepository;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
+import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
+import com.jeib.service.UndoManager;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -60,7 +62,7 @@ class TransactionDialogViewModelTest {
 
     /** A dialog as Dialogs opens it: prepared, then loaded. */
     private TransactionDialogViewModel opened(Transaction editing) throws SQLException {
-        TransactionDialogViewModel viewModel = new TransactionDialogViewModel(transactions,
+        TransactionDialogViewModel viewModel = new TransactionDialogViewModel(new TransactionCommands(transactions, new UndoManager()),
                 new CategoryService(new CategoryRepository(database, CLOCK)), currencies, CLOCK);
         if (editing == null) {
             viewModel.startNew();
@@ -165,6 +167,22 @@ class TransactionDialogViewModelTest {
 
         viewModel.rateProperty().set("25.40");
         assertTrue(viewModel.request().saveRate());
+    }
+
+    @Test
+    void onlyAnEditedTransactionCanBeDeletedAndTheDeleteCanBeUndone() throws SQLException {
+        assertFalse(opened(null).editingProperty().get());
+
+        TransactionDialogViewModel adding = opened(null);
+        adding.amountProperty().set("12.5");
+        adding.categoryIdProperty().set(FOOD);
+        adding.perform(adding.request());
+        Transaction original = november().getFirst();
+
+        TransactionDialogViewModel editing = opened(original);
+        assertTrue(editing.editingProperty().get());
+        editing.deleteNow(original.id());
+        assertTrue(november().isEmpty());
     }
 
     @Test

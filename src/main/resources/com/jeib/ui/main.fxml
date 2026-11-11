@@ -125,4 +125,7 @@
 
     <!-- Dialogs open here, over a dimmed backdrop (DialogHost). -->
     <StackPane fx:id="dialogLayer" styleClass="dialog-layer" visible="false"/>
+
+    <!-- Toasts ("Transaction deleted · Undo") sit above everything (Toasts). -->
+    <StackPane fx:id="toastLayer"/>
 </StackPane>

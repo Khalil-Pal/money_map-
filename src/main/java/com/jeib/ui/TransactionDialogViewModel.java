@@ -7,8 +7,8 @@ import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
+import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionInput;
-import com.jeib.service.TransactionService;
 import com.jeib.service.ValidationException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -36,7 +36,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.concurrent.Task;
 
 /**
- * State for the New / Edit transaction dialog. The rules live in {@link TransactionService}; this
+ * State for the New / Edit transaction dialog. The rules live in the service layer; this
  * class only collects what the user typed, sends it, and shows each error next to its field.
  *
  * <p>When the chosen currency isn't the main one, the dialog also shows its exchange rate
@@ -50,13 +50,14 @@ public final class TransactionDialogViewModel {
     public static final List<String> ERROR_KEYS =
             List.of("type", "amount", "currency", "rate", "date", "category", "note", FORM);
 
-    private final TransactionService transactions;
+    private final TransactionCommands transactions;
     private final CategoryService categories;
     private final CurrencyService currencies;
     private final Clock clock;
 
     private String editingId; // null while adding
     private final StringProperty title = new SimpleStringProperty("New transaction");
+    private final BooleanProperty editing = new SimpleBooleanProperty(false);
     private final ObjectProperty<TransactionType> type = new SimpleObjectProperty<>(TransactionType.EXPENSE);
     private final StringProperty amount = new SimpleStringProperty("");
     private final ObjectProperty<SupportedCurrency> currency = new SimpleObjectProperty<>();
@@ -76,7 +77,8 @@ public final class TransactionDialogViewModel {
     private final Map<String, StringProperty> errors = new LinkedHashMap<>();
     private final BooleanProperty saving = new SimpleBooleanProperty(false);
 
-    public TransactionDialogViewModel(TransactionService transactions, CategoryService categories,
+    /** @param transactions every save goes through these commands, so it can be undone */
+    public TransactionDialogViewModel(TransactionCommands transactions, CategoryService categories,
                                       CurrencyService currencies, Clock clock) {
         this.transactions = transactions;
         this.categories = categories;
@@ -115,6 +117,7 @@ public final class TransactionDialogViewModel {
 
     public void startNew() {
         editingId = null;
+        editing.set(false);
         title.set("New transaction");
         type.set(TransactionType.EXPENSE);
         amount.set("");
@@ -126,6 +129,7 @@ public final class TransactionDialogViewModel {
 
     public void startEdit(Transaction transaction) {
         editingId = transaction.id();
+        editing.set(true);
         title.set("Edit transaction");
         type.set(transaction.type());
         amount.set(BigDecimal.valueOf(transaction.amountMinor(), 2).toPlainString());
@@ -245,6 +249,38 @@ public final class TransactionDialogViewModel {
         Thread.ofVirtual().name("jeib-dialog-save").start(task);
     }
 
+    /** Database work for {@link #delete}; tests call it directly. */
+    void deleteNow(String id) throws SQLException {
+        transactions.delete(id);
+    }
+
+    /** Deletes the transaction being edited, in the background, then runs {@code onDeleted}. */
+    public void delete(Runnable onDeleted) {
+        if (editingId == null || saving.get()) {
+            return;
+        }
+        String id = editingId;
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                deleteNow(id);
+                return null;
+            }
+        };
+        task.setOnSucceeded(event -> {
+            saving.set(false);
+            onDeleted.run();
+        });
+        task.setOnFailed(event -> {
+            saving.set(false);
+            Throwable error = task.getException();
+            errors.get(FORM).set(error instanceof ValidationException ? error.getMessage() : message(error));
+        });
+        errors.values().forEach(error -> error.set(""));
+        saving.set(true);
+        Thread.ofVirtual().name("jeib-dialog-delete").start(task);
+    }
+
     void showErrors(Map<String, String> found) {
         found.forEach((key, text) -> errors.getOrDefault(key, errors.get(FORM)).set(text));
     }
@@ -257,6 +293,11 @@ public final class TransactionDialogViewModel {
 
     public ReadOnlyStringProperty titleProperty() {
         return title;
+    }
+
+    /** True when editing an existing transaction (the dialog then offers Delete). */
+    public ReadOnlyBooleanProperty editingProperty() {
+        return editing;
     }
 
     public ObjectProperty<TransactionType> typeProperty() {

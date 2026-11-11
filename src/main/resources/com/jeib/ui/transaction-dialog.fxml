@@ -66,6 +66,7 @@
     <Label fx:id="formError" styleClass="field-error" wrapText="true"/>
 
     <HBox styleClass="dialog-buttons">
+        <Button fx:id="deleteButton" text="Delete" styleClass="button-danger"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="cancelButton" text="Cancel" cancelButton="true" styleClass="button-secondary"/>
         <Button fx:id="saveButton" text="Save" defaultButton="true" styleClass="button-primary"/>

@@ -16,15 +16,20 @@ public final class TransactionsController {
 
     private final TransactionsViewModel viewModel;
     private final Dialogs dialogs;
+    private final Toasts toasts;
+    private final HistoryViewModel history;
 
     @FXML private Label summary;
     @FXML private HBox header;
     @FXML private VBox rowsBox;
     @FXML private Label message;
 
-    public TransactionsController(TransactionsViewModel viewModel, Dialogs dialogs) {
+    public TransactionsController(TransactionsViewModel viewModel, Dialogs dialogs, Toasts toasts,
+                                  HistoryViewModel history) {
         this.viewModel = viewModel;
         this.dialogs = dialogs;
+        this.toasts = toasts;
+        this.history = history;
     }
 
     @FXML
@@ -48,7 +53,10 @@ public final class TransactionsController {
         rowsBox.getChildren().setAll(viewModel.rows().stream().map(this::row).toList());
     }
 
-    /** A clickable row: click it, or focus it with Tab and press Enter or Space, to edit. */
+    /**
+     * A clickable row: click it, or focus it with Tab and press Enter or Space, to edit. Delete
+     * (or Backspace) on a focused row deletes it, with Undo in the toast.
+     */
     private Node row(TransactionRow row) {
         Label date = label(row.date(), "tx-col-date", "muted");
 
@@ -70,6 +78,9 @@ public final class TransactionsController {
         line.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
                 dialogs.openEditTransaction(row.source());
+                event.consume();
+            } else if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
+                viewModel.delete(row.id(), () -> toasts.show("Transaction deleted.", "Undo", history::undo));
                 event.consume();
             }
         });

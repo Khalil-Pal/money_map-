@@ -28,6 +28,9 @@
     -row-hover: #27221E;                     /* §6.5: hovered row = bg-surface-elevated in dark */
     -backdrop: rgba(0, 0, 0, 0.60);          /* behind dialogs */
     -dialog-shadow: rgba(0, 0, 0, 0.60);
+    -toast-bg: #F5F0EB;                      /* inverted: light toast on the dark app */
+    -toast-text: #1F1A17;
+    -toast-action: #C2410C;
 
     -chart-0: #FF751F;
     -chart-1: #5BA4E6;

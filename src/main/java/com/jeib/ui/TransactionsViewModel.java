@@ -1,6 +1,7 @@
 package com.jeib.ui;
 
 import com.jeib.service.CategoryService;
+import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +27,7 @@ public final class TransactionsViewModel {
     private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US);
 
     private final TransactionService transactions;
+    private final TransactionCommands commands;
     private final CategoryService categories;
     private final ReadOnlyObjectProperty<YearMonth> month;
 
@@ -38,9 +40,11 @@ public final class TransactionsViewModel {
      * @param month the month chosen in the top bar (shared with the other pages)
      * @param ready true once the database is migrated; nothing loads before that
      */
-    public TransactionsViewModel(TransactionService transactions, CategoryService categories,
+    public TransactionsViewModel(TransactionService transactions, TransactionCommands commands,
+                                 CategoryService categories,
                                  ReadOnlyObjectProperty<YearMonth> month, ReadOnlyBooleanProperty ready) {
         this.transactions = transactions;
+        this.commands = commands;
         this.categories = categories;
         this.month = month;
         month.addListener((obs, oldMonth, newMonth) -> {
@@ -86,6 +90,26 @@ public final class TransactionsViewModel {
         });
         loading.set(true);
         Thread.ofVirtual().name("jeib-transactions").start(task);
+    }
+
+    /** Deletes (undoably) in the background, reloads, then runs {@code onDeleted} (JavaFX thread). */
+    public void delete(String id, Runnable onDeleted) {
+        Task<Void> task = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                commands.delete(id);
+                return null;
+            }
+        };
+        task.setOnSucceeded(event -> {
+            load();
+            onDeleted.run();
+        });
+        task.setOnFailed(event -> {
+            message.set("Couldn't delete: " + task.getException().getMessage());
+            load();
+        });
+        Thread.ofVirtual().name("jeib-delete").start(task);
     }
 
     public ObservableList<TransactionRow> rows() {

@@ -19,14 +19,22 @@ public final class Dialogs {
     private final Supplier<SetupViewModel> setupViewModels;
     private final Supplier<TransactionDialogViewModel> transactionViewModels;
     private final Runnable afterTransactionSaved;
+    private final Toasts toasts;
+    private final HistoryViewModel history;
 
-    /** @param afterTransactionSaved runs on the JavaFX thread after a successful save, e.g. reload the list */
+    /**
+     * @param afterTransactionSaved runs on the JavaFX thread after a save or delete, e.g. reload the list
+     * @param history               for the toast's Undo after a delete
+     */
     public Dialogs(DialogHost host, Supplier<SetupViewModel> setupViewModels,
-                   Supplier<TransactionDialogViewModel> transactionViewModels, Runnable afterTransactionSaved) {
+                   Supplier<TransactionDialogViewModel> transactionViewModels, Runnable afterTransactionSaved,
+                   Toasts toasts, HistoryViewModel history) {
         this.host = host;
         this.setupViewModels = setupViewModels;
         this.transactionViewModels = transactionViewModels;
         this.afterTransactionSaved = afterTransactionSaved;
+        this.toasts = toasts;
+        this.history = history;
     }
 
     /** First-launch setup. It can't be cancelled; {@code onDone} runs once the currency is saved. */
@@ -58,6 +66,10 @@ public final class Dialogs {
         host.show(load("transaction-dialog.fxml", new TransactionDialogController(viewModel, host::close, () -> {
             host.close();
             afterTransactionSaved.run();
+        }, () -> {
+            host.close();
+            afterTransactionSaved.run();
+            toasts.show("Transaction deleted.", "Undo", history::undo);
         })));
         viewModel.load();
     }

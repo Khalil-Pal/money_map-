@@ -8,6 +8,7 @@ import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.TransactionRepository;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
@@ -17,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Adds, edits, deletes, and lists transactions. Every write is checked here first, so the UI,
@@ -85,6 +87,24 @@ public final class TransactionService {
         if (!transactions.softDelete(id)) {
             throw gone();
         }
+    }
+
+    /** Undoes a delete: the soft-deleted row comes back (with a new version, for sync). */
+    public void restore(String id) throws SQLException {
+        if (!transactions.restore(id)) {
+            throw new ValidationException("This transaction can't be brought back: it isn't deleted any more.");
+        }
+    }
+
+    /** The transaction as stored, deleted or not; for undo, which needs the values before a change. */
+    public Optional<Transaction> find(String id) throws SQLException {
+        return transactions.findById(id);
+    }
+
+    /** The input that would recreate {@code t}'s editable values (used to undo or redo an edit). */
+    public static TransactionInput inputOf(Transaction t) {
+        return new TransactionInput(t.type(), BigDecimal.valueOf(t.amountMinor(), 2).toPlainString(),
+                SupportedCurrency.valueOf(t.currency()), t.occurredOn(), t.categoryId(), t.note());
     }
 
     // ---- validation ------------------------------------------------------

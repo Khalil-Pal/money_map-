@@ -28,6 +28,9 @@
     -row-hover: #FFEFE4;                     /* §6.5: hovered row = primary-tint in light */
     -backdrop: rgba(31, 26, 23, 0.40);       /* behind dialogs */
     -dialog-shadow: rgba(31, 26, 23, 0.20);
+    -toast-bg: #1F1A17;                      /* inverted: dark toast on the light app */
+    -toast-text: #F5F0EB;
+    -toast-action: #FF8A42;
 
     -chart-0: #FF751F;
     -chart-1: #3B82C4;

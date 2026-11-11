@@ -27,6 +27,7 @@ public final class TransactionDialogController {
     private final TransactionDialogViewModel viewModel;
     private final Runnable onCancel;
     private final Runnable onSaved;
+    private final Runnable onDeleted;
 
     @FXML private Label title;
     @FXML private ToggleButton typeExpense;
@@ -50,15 +51,18 @@ public final class TransactionDialogController {
     @FXML private Label formError;
     @FXML private Button cancelButton;
     @FXML private Button saveButton;
+    @FXML private Button deleteButton;
 
     private final ToggleGroup typeGroup = new ToggleGroup();
     private final ToggleGroup currencyGroup = new ToggleGroup();
     private final ToggleGroup categoryGroup = new ToggleGroup();
 
-    public TransactionDialogController(TransactionDialogViewModel viewModel, Runnable onCancel, Runnable onSaved) {
+    public TransactionDialogController(TransactionDialogViewModel viewModel, Runnable onCancel, Runnable onSaved,
+                                       Runnable onDeleted) {
         this.viewModel = viewModel;
         this.onCancel = onCancel;
         this.onSaved = onSaved;
+        this.onDeleted = onDeleted;
     }
 
     @FXML
@@ -113,6 +117,11 @@ public final class TransactionDialogController {
         saveButton.disableProperty().bind(viewModel.savingProperty());
         saveButton.setOnAction(event -> viewModel.save(onSaved));
         cancelButton.setOnAction(event -> onCancel.run());
+        // No "are you sure?": deleting is undoable (toast + Ctrl+Z), which is faster and safer.
+        deleteButton.visibleProperty().bind(viewModel.editingProperty());
+        deleteButton.managedProperty().bind(viewModel.editingProperty());
+        deleteButton.disableProperty().bind(viewModel.savingProperty());
+        deleteButton.setOnAction(event -> viewModel.delete(onDeleted));
 
         Platform.runLater(amountField::requestFocus);
     }

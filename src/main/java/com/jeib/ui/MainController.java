@@ -15,6 +15,7 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -42,10 +43,13 @@ public final class MainController {
     private final MainViewModel viewModel;
     private final DialogHost dialogHost;
     private final Dialogs dialogs;
+    private final Toasts toasts;
+    private final HistoryViewModel history;
 
     @FXML private StackPane root;
     @FXML private BorderPane appContent;
     @FXML private StackPane dialogLayer;
+    @FXML private StackPane toastLayer;
     @FXML private Button newTransaction;
     @FXML private ToggleGroup navGroup;
     @FXML private Label pageTitle;
@@ -62,15 +66,38 @@ public final class MainController {
     @FXML private Button themeToggle;
     @FXML private SVGPath themeIcon;
 
-    public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs) {
+    private static final KeyCombination UNDO = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination REDO = new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination REDO_SHIFT =
+            new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
+
+    public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs, Toasts toasts,
+                          HistoryViewModel history) {
         this.viewModel = viewModel;
         this.dialogHost = dialogHost;
         this.dialogs = dialogs;
+        this.toasts = toasts;
+        this.history = history;
     }
 
     @FXML
     private void initialize() {
         dialogHost.attach(dialogLayer, appContent);
+        toasts.attach(toastLayer);
+        // A handler, not an accelerator: a focused text field handles its own Ctrl+Z (undo typing)
+        // and consumes it, so the app's undo only runs when the keys weren't used for text.
+        root.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (dialogHost.isOpen()) {
+                return;
+            }
+            if (UNDO.match(event)) {
+                history.undo();
+                event.consume();
+            } else if (REDO.match(event) || REDO_SHIFT.match(event)) {
+                history.redo();
+                event.consume();
+            }
+        });
         newTransaction.setOnAction(event -> dialogs.openNewTransaction());
         viewModel.setupNeededProperty().addListener((obs, wasNeeded, needed) -> {
             if (needed) {
