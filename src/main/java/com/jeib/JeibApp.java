@@ -14,6 +14,7 @@ import com.jeib.ui.Dialogs;
 import com.jeib.ui.HistoryViewModel;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
+import com.jeib.ui.QuickAddViewModel;
 import com.jeib.ui.SetupViewModel;
 import com.jeib.ui.Toasts;
 import com.jeib.ui.TransactionDialogViewModel;
@@ -55,6 +56,8 @@ public class JeibApp extends Application {
                 categoryService, main.monthProperty(), main.readyProperty());
         Toasts toasts = new Toasts();
         HistoryViewModel history = new HistoryViewModel(transactionCommands.history(), transactions::load, toasts::show);
+        QuickAddViewModel quickAdd = new QuickAddViewModel(transactionCommands, categoryService, currencyService,
+                clock, transactions::load);
         DialogHost dialogHost = new DialogHost();
         Dialogs dialogs = new Dialogs(dialogHost,
                 () -> new SetupViewModel(currencyService),
@@ -65,7 +68,7 @@ public class JeibApp extends Application {
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
-                return new MainController(main, dialogHost, dialogs, toasts, history);
+                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd);
             }
             if (type == TransactionsController.class) {
                 return new TransactionsController(transactions, dialogs, toasts, history);

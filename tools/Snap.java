@@ -52,6 +52,16 @@ public class Snap {
                     }
                     step(() -> open(scene, "Transactions"));
                     step(() -> save(scene, out + "-03-light-transactions.png"));
+                    step(() -> type(scene, "#quickAdd", "250 food lunch"));
+                    step(() -> save(scene, out + "-03b-quick-add-preview.png"));
+                    step(() -> {
+                        javafx.scene.control.TextField field = (javafx.scene.control.TextField) scene.lookup("#quickAdd");
+                        field.getOnAction().handle(null); // Enter
+                    });
+                    step(() -> save(scene, out + "-03c-quick-add-saved.png"));
+                    step(() -> type(scene, "#quickAdd", "lunch 250"));
+                    step(() -> save(scene, out + "-03d-quick-add-error.png"));
+                    step(() -> type(scene, "#quickAdd", ""));
                     step(() -> fire(scene, "#newTransaction"));
                     step(() -> save(scene, out + "-04-light-new.png"));
                     step(() -> fire(scene, "#saveButton"));
@@ -106,6 +116,10 @@ public class Snap {
         } else {
             System.out.println("not found: " + selector);
         }
+    }
+
+    static void type(Scene scene, String selector, String text) {
+        ((javafx.scene.control.TextField) scene.lookup(selector)).setText(text);
     }
 
     static void clickFirstRow(Scene scene) {

@@ -80,6 +80,7 @@
     <center>
         <BorderPane>
             <top>
+              <VBox>
                 <HBox styleClass="topbar">
                     <Button fx:id="previousMonth" styleClass="icon-button" accessibleText="Previous month">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M15 18l-6-6 6-6"/></Group></graphic>
@@ -88,11 +89,17 @@
                     <Button fx:id="nextMonth" styleClass="icon-button" accessibleText="Next month">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M9 18l6-6-6-6"/></Group></graphic>
                     </Button>
-                    <TextField promptText="Quick add — type 12.50 food lunch and press Enter" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                    <TextField fx:id="quickAdd" promptText="Quick add — type 250 food lunch and press Enter"
+                               accessibleText="Quick add" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
                     <Button fx:id="newTransaction" text="New transaction" styleClass="button-primary">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.67" scaleY="0.67" content="M5 12h14M12 5v14"/></Group></graphic>
                     </Button>
                 </HBox>
+                <!-- What Enter will save; only shown while typing in quick add. -->
+                <HBox fx:id="quickAddPreviewBar" styleClass="quick-add-preview">
+                    <Label fx:id="quickAddPreview"/>
+                </HBox>
+              </VBox>
             </top>
             <center>
                 <ScrollPane fitToWidth="true" styleClass="page-scroll">

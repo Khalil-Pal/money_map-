@@ -8,7 +8,9 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
@@ -45,12 +47,16 @@ public final class MainController {
     private final Dialogs dialogs;
     private final Toasts toasts;
     private final HistoryViewModel history;
+    private final QuickAddViewModel quickAddViewModel;
 
     @FXML private StackPane root;
     @FXML private BorderPane appContent;
     @FXML private StackPane dialogLayer;
     @FXML private StackPane toastLayer;
     @FXML private Button newTransaction;
+    @FXML private TextField quickAdd;
+    @FXML private HBox quickAddPreviewBar;
+    @FXML private Label quickAddPreview;
     @FXML private ToggleGroup navGroup;
     @FXML private Label pageTitle;
     @FXML private Label monthLabel;
@@ -72,18 +78,20 @@ public final class MainController {
             new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
 
     public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs, Toasts toasts,
-                          HistoryViewModel history) {
+                          HistoryViewModel history, QuickAddViewModel quickAddViewModel) {
         this.viewModel = viewModel;
         this.dialogHost = dialogHost;
         this.dialogs = dialogs;
         this.toasts = toasts;
         this.history = history;
+        this.quickAddViewModel = quickAddViewModel;
     }
 
     @FXML
     private void initialize() {
         dialogHost.attach(dialogLayer, appContent);
         toasts.attach(toastLayer);
+        wireQuickAdd();
         // A handler, not an accelerator: a focused text field handles its own Ctrl+Z (undo typing)
         // and consumes it, so the app's undo only runs when the keys weren't used for text.
         root.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
@@ -135,6 +143,45 @@ public final class MainController {
         viewModel.themeProperty().addListener((obs, oldTheme, theme) -> {
             if (root.getScene() != null) {
                 applyTheme(root.getScene());
+            }
+        });
+    }
+
+    private void wireQuickAdd() {
+        quickAdd.textProperty().bindBidirectional(quickAddViewModel.textProperty());
+        quickAddPreview.textProperty().bind(quickAddViewModel.previewProperty());
+        quickAddPreviewBar.visibleProperty().bind(Bindings.isNotEmpty(quickAddViewModel.previewProperty()));
+        quickAddPreviewBar.managedProperty().bind(quickAddPreviewBar.visibleProperty());
+        quickAddViewModel.previewIsErrorProperty().addListener((obs, was, isError) -> {
+            if (isError) {
+                quickAddPreviewBar.getStyleClass().add("quick-add-error");
+            } else {
+                quickAddPreviewBar.getStyleClass().remove("quick-add-error");
+            }
+        });
+        // Load categories and currency once the database is ready and after setup, then again each
+        // time the field is used (cheap, and never stale).
+        viewModel.readyProperty().addListener((obs, was, ready) -> {
+            if (ready) {
+                quickAddViewModel.load();
+            }
+        });
+        viewModel.setupNeededProperty().addListener((obs, was, needed) -> {
+            if (!needed) {
+                quickAddViewModel.load();
+            }
+        });
+        quickAdd.focusedProperty().addListener((obs, was, focused) -> {
+            if (focused) {
+                quickAddViewModel.load();
+            }
+        });
+        quickAdd.setOnAction(event -> quickAddViewModel.submit(
+                message -> toasts.show(message, "Undo", history::undo)));
+        quickAdd.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                quickAddViewModel.clear();
+                event.consume();
             }
         });
     }

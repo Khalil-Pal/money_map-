@@ -156,6 +156,12 @@ category"); category deletion has no UI yet, so this is rare. Undo history is pe
 Week 4 (add/edit dialog, delete, undo/redo) is done on Nov 12, ahead of the Nov 16-21 milestone;
 only quick-add is left from it.
 
+Nov 12, night: quick-add done, so the whole Nov 16-21 milestone is finished early. Next is limits +
+the dashboard (budgets table exists since V1; remember: limits are in the main currency, converted
+sums per currency via `ExchangeRates.toMain`, "left per day until month end" is the headline from
+the survey). Round 2 mockups for Budgets/Dashboard were planned but aren't made; build from the
+color system (status icon tiles, §4) and keep it simple until the post-Dec 1 redesign.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

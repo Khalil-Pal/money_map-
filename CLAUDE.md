@@ -240,8 +240,14 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   old values through normal validation. Delete: red Delete button in the edit dialog (no
   confirmation) or Delete/Backspace on a focused row → `Toasts` "Transaction deleted · Undo".
   Ctrl+Z / Ctrl+Y (also Ctrl+Shift+Z) via `HistoryViewModel`, as a root key handler so text fields
-  keep their own undo; ignored while a dialog is open. 153 tests passing.
-  Next: quick-add bar ("250 food lunch"), then limits + dashboard (Nov 23-28).
+  keep their own undo; ignored while a dialog is open.
+  Then the quick-add bar: `service/QuickAddParser` (pure; rules in its Javadoc: amount first, `+`
+  = income, currency glued or next word incl. usd/nis/rub/$/₪/₽, category by full name or a unique
+  start of ≥2 letters, expense first, an income-only word makes it income, no match → built-in
+  Other/Other income, rest = note, date = today) + `QuickAddViewModel` (live preview bar under the
+  top bar, red on errors; Enter saves through `TransactionCommands` → toast "Added … · Undo"; Esc
+  clears). 194 tests passing. Week 4's milestone is complete (Nov 12).
+  Next: limits + dashboard (Nov 23-28 in the plan; can start now).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a
