@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Transactions page: the selected month's list, newest first. Rows are added by TransactionsController. -->
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.TransactionsController" styleClass="transactions-page">
+
+    <Label fx:id="summary" styleClass="muted"/>
+
+    <VBox styleClass="card,tx-card">
+        <HBox fx:id="header" styleClass="tx-header">
+            <Label text="Date" styleClass="tx-col-date"/>
+            <Label text="Note" styleClass="tx-col-note" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Label text="Category" styleClass="tx-col-category"/>
+            <Label text="Amount" styleClass="tx-col-amount"/>
+        </HBox>
+        <VBox fx:id="rowsBox"/>
+        <Label fx:id="message" styleClass="tx-message" wrapText="true" maxWidth="Infinity"/>
+    </VBox>
+</VBox>

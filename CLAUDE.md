@@ -219,8 +219,12 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   (add/edit/delete/listMonth with validation; `ValidationException.field()` names the form field),
   `TransactionRepository.update` with an optimistic version check. Then currencies:
   `SupportedCurrency`, `ExchangeRates`, `SettingsRepository`, `CurrencyService`; transactions
-  carry USD/ILS/RUB; 119 tests passing.
-  Next: the Transactions screen (month list + month switcher).
+  carry USD/ILS/RUB. Nov 12: Transactions screen (`transactions.fxml` + `TransactionsController` +
+  `TransactionsViewModel`, rows built by `TransactionRow.from`), working ◀ ▶ month switcher (month
+  lives in `MainViewModel`, shared by all pages), `SupportedCurrency.format` ("$12.50", "₪45.00",
+  "950.00 ₽"). `JeibApp.createMainWindow(database, clock)` is the one place that wires the app (also
+  used by `tools/Snap.java`, which now also captures the Transactions page). 133 tests passing.
+  Next (Nov 16-21): first-launch main-currency step, add/edit dialog, quick-add, delete, undo/redo.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a

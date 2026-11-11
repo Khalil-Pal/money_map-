@@ -79,11 +79,11 @@
         <BorderPane>
             <top>
                 <HBox styleClass="topbar">
-                    <Button styleClass="icon-button" accessibleText="Previous month">
+                    <Button fx:id="previousMonth" styleClass="icon-button" accessibleText="Previous month">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M15 18l-6-6 6-6"/></Group></graphic>
                     </Button>
-                    <Label text="October 2026" styleClass="month-label"/>
-                    <Button styleClass="icon-button" accessibleText="Next month">
+                    <Label fx:id="monthLabel" styleClass="month-label"/>
+                    <Button fx:id="nextMonth" styleClass="icon-button" accessibleText="Next month">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M9 18l6-6-6-6"/></Group></graphic>
                     </Button>
                     <TextField promptText="Quick add — type 12.50 food lunch and press Enter" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
@@ -98,6 +98,7 @@
                         <Label fx:id="pageTitle" styleClass="page-title"/>
                         <Label fx:id="pageSubtitle" styleClass="muted"/>
                         <Label fx:id="comingSoon" styleClass="coming-soon" wrapText="true" maxWidth="Infinity"/>
+                        <fx:include fx:id="transactionsPage" source="transactions.fxml"/>
                         <VBox fx:id="dashboardCards" spacing="16">
                             <VBox styleClass="card">
                                 <Label text="Database" styleClass="card-title"/>

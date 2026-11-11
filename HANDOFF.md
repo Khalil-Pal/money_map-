@@ -135,6 +135,13 @@ main currency **the user picks when setting up** (not a fixed default), with man
 are in `CLAUDE.md` → Features, item 9. The Dec 1 build therefore needs a small first-launch step
 (choose main currency) and a place to enter the rates.
 
+Step 4 (Transactions screen) done Nov 12 on `feature/transactions`. Notes: the month list reloads
+when the month or DB readiness changes, and ignores results for a month no longer on screen (fast
+◀ ▶ clicks). Rows aren't clickable yet, so no hover (CLAUDE.md rule). Amounts show in each
+transaction's own currency; converted totals come with the dashboard. To screenshot with sample
+data: seed a temp DB through the services, then run `tools/Snap.java <db> <prefix> 2026-11-12`.
+Khalil asked to keep the conversation in English (even when a request arrives in Russian).
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index
@@ -149,7 +156,7 @@ are in `CLAUDE.md` → Features, item 9. The Dec 1 build therefore needs a small
 3. ~~**Step 3: `TransactionService`:**~~ (done) validates input (amount > 0 via `Money.parseMinorUnits`, date
    required, category exists and is live, transaction type matches the category's kind) and calls
    the repository. Tests.
-4. **Step 4: Transactions screen:** month list (newest first) wired to the top-bar month switcher;
+4. ~~**Step 4: Transactions screen:**~~ (done) month list (newest first) wired to the top-bar month switcher;
    view-model loads on a background `Task`. Match the Round 1 mockup (date, description, category
    with color swatch, account, tags, amount; income in green with "+").
 5. **Week 4:** add/edit dialog (category chips, "+ New category" with color picker, limit preview),

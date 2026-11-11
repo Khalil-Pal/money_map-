@@ -2,8 +2,15 @@ package com.jeib;
 
 import com.jeib.db.Database;
 import com.jeib.repository.CategoryRepository;
+import com.jeib.repository.SettingsRepository;
+import com.jeib.repository.TransactionRepository;
+import com.jeib.service.CategoryService;
+import com.jeib.service.CurrencyService;
+import com.jeib.service.TransactionService;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
+import com.jeib.ui.TransactionsController;
+import com.jeib.ui.TransactionsViewModel;
 import java.io.IOException;
 import java.time.Clock;
 import java.util.Objects;
@@ -16,16 +23,47 @@ import javafx.stage.Stage;
 
 public class JeibApp extends Application {
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        Database database = Database.openDefault();
-        MainViewModel viewModel = new MainViewModel(database, new CategoryRepository(database, Clock.systemUTC()));
+    /** The main window's content and its view-model, so callers can start loading. */
+    public record MainWindow(Parent root, MainViewModel viewModel) {
+    }
+
+    /**
+     * Builds every repository, service, view-model, and controller for one database. The only place
+     * that wires the app together; also used by tools/Snap.java.
+     *
+     * @param clock the system clock in the app; a fixed one in tools and tests
+     */
+    public static MainWindow createMainWindow(Database database, Clock clock) throws IOException {
+        CategoryRepository categoryRepository = new CategoryRepository(database, clock);
+        CategoryService categoryService = new CategoryService(categoryRepository);
+        CurrencyService currencyService = new CurrencyService(new SettingsRepository(database));
+        TransactionService transactionService = new TransactionService(
+                new TransactionRepository(database, clock), categoryRepository, currencyService, clock);
+
+        MainViewModel main = new MainViewModel(database, categoryRepository, clock);
+        TransactionsViewModel transactions = new TransactionsViewModel(
+                transactionService, categoryService, main.monthProperty(), main.readyProperty());
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
-        loader.setControllerFactory(type -> new MainController(viewModel));
-        Parent root = loader.load();
+        // fx:include uses the same factory, so it must know every controller type.
+        loader.setControllerFactory(type -> {
+            if (type == MainController.class) {
+                return new MainController(main);
+            }
+            if (type == TransactionsController.class) {
+                return new TransactionsController(transactions);
+            }
+            throw new IllegalArgumentException("No controller for " + type);
+        });
+        return new MainWindow(loader.load(), main);
+    }
 
-        stage.setScene(new Scene(root, 1280, 800));
+    @Override
+    public void start(Stage stage) throws IOException {
+        // The local time zone decides "today" and which month the app opens on.
+        MainWindow window = createMainWindow(Database.openDefault(), Clock.systemDefaultZone());
+
+        stage.setScene(new Scene(window.root(), 1280, 800));
         stage.setTitle("Jeib");
         stage.getIcons().add(new Image(Objects.requireNonNull(
                 JeibApp.class.getResourceAsStream("ui/logo.png"))));
@@ -33,7 +71,7 @@ public class JeibApp extends Application {
         stage.setMinHeight(640);
         stage.show();
 
-        viewModel.load();
+        window.viewModel().load();
     }
 
     public static void main(String[] args) {

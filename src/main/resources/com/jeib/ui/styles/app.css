@@ -286,6 +286,79 @@
 .swatch-12 { -fx-background-color: -chart-12; }
 .swatch-13 { -fx-background-color: -chart-13; }
 
+/* ---- Transactions list ------------------------------------------------ */
+
+.transactions-page {
+    -fx-spacing: 12;
+}
+
+/* The list is one card; header and rows run edge to edge inside it. */
+.tx-card {
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.tx-header {
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 10 20 10 20;
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+}
+
+.tx-header .label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -text-secondary;
+}
+
+.tx-row {
+    -fx-padding: 12 20 12 20;
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.tx-col-date {
+    -fx-min-width: 110;
+    -fx-pref-width: 110;
+}
+
+.tx-col-note {
+    -fx-min-width: 120;
+}
+
+.tx-col-category {
+    -fx-min-width: 180;
+    -fx-pref-width: 180;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.tx-col-amount {
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-alignment: center-right;
+}
+
+/* Expenses stay in normal text (not red), income is green with "+" (jeib-color-system.md §6). */
+.amount {
+    -fx-text-fill: -text-primary;
+    -fx-font-weight: 600;
+}
+
+.amount-income {
+    -fx-text-fill: -success;
+    -fx-font-weight: 600;
+}
+
+.tx-message {
+    -fx-padding: 40 24 40 24;
+    -fx-text-fill: -text-secondary;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
 /* ---- Scroll bars ------------------------------------------------------ */
 
 .scroll-bar {

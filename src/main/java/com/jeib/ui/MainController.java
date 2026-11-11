@@ -24,7 +24,6 @@ public final class MainController {
 
     /** Placeholder text for screens that aren't built yet, by roadmap week. */
     private static final Map<String, String> COMING = Map.of(
-            "Transactions", "Built in Weeks 3-4: add, edit, delete, monthly list, undo/redo.",
             "Budgets", "Built in Week 5: monthly limits per category and overall.",
             "Reports", "Built in Week 6: monthly report and Excel export.",
             "Accounts", "Built in Week 8: multiple accounts and currencies.",
@@ -41,6 +40,10 @@ public final class MainController {
     @FXML private BorderPane root;
     @FXML private ToggleGroup navGroup;
     @FXML private Label pageTitle;
+    @FXML private Label monthLabel;
+    @FXML private Button previousMonth;
+    @FXML private Button nextMonth;
+    @FXML private VBox transactionsPage;
     @FXML private Label pageSubtitle;
     @FXML private VBox dashboardCards;
     @FXML private Label comingSoon;
@@ -57,6 +60,9 @@ public final class MainController {
     @FXML
     private void initialize() {
         databaseStatus.textProperty().bind(viewModel.statusProperty());
+        monthLabel.textProperty().bind(viewModel.monthLabel());
+        previousMonth.setOnAction(event -> viewModel.previousMonth());
+        nextMonth.setOnAction(event -> viewModel.nextMonth());
 
         viewModel.categories().addListener((ListChangeListener<Category>) change -> renderCategories());
         renderCategories();
@@ -95,12 +101,18 @@ public final class MainController {
         String page = ((ToggleButton) toggle).getText();
         pageTitle.setText(page);
         boolean dashboard = "Dashboard".equals(page);
+        boolean transactions = "Transactions".equals(page);
         pageSubtitle.setText(dashboard ? "The app skeleton: theme, navigation, and the local database." : "");
+        pageSubtitle.setVisible(dashboard);
+        pageSubtitle.setManaged(dashboard);
         dashboardCards.setVisible(dashboard);
         dashboardCards.setManaged(dashboard);
         comingSoon.setText(COMING.getOrDefault(page, ""));
-        comingSoon.setVisible(!dashboard);
-        comingSoon.setManaged(!dashboard);
+        boolean built = dashboard || transactions;
+        comingSoon.setVisible(!built);
+        comingSoon.setManaged(!built);
+        transactionsPage.setVisible(transactions);
+        transactionsPage.setManaged(transactions);
     }
 
     private void renderCategories() {
