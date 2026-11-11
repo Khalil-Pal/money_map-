@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -95,7 +94,7 @@ public final class TransactionRepository {
                 WHERE id = ? AND deleted = 0""";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, Timestamps.format(clock.instant().truncatedTo(ChronoUnit.MILLIS)));
+            statement.setString(1, Timestamps.now(clock));
             statement.setString(2, id);
             return statement.executeUpdate() == 1;
         }

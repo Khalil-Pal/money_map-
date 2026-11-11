@@ -1,8 +1,10 @@
 package com.jeib.db;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 /**
  * How timestamps are stored: ISO-8601 UTC with exactly three decimals, e.g. 2026-10-25T09:30:00.000Z.
@@ -22,6 +24,11 @@ public final class Timestamps {
 
     public static String format(Instant instant) {
         return FORMAT.format(instant);
+    }
+
+    /** The clock's current time as stored text, cut to milliseconds like every stored value. */
+    public static String now(Clock clock) {
+        return format(clock.instant().truncatedTo(ChronoUnit.MILLIS));
     }
 
     /** Accepts any ISO-8601 instant, including the second-precision ones written by migration V2. */

@@ -5,6 +5,7 @@ import com.jeib.repository.CategoryRepository;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
 import java.io.IOException;
+import java.time.Clock;
 import java.util.Objects;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,7 +19,7 @@ public class JeibApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         Database database = Database.openDefault();
-        MainViewModel viewModel = new MainViewModel(database, new CategoryRepository(database));
+        MainViewModel viewModel = new MainViewModel(database, new CategoryRepository(database, Clock.systemUTC()));
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
         loader.setControllerFactory(type -> new MainController(viewModel));

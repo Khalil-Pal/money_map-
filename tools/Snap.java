@@ -30,7 +30,7 @@ public class Snap {
         Platform.startup(() -> {
             try {
                 Database db = new Database(Path.of(args[0]));
-                MainViewModel vm = new MainViewModel(db, new CategoryRepository(db));
+                MainViewModel vm = new MainViewModel(db, new CategoryRepository(db, java.time.Clock.systemUTC()));
                 FXMLLoader loader = new FXMLLoader(JeibApp.class.getResource("ui/main.fxml"));
                 loader.setControllerFactory(t -> new MainController(vm));
                 Parent root = loader.load();

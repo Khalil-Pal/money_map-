@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ class MigrationTest {
 
     @Test
     void seedsTheDefaultCategories() throws SQLException {
-        List<Category> categories = new CategoryRepository(database).findActive();
+        List<Category> categories = new CategoryRepository(database, Clock.systemUTC()).findActive();
 
         assertEquals(11, categories.size());
         assertEquals(8, categories.stream().filter(c -> c.kind() == TransactionType.EXPENSE).count());
@@ -44,7 +45,7 @@ class MigrationTest {
 
     @Test
     void everyDefaultCategoryHasItsOwnColor() throws SQLException {
-        List<Category> categories = new CategoryRepository(database).findActive();
+        List<Category> categories = new CategoryRepository(database, Clock.systemUTC()).findActive();
         long distinctColors = categories.stream().mapToInt(Category::colorIndex).distinct().count();
         assertEquals(categories.size(), distinctColors);
         assertTrue(categories.stream().allMatch(c -> c.colorIndex() >= 0 && c.colorIndex() <= 13));
@@ -53,7 +54,7 @@ class MigrationTest {
     @Test
     void migratingTwiceIsANoOp() throws SQLException {
         database.migrate();
-        assertEquals(11, new CategoryRepository(database).findActive().size());
+        assertEquals(11, new CategoryRepository(database, Clock.systemUTC()).findActive().size());
     }
 
     @Test

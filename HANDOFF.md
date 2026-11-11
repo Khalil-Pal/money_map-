@@ -32,6 +32,13 @@ decided and why, what's pending, and how Khalil likes to work.
 
 ## 2. Where the schedule stands
 
+**Update Nov 11, 2026 — the plan changed.** Khalil wants Jeib **ready to use by Dec 1** and dropped
+the week-by-week order; the Dec 1 scope and milestones are in `CLAUDE.md` → Features. A design
+overhaul ("more professional, not a basic AI look") comes after Dec 1. A 7-student survey shaped the
+priorities: `docs/user-research.md`. The roadmap .docx has an "Update Nov 11" note under "Safety
+net". Done Nov 11: categories (step 2 below), on branch `feature/categories`. The table below is
+the old Nov 1 view, kept for history.
+
 Timeline (from `CLAUDE.md`): Phase 2 = Weeks 3-10 (Oct 26 - Dec 20). Key dates: **Nov 22** core
 features + limits + dashboard, **Nov 29** private build into daily use (30-day self-test),
 **Dec 20** public v1.0.
@@ -40,7 +47,7 @@ features + limits + dashboard, **Nov 29** private build into daily use (30-day s
 |---|---|
 | Phase 1 (Weeks 1-2): brief, repo, mockups, skeleton, first migration, jpackage test | **Done** (Oct 25) |
 | Week 3 step 1: `Transaction` record + `TransactionRepository` + tests | **Done** (Oct 25) |
-| Week 3 step 2: categories create / rename / delete | Not started |
+| Week 3 step 2: categories create / rename / delete | **Done** Nov 11 (`CategoryService`, 21 tests; 61 total) |
 | Week 3 step 3: `TransactionService` with validation | Not started |
 | Week 3 step 4: Transactions screen (monthly list) | Not started |
 | Week 4: add/edit dialog with category chips; undo/redo (Command pattern) | Not started |
@@ -110,9 +117,14 @@ All agreed with Khalil; most are also recorded in `CLAUDE.md` or `jeib-color-sys
 
 ## 6. Next steps (in order)
 
-1. Start of session: short status (where we are, the slip in §2), ask the step 1 quiz, agree the
-   catch-up plan. Create branch `feature/categories` from `main`.
-2. **Week 3 step 2: categories.** In `CategoryRepository` (+ a small service if it helps):
+Steps 1-2 are done (Nov 11). `feature/categories` was branched from `docs/handoff`, so it also
+carries this file and `tools/Snap.java`. Category decisions made while building: a color may repeat
+only when all 14 are used (then the least-used, lowest index); names are whitespace-collapsed, max
+40 characters; built-ins can be renamed and recolored but not deleted; only live transactions move
+on delete, and `softDelete` returns their ids for the coming undo. Step 2 quiz is pending.
+
+1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
+2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index
      `ux_categories_kind_name` already enforces it), gets the **first free color index** 0-13
      (if all 14 are used, colors may repeat), `built_in = 0`, UUID, timestamps via `Timestamps`;

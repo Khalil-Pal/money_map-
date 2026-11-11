@@ -54,15 +54,36 @@ Python is secondary: fake-data generation (100k-500k transactions), analysis, lo
 **Explicitly out of scope:** microservices, Kubernetes, GraphQL, web frontend, mobile app.
 Recommend against them if they come up — a well-structured monolith is the decision.
 
-**Open question (Oct 24, 2026):** the user wants a very modern-looking UI and asked whether to keep
-JavaFX. Not decided yet — update this section once they choose.
+**Design (Nov 11, 2026):** JavaFX stays for now. Khalil wants a much more professional design that
+doesn't look like a basic AI-made UI, but that overhaul comes **after Dec 1**. Until then keep every
+color, size, and radius in the CSS tokens and keep screens simple, so the redesign is mostly CSS
+and layout, not rewritten logic.
 
 ### Features (final scope, agreed Oct 24, 2026)
 
 Rule: **v1.0 (Dec 20, 2026) has every feature that works without a server. v2.0 (Jan 17, 2027)
 adds sync and everything that depends on it.** Numbers are the ones used when the scope was agreed.
 
-**v1.0 — 34 features, by roadmap week:**
+**Ready to use by Dec 1, 2026 (decided Nov 11; replaces the week-by-week order below).** Plan
+by scope, not by roadmap week. Dec 1 build, for Khalil plus 2-3 survey respondents, as a zipped
+app image (no installer):
+
+1. Categories: create, rename/recolor, delete (transactions move to "Other")
+2. Transactions: add, edit, delete, monthly list, working month switcher, validation
+3. Quick-add bar ("250 food lunch")
+4. Undo/redo through the service layer (Command pattern)
+5. Per-category + overall limits, OK/WARNING/EXCEEDED, in-app alert
+6. Dashboard: spent, remaining, **left per day until month end**, category chart
+7. Automatic daily backup (keep 7) + crash log
+8. `Jeib.exe` app image, zipped
+
+Milestones: Nov 11-14 categories → `TransactionService` → Transactions screen · Nov 16-21
+add/edit dialog, quick-add, delete, undo/redo · Nov 23-28 limits, statuses, dashboard · Nov 30 -
+Dec 1 backup, crash log, packaging, bug bash. After Dec 1: monthly report + Excel/PDF (needed by
+the first month end, Dec 31), then the rest of the list below in the order real use shows.
+Student survey findings that shaped this: `docs/user-research.md`.
+
+**v1.0 — 34 features, by roadmap week (original order, now flexible):**
 
 | Week | Features |
 |---|---|
@@ -124,6 +145,8 @@ Server adds `users`, `devices`, `user_id` + `server_seq BIGSERIAL` on each synce
 ## Timeline
 
 Rescheduled Oct 24, 2026 so all local features fit in v1.0; the April deadline is unchanged.
+Nov 11, 2026: Phase 2's weekly order no longer binds; the hard date is the Dec 1 usable build
+(see Features). Dec 20 v1.0 stays the target, to be re-checked on Dec 1.
 
 | Phase | Weeks | Dates | Output |
 |---|---|---|---|
@@ -138,7 +161,7 @@ Rescheduled Oct 24, 2026 so all local features fit in v1.0; the April deadline i
 Parallel tracks: DSA from Week 6 (2-3/week → 4-5/week in Phase 5), weekly communication practice,
 Sunday review in `journal.md`, applications from Week 16 (daily from Week 21).
 
-**If behind schedule, protect:** the Nov 29 private build (self-test), then the released MVP (Phase 2), sync basics (auth + push/pull), and
+**If behind schedule, protect:** the Dec 1 usable build (self-test), then the released MVP (Phase 2), sync basics (auth + push/pull), and
 the documentation package (Phase 4). Cut extras, fancy Excel formatting, and Phase 5 volume first.
 
 ## Commands
@@ -179,9 +202,9 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   (fixed-width UTC text); 40 tests passing. Both merged into `main` via PR #1 (Oct 25).
   For session history, decisions, and pending items, see `HANDOFF.md`.
   `developer-roadmap.docx` is git-ignored (personal).
-- Week 3 next: categories create/rename/delete (built-ins protected, first free color, case-insensitive
-  unique names, deleting moves its transactions to "Other"), then `TransactionService` validation,
-  then the Transactions screen.
+- Nov 1 - Nov 10: no work. Nov 11: plan changed to "usable by Dec 1" (see Features); branch
+  `feature/categories` (from `docs/handoff`): `CategoryService` + repository methods for
+  create/update/delete. Next: `TransactionService` validation, then the Transactions screen.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a
