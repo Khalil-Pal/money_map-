@@ -47,6 +47,39 @@ public final class TransactionRepository {
         }
     }
 
+    /**
+     * Saves an edited transaction. {@code t} must carry the next version (stored version + 1) and
+     * its new updated_at; the row is marked for the next sync push.
+     *
+     * <p>Optimistic locking: the WHERE clause only matches if the stored version is still
+     * {@code t.version() - 1}. If something else changed the row in between (later: a sync pull),
+     * nothing is overwritten and this returns false.
+     *
+     * @return false if the transaction is deleted, missing, or was changed in the meantime
+     */
+    public boolean update(Transaction t) throws SQLException {
+        String sql = """
+                UPDATE transactions
+                SET account_id = ?, category_id = ?, type = ?, amount = ?, currency = ?, occurred_on = ?, note = ?,
+                    updated_at = ?, version = ?, sync_state = 'PENDING'
+                WHERE id = ? AND deleted = 0 AND version = ?""";
+        try (Connection connection = database.connect();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, t.accountId());
+            statement.setString(2, t.categoryId());
+            statement.setString(3, t.type().name());
+            statement.setLong(4, t.amountMinor());
+            statement.setString(5, t.currency());
+            statement.setString(6, t.occurredOn().toString());
+            statement.setString(7, t.note());
+            statement.setString(8, Timestamps.format(t.updatedAt()));
+            statement.setInt(9, t.version());
+            statement.setString(10, t.id());
+            statement.setInt(11, t.version() - 1);
+            return statement.executeUpdate() == 1;
+        }
+    }
+
     /** Includes soft-deleted rows, so undo and sync can still see them. */
     public Optional<Transaction> findById(String id) throws SQLException {
         String sql = "SELECT " + COLUMNS + " FROM transactions WHERE id = ?";

@@ -203,8 +203,11 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   For session history, decisions, and pending items, see `HANDOFF.md`.
   `developer-roadmap.docx` is git-ignored (personal).
 - Nov 1 - Nov 10: no work. Nov 11: plan changed to "usable by Dec 1" (see Features); branch
-  `feature/categories` (from `docs/handoff`): `CategoryService` + repository methods for
-  create/update/delete. Next: `TransactionService` validation, then the Transactions screen.
+  `feature/categories` (from `docs/handoff`, PR #2): `CategoryService` + repository methods for
+  create/update/delete. Branch `feature/transactions` (stacked on it): `TransactionService`
+  (add/edit/delete/listMonth with validation; `ValidationException.field()` names the form field),
+  `TransactionRepository.update` with an optimistic version check; 90 tests passing.
+  Next: the Transactions screen (month list + month switcher).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a

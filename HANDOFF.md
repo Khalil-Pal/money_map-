@@ -123,6 +123,13 @@ only when all 14 are used (then the least-used, lowest index); names are whitesp
 40 characters; built-ins can be renamed and recolored but not deleted; only live transactions move
 on delete, and `softDelete` returns their ids for the coming undo. Step 2 quiz is pending.
 
+Step 3 is done too (Nov 11, branch `feature/transactions`, stacked on `feature/categories`).
+Decisions: amount max 999,999,999.99; date at most one year ahead (past dates allowed); note
+optional, max 200 characters; edits keep id/account/currency/created_at and use an optimistic
+version check (`WHERE version = expected`) so a stale edit never overwrites silently; currency is a
+constructor argument ("USD" until settings exist). Khalil asked to skip the quizzes for now (Nov
+11); offer them again later, don't push.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index
@@ -134,7 +141,7 @@ on delete, and `softDelete` returns their ids for the coming undo. Step 2 quiz i
      `version` / `updated_at` and `sync_state = 'PENDING'`;
    - tests for each rule (follow `TransactionRepositoryTest`: temp DB, fixed `Clock`).
    Then walkthrough + quiz.
-3. **Step 3: `TransactionService`:** validates input (amount > 0 via `Money.parseMinorUnits`, date
+3. ~~**Step 3: `TransactionService`:**~~ (done) validates input (amount > 0 via `Money.parseMinorUnits`, date
    required, category exists and is live, transaction type matches the category's kind) and calls
    the repository. Tests.
 4. **Step 4: Transactions screen:** month list (newest first) wired to the top-bar month switcher;

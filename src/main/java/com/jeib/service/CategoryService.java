@@ -87,12 +87,12 @@ public final class CategoryService {
 
     private static int requireUsableColor(int colorIndex, int[] usage) {
         if (colorIndex < 0 || colorIndex >= Category.PALETTE_SIZE) {
-            throw new ValidationException("Pick one of the " + Category.PALETTE_SIZE + " colors.");
+            throw new ValidationException("color", "Pick one of the " + Category.PALETTE_SIZE + " colors.");
         }
         boolean taken = usage[colorIndex] > 0;
         boolean anyFree = Arrays.stream(usage).anyMatch(uses -> uses == 0);
         if (taken && anyFree) {
-            throw new ValidationException("That color is already used by another category. Pick a free one.");
+            throw new ValidationException("color", "That color is already used by another category. Pick a free one.");
         }
         return colorIndex;
     }
@@ -100,17 +100,17 @@ public final class CategoryService {
     private static String cleanName(String name) {
         String clean = name == null ? "" : name.strip().replaceAll("\\s+", " ");
         if (clean.isEmpty()) {
-            throw new ValidationException("Give the category a name.");
+            throw new ValidationException("name", "Give the category a name.");
         }
         if (clean.codePointCount(0, clean.length()) > MAX_NAME_LENGTH) {
-            throw new ValidationException("Keep the name to " + MAX_NAME_LENGTH + " characters or fewer.");
+            throw new ValidationException("name", "Keep the name to " + MAX_NAME_LENGTH + " characters or fewer.");
         }
         return clean;
     }
 
     private void requireNameFree(TransactionType kind, String name, String exceptId) throws SQLException {
         if (categories.nameTaken(kind, name, exceptId)) {
-            throw new ValidationException("You already have an " + kind.name().toLowerCase(Locale.ROOT)
+            throw new ValidationException("name", "You already have an " + kind.name().toLowerCase(Locale.ROOT)
                     + " category called \"" + name + "\".");
         }
     }
