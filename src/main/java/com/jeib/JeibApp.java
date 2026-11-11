@@ -7,8 +7,12 @@ import com.jeib.repository.TransactionRepository;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.TransactionService;
+import com.jeib.ui.DialogHost;
+import com.jeib.ui.Dialogs;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
+import com.jeib.ui.SetupViewModel;
+import com.jeib.ui.TransactionDialogViewModel;
 import com.jeib.ui.TransactionsController;
 import com.jeib.ui.TransactionsViewModel;
 import java.io.IOException;
@@ -40,18 +44,23 @@ public class JeibApp extends Application {
         TransactionService transactionService = new TransactionService(
                 new TransactionRepository(database, clock), categoryRepository, currencyService, clock);
 
-        MainViewModel main = new MainViewModel(database, categoryRepository, clock);
+        MainViewModel main = new MainViewModel(database, categoryRepository, currencyService, clock);
         TransactionsViewModel transactions = new TransactionsViewModel(
                 transactionService, categoryService, main.monthProperty(), main.readyProperty());
+        DialogHost dialogHost = new DialogHost();
+        Dialogs dialogs = new Dialogs(dialogHost,
+                () -> new SetupViewModel(currencyService),
+                () -> new TransactionDialogViewModel(transactionService, categoryService, currencyService, clock),
+                transactions::load);
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
-                return new MainController(main);
+                return new MainController(main, dialogHost, dialogs);
             }
             if (type == TransactionsController.class) {
-                return new TransactionsController(transactions);
+                return new TransactionsController(transactions, dialogs);
             }
             throw new IllegalArgumentException("No controller for " + type);
         });

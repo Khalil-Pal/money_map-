@@ -8,7 +8,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
@@ -16,21 +18,21 @@ import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 
 /**
- * Dev tool, not part of the app: starts the real main window on a throwaway database and saves
- * screenshots, so UI changes can be checked without clicking through the app. Build first
- * (mvnw package), then from the repo root:
+ * Dev tool, not part of the app: starts the real main window on a throwaway database, clicks
+ * through the main flows, and saves a screenshot after each step, so UI changes can be checked
+ * without clicking through the app by hand. Build first (mvnw package), then from the repo root:
  *
  *   "%JAVA_HOME%\bin\java" --class-path "target/classes;target/libs/*" tools/Snap.java <temp.db> <out-prefix> [yyyy-mm-dd]
  *
- * Writes <out-prefix>-light-dashboard.png, -light-transactions.png, -dark-transactions.png and
- * -dark-transactions-empty.png (the month before). The optional date fixes "today" (and so the
- * month shown). Use a temp path for the database, never the real one.
+ * On a fresh database it also captures the first-launch setup (choosing RUB). The optional date
+ * fixes "today" (and so the month shown). Use a temp path for the database, never the real one.
  */
 public class Snap {
     public static void main(String[] args) {
         Clock clock = args.length > 2
                 ? Clock.fixed(LocalDate.parse(args[2]).atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault())
                 : Clock.systemDefaultZone();
+        String out = args[1];
         Platform.startup(() -> {
             try {
                 JeibApp.MainWindow window = JeibApp.createMainWindow(new Database(Path.of(args[0])), clock);
@@ -41,15 +43,41 @@ public class Snap {
                 stage.show();
                 vm.load();
                 Thread.ofPlatform().daemon().start(() -> {
-                    sleep(3000);
-                    Platform.runLater(() -> save(scene, args[1] + "-light-dashboard.png"));
+                    sleep(2500);
+                    step(() -> save(scene, out + "-01-start.png"));
+                    if (scene.lookup("#setup-RUB") != null) {
+                        step(() -> fire(scene, "#setup-RUB"));
+                        step(() -> save(scene, out + "-02-setup-chosen.png"));
+                        step(() -> fire(scene, "#continueButton"));
+                    }
                     step(() -> open(scene, "Transactions"));
-                    step(() -> save(scene, args[1] + "-light-transactions.png"));
+                    step(() -> save(scene, out + "-03-light-transactions.png"));
+                    step(() -> fire(scene, "#newTransaction"));
+                    step(() -> save(scene, out + "-04-light-new.png"));
+                    step(() -> fire(scene, "#saveButton"));
+                    step(() -> save(scene, out + "-05-light-new-errors.png"));
+                    step(() -> fire(scene, "#currency-USD"));
+                    step(() -> save(scene, out + "-06-light-new-usd.png"));
+                    step(() -> {
+                        // Fill in and save for real: 12.50 USD in the first category.
+                        ((javafx.scene.control.TextField) scene.lookup("#amountField")).setText("12.50");
+                        ((ButtonBase) scene.lookup(".category-chip")).fire();
+                        fire(scene, "#saveButton");
+                    });
+                    step(() -> save(scene, out + "-06b-light-saved.png"));
                     step(vm::toggleTheme);
-                    step(() -> save(scene, args[1] + "-dark-transactions.png"));
+                    step(() -> save(scene, out + "-07-dark-transactions.png"));
+                    step(() -> {
+                        Node row = scene.lookup(".tx-row-clickable");
+                        if (row != null) {
+                            row.getOnMouseClicked().handle(null);
+                        }
+                    });
+                    step(() -> save(scene, out + "-08-dark-edit.png"));
+                    step(() -> fire(scene, "#cancelButton"));
                     step(vm::previousMonth);
                     step(() -> {
-                        save(scene, args[1] + "-dark-transactions-empty.png");
+                        save(scene, out + "-09-dark-empty-month.png");
                         System.out.println("status: " + vm.statusProperty().get());
                         Platform.exit();
                     });
@@ -63,8 +91,17 @@ public class Snap {
 
     /** Waits for the previous step to render, then runs the next one on the JavaFX thread. */
     static void step(Runnable action) {
-        sleep(800);
+        sleep(700);
         Platform.runLater(action);
+    }
+
+    static void fire(Scene scene, String selector) {
+        Node node = scene.lookup(selector);
+        if (node instanceof ButtonBase button) {
+            button.fire();
+        } else {
+            System.out.println("not found: " + selector);
+        }
     }
 
     static void open(Scene scene, String page) {

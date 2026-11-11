@@ -12,16 +12,18 @@ import java.util.Locale;
  * (e.g. the Jordanian dinar) would need Money changes first.
  */
 public enum SupportedCurrency {
-    USD("$", true),
-    ILS("₪", true),
-    RUB("₽", false);
+    USD("$", true, "US dollar"),
+    ILS("₪", true, "Israeli shekel"),
+    RUB("₽", false, "Russian ruble");
 
     private final String symbol;
     private final boolean symbolFirst;
+    private final String displayName;
 
-    SupportedCurrency(String symbol, boolean symbolFirst) {
+    SupportedCurrency(String symbol, boolean symbolFirst, String displayName) {
         this.symbol = symbol;
         this.symbolFirst = symbolFirst;
+        this.displayName = displayName;
     }
 
     public Currency currency() {
@@ -30,6 +32,11 @@ public enum SupportedCurrency {
 
     public String symbol() {
         return symbol;
+    }
+
+    /** "Russian ruble" */
+    public String displayName() {
+        return displayName;
     }
 
     /**

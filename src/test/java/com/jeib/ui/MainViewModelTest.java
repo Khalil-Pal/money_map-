@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.jeib.db.Database;
 import com.jeib.repository.CategoryRepository;
+import com.jeib.repository.SettingsRepository;
+import com.jeib.service.CurrencyService;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
@@ -17,7 +19,8 @@ class MainViewModelTest {
     private static MainViewModel openedOn(String instant, String zone) {
         Database unused = new Database(Path.of("never-opened.db"));
         Clock clock = Clock.fixed(Instant.parse(instant), ZoneId.of(zone));
-        return new MainViewModel(unused, new CategoryRepository(unused, clock), clock);
+        return new MainViewModel(unused, new CategoryRepository(unused, clock),
+                new CurrencyService(new SettingsRepository(unused)), clock);
     }
 
     @Test

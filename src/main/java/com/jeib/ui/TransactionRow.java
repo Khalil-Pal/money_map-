@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
  * @param note          the user's note, or null (the list then shows a muted "No note")
  * @param colorIndex    the category's palette color, for its swatch
  * @param amount        e.g. "$12.50" for an expense, "+950.00 ₽" for income
+ * @param source        the transaction itself, for opening it in the edit dialog
  */
 public record TransactionRow(
         String id,
@@ -26,7 +27,8 @@ public record TransactionRow(
         String categoryName,
         int colorIndex,
         String amount,
-        boolean income) {
+        boolean income,
+        Transaction source) {
 
     static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US);
     static final String UNKNOWN_CATEGORY = "Unknown category";
@@ -48,7 +50,8 @@ public record TransactionRow(
                 category == null ? UNKNOWN_CATEGORY : category.name(),
                 category == null ? UNKNOWN_COLOR : category.colorIndex(),
                 (income ? "+" : "") + formatAmount(t.amountMinor(), t.currency()),
-                income);
+                income,
+                t);
     }
 
     private static String formatAmount(long minorUnits, String currencyCode) {

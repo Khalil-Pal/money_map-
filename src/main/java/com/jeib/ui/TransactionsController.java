@@ -5,6 +5,7 @@ import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -14,14 +15,16 @@ import javafx.scene.layout.VBox;
 public final class TransactionsController {
 
     private final TransactionsViewModel viewModel;
+    private final Dialogs dialogs;
 
     @FXML private Label summary;
     @FXML private HBox header;
     @FXML private VBox rowsBox;
     @FXML private Label message;
 
-    public TransactionsController(TransactionsViewModel viewModel) {
+    public TransactionsController(TransactionsViewModel viewModel, Dialogs dialogs) {
         this.viewModel = viewModel;
+        this.dialogs = dialogs;
     }
 
     @FXML
@@ -42,11 +45,11 @@ public final class TransactionsController {
     }
 
     private void render() {
-        rowsBox.getChildren().setAll(viewModel.rows().stream().map(TransactionsController::row).toList());
+        rowsBox.getChildren().setAll(viewModel.rows().stream().map(this::row).toList());
     }
 
-    /** Not clickable yet (editing comes with the dialog), so no hover highlight: see CLAUDE.md. */
-    private static Node row(TransactionRow row) {
+    /** A clickable row: click it, or focus it with Tab and press Enter or Space, to edit. */
+    private Node row(TransactionRow row) {
         Label date = label(row.date(), "tx-col-date", "muted");
 
         Label note = row.note() == null ? label("No note", "tx-col-note", "muted") : label(row.note(), "tx-col-note");
@@ -61,7 +64,15 @@ public final class TransactionsController {
         Label amount = label(row.amount(), "tx-col-amount", row.income() ? "amount-income" : "amount");
 
         HBox line = new HBox(date, note, category, amount);
-        line.getStyleClass().add("tx-row");
+        line.getStyleClass().addAll("tx-row", "tx-row-clickable");
+        line.setFocusTraversable(true);
+        line.setOnMouseClicked(event -> dialogs.openEditTransaction(row.source()));
+        line.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
+                dialogs.openEditTransaction(row.source());
+                event.consume();
+            }
+        });
         return line;
     }
 

@@ -25,6 +25,9 @@
     -danger-bar: #FF6B6B;
     -danger-tint: #3A1717;
     -focus-ring: #6EA8FE;
+    -row-hover: #27221E;                     /* §6.5: hovered row = bg-surface-elevated in dark */
+    -backdrop: rgba(0, 0, 0, 0.60);          /* behind dialogs */
+    -dialog-shadow: rgba(0, 0, 0, 0.60);
 
     -chart-0: #FF751F;
     -chart-1: #5BA4E6;

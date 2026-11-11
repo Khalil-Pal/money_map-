@@ -223,8 +223,17 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   `TransactionsViewModel`, rows built by `TransactionRow.from`), working ◀ ▶ month switcher (month
   lives in `MainViewModel`, shared by all pages), `SupportedCurrency.format` ("$12.50", "₪45.00",
   "950.00 ₽"). `JeibApp.createMainWindow(database, clock)` is the one place that wires the app (also
-  used by `tools/Snap.java`, which now also captures the Transactions page). 133 tests passing.
-  Next (Nov 16-21): first-launch main-currency step, add/edit dialog, quick-add, delete, undo/redo.
+  used by `tools/Snap.java`, which now also captures the Transactions page).
+  Then: dialogs open inside the window over a dimmed backdrop (`DialogHost`, opened via `Dialogs`;
+  the content behind is disabled). First launch shows `setup.fxml` (choose main currency, can't be
+  skipped). New/Edit transaction dialog (`transaction-dialog.fxml`, `TransactionDialogViewModel`):
+  type, amount + currency, an exchange-rate row when the currency isn't the main one (prefilled,
+  saved first if new or changed), date, category chips, note; each `ValidationException` shows
+  under its field. Opened by the New transaction button, Ctrl+N, or clicking / Enter on a list row.
+  View-models keep DB work in plain methods (`loadData`/`apply`, `request`/`perform`) so tests run
+  without JavaFX. `tools/Snap.java` clicks through setup → new → errors → rate → save → dark edit.
+  141 tests passing.
+  Next (Nov 16-21): delete with undo, undo/redo (Command pattern), quick-add bar.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a

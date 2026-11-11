@@ -14,12 +14,14 @@
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
 
 <!-- App shell from the Round 1 mockup: sidebar, top bar, page content. Icons are Lucide paths (24 px grid). -->
-<BorderPane fx:id="root" styleClass="app-root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.jeib.ui.MainController">
+<StackPane fx:id="root" styleClass="app-root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.jeib.ui.MainController">
+<BorderPane fx:id="appContent" styleClass="app-content">
 
     <fx:define>
         <ToggleGroup fx:id="navGroup"/>
@@ -87,7 +89,7 @@
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M9 18l6-6-6-6"/></Group></graphic>
                     </Button>
                     <TextField promptText="Quick add — type 12.50 food lunch and press Enter" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <Button text="New transaction" styleClass="button-primary">
+                    <Button fx:id="newTransaction" text="New transaction" styleClass="button-primary">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.67" scaleY="0.67" content="M5 12h14M12 5v14"/></Group></graphic>
                     </Button>
                 </HBox>
@@ -120,3 +122,7 @@
         </BorderPane>
     </center>
 </BorderPane>
+
+    <!-- Dialogs open here, over a dimmed backdrop (DialogHost). -->
+    <StackPane fx:id="dialogLayer" styleClass="dialog-layer" visible="false"/>
+</StackPane>

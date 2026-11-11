@@ -142,6 +142,14 @@ transaction's own currency; converted totals come with the dashboard. To screens
 data: seed a temp DB through the services, then run `tools/Snap.java <db> <prefix> 2026-11-12`.
 Khalil asked to keep the conversation in English (even when a request arrives in Russian).
 
+Nov 12, later: first-launch setup + New/Edit transaction dialog done (see CLAUDE.md status).
+Notes: the Round 1 mockup artifact couldn't be read from this account (404), so the dialog follows
+the color system and HANDOFF notes instead; dialogs are in-window overlays, not OS windows. The
+service stops at the first error, so the dialog shows one error at a time (amount, then category…);
+showing all at once is a possible later polish. The DatePicker uses the OS date format (e.g.
+12.11.2026 on a Russian locale) while the list uses "Thu, Nov 12". Exchange rates are global (not
+per transaction): changing a rate changes how all past amounts in that currency are counted.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

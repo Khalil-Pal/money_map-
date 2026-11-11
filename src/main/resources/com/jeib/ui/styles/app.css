@@ -359,6 +359,243 @@
     -fx-text-alignment: center;
 }
 
+/* Clickable rows: hover and keyboard focus (CLAUDE.md: hover only on clickable things). */
+.tx-row-clickable {
+    -fx-cursor: hand;
+}
+
+.tx-row-clickable:hover {
+    -fx-background-color: -row-hover;
+}
+
+.tx-row-clickable:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+}
+
+/* ---- Dialogs (DialogHost) --------------------------------------------- */
+
+/* The window behind an open dialog is disabled, but shouldn't fade: the backdrop dims it. */
+.app-content:disabled {
+    -fx-opacity: 1;
+}
+
+.dialog-layer {
+    -fx-background-color: -backdrop;
+    -fx-padding: 24;
+}
+
+.dialog {
+    -fx-background-color: -bg-surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -border;
+    -fx-border-radius: 12;
+    -fx-padding: 24;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, -dialog-shadow, 32, 0, 0, 8);
+}
+
+.dialog-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+}
+
+.field {
+    -fx-spacing: 6;
+}
+
+.field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -text-secondary;
+}
+
+.field-error {
+    -fx-font-size: 12px;
+    -fx-text-fill: -danger-text;
+}
+
+.hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-secondary;
+}
+
+.dialog-buttons {
+    -fx-spacing: 8;
+    -fx-alignment: center-right;
+    -fx-padding: 6 0 0 0;
+}
+
+.dialog-buttons .button-secondary {
+    -fx-pref-height: 36;
+    -fx-padding: 0 16 0 16;
+}
+
+.amount-input {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+    -fx-pref-height: 44;
+}
+
+/* Segmented control: Expense | Income, and the currency picker. */
+.segmented {
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 8;
+    -fx-padding: 3;
+    -fx-spacing: 2;
+    -fx-alignment: center-left;
+}
+
+.segment {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 500;
+    -fx-pref-height: 32;
+    -fx-padding: 0 14 0 14;
+    -fx-cursor: hand;
+}
+
+.segment:hover {
+    -fx-text-fill: -text-primary;
+}
+
+.segment:selected {
+    -fx-background-color: -primary-tint;
+    -fx-text-fill: -primary-text;
+    -fx-font-weight: 600;
+}
+
+.segment:focus-visible,
+.category-chip:focus-visible,
+.currency-option:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+}
+
+.category-chip {
+    -fx-background-color: -bg-surface-alt;
+    -fx-border-color: -border;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-graphic-text-gap: 7;
+    -fx-text-fill: -text-primary;
+    -fx-cursor: hand;
+}
+
+.category-chip:hover {
+    -fx-border-color: -primary;
+}
+
+.category-chip:selected {
+    -fx-background-color: -primary-tint;
+    -fx-border-color: -primary;
+    -fx-text-fill: -primary-text;
+    -fx-font-weight: 600;
+}
+
+/* First-launch currency options. */
+.currency-option {
+    -fx-background-color: -bg-surface-alt;
+    -fx-border-color: -border;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 16;
+    -fx-alignment: top-left;
+    -fx-cursor: hand;
+}
+
+.currency-option:hover {
+    -fx-border-color: -primary;
+}
+
+.currency-option:selected {
+    -fx-background-color: -primary-tint;
+    -fx-border-color: -primary;
+}
+
+.currency-option-symbol {
+    -fx-font-size: 24px;
+    -fx-font-weight: 600;
+}
+
+.currency-option-code {
+    -fx-font-weight: 600;
+}
+
+/* Date picker: looks like the other inputs; its calendar popup follows the theme. */
+.date-picker {
+    -fx-background-color: -border, -bg-surface-alt;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-pref-height: 36;
+}
+
+.date-picker > .text-field {
+    -fx-background-color: transparent;
+}
+
+.date-picker > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12 0 12;
+    -fx-cursor: hand;
+}
+
+.date-picker > .arrow-button > .arrow {
+    -fx-background-color: -text-secondary;
+}
+
+.date-picker-popup {
+    -fx-background-color: -border, -bg-surface;
+    -fx-background-insets: 0, 1;
+}
+
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: -bg-surface-alt;
+}
+
+.date-picker-popup .label {
+    -fx-text-fill: -text-primary;
+}
+
+.date-picker-popup .spinner .button {
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup .spinner .left-arrow,
+.date-picker-popup .spinner .right-arrow {
+    -fx-background-color: -text-secondary;
+}
+
+.date-picker-popup .day-name-cell,
+.date-picker-popup .day-cell {
+    -fx-background-color: -bg-surface;
+    -fx-text-fill: -text-primary;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: -text-secondary;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: -row-hover;
+}
+
+.date-picker-popup .previous-month,
+.date-picker-popup .next-month {
+    -fx-text-fill: -text-disabled;
+}
+
+.date-picker-popup .today {
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup .selected {
+    -fx-background-color: -primary;
+    -fx-text-fill: -on-primary;
+}
+
 /* ---- Scroll bars ------------------------------------------------------ */
 
 .scroll-bar {

@@ -12,10 +12,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
 
@@ -36,8 +40,13 @@ public final class MainController {
             + "M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41";
 
     private final MainViewModel viewModel;
+    private final DialogHost dialogHost;
+    private final Dialogs dialogs;
 
-    @FXML private BorderPane root;
+    @FXML private StackPane root;
+    @FXML private BorderPane appContent;
+    @FXML private StackPane dialogLayer;
+    @FXML private Button newTransaction;
     @FXML private ToggleGroup navGroup;
     @FXML private Label pageTitle;
     @FXML private Label monthLabel;
@@ -53,12 +62,22 @@ public final class MainController {
     @FXML private Button themeToggle;
     @FXML private SVGPath themeIcon;
 
-    public MainController(MainViewModel viewModel) {
+    public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs) {
         this.viewModel = viewModel;
+        this.dialogHost = dialogHost;
+        this.dialogs = dialogs;
     }
 
     @FXML
     private void initialize() {
+        dialogHost.attach(dialogLayer, appContent);
+        newTransaction.setOnAction(event -> dialogs.openNewTransaction());
+        viewModel.setupNeededProperty().addListener((obs, wasNeeded, needed) -> {
+            if (needed) {
+                dialogs.openSetup(viewModel::setupDone);
+            }
+        });
+
         databaseStatus.textProperty().bind(viewModel.statusProperty());
         monthLabel.textProperty().bind(viewModel.monthLabel());
         previousMonth.setOnAction(event -> viewModel.previousMonth());
@@ -81,6 +100,9 @@ public final class MainController {
         root.sceneProperty().addListener((obs, oldScene, scene) -> {
             if (scene != null) {
                 applyTheme(scene);
+                // Ctrl+N (Cmd+N on macOS): new transaction, from anywhere in the window.
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN),
+                        dialogs::openNewTransaction);
             }
         });
         viewModel.themeProperty().addListener((obs, oldTheme, theme) -> {
