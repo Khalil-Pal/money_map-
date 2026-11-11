@@ -76,6 +76,17 @@ app image (no installer):
 6. Dashboard: spent, remaining, **left per day until month end**, category chart
 7. Automatic daily backup (keep 7) + crash log
 8. `Jeib.exe` app image, zipped
+9. Currencies (added Nov 11): **USD, ILS, RUB**. Each transaction has one of them; the user picks
+   a **main currency** when setting up their plan (a small first-launch step), and totals, limits,
+   and "left per day" are shown in it using **manual exchange rates** ("1 USD = 92.50 RUB") they
+   can update any time. Changing the main currency re-expresses the rates automatically.
+
+Currency rules: all three have 2 decimals (what `Money` assumes; a 3-decimal currency like JOD
+needs `Money` changes first). Rates are `BigDecimal` (max 6 decimals), stored in `settings` as
+`main_currency` and `rate.<CODE>` (main currency's own rate is never stored). Convert sums per
+currency, then convert once (`ExchangeRates.toMain`, half-even rounding). A transaction in a
+non-main currency needs its rate set first. **Budgets (Week 5):** limits are in the main currency;
+when the main currency changes, existing limits must be converted too.
 
 Milestones: Nov 11-14 categories → `TransactionService` → Transactions screen · Nov 16-21
 add/edit dialog, quick-add, delete, undo/redo · Nov 23-28 limits, statuses, dashboard · Nov 30 -
@@ -206,7 +217,9 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   `feature/categories` (from `docs/handoff`, PR #2): `CategoryService` + repository methods for
   create/update/delete. Branch `feature/transactions` (stacked on it): `TransactionService`
   (add/edit/delete/listMonth with validation; `ValidationException.field()` names the form field),
-  `TransactionRepository.update` with an optimistic version check; 90 tests passing.
+  `TransactionRepository.update` with an optimistic version check. Then currencies:
+  `SupportedCurrency`, `ExchangeRates`, `SettingsRepository`, `CurrencyService`; transactions
+  carry USD/ILS/RUB; 119 tests passing.
   Next: the Transactions screen (month list + month switcher).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).

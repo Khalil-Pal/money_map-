@@ -1,7 +1,9 @@
 package com.jeib.service;
 
 import com.jeib.model.Category;
+import com.jeib.model.ExchangeRates;
 import com.jeib.model.Money;
+import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.CategoryRepository;
@@ -21,6 +23,8 @@ import java.util.Objects;
  * quick-add, and (later) CSV import all follow the same rules:
  * <ul>
  *   <li>type is required;</li>
+ *   <li>the currency is USD, ILS or RUB (default: the main currency), and if it isn't the main
+ *       currency, its exchange rate has been set, so totals can be converted;</li>
  *   <li>the amount parses (at most two decimals), is more than 0, and at most 999,999,999.99;</li>
  *   <li>the date is required and at most one year ahead (catches typos like 2062);</li>
  *   <li>the category exists, isn't deleted, and has the same kind as the type;</li>
@@ -35,18 +39,18 @@ public final class TransactionService {
 
     private final TransactionRepository transactions;
     private final CategoryRepository categories;
-    private final String currency;
+    private final CurrencyService currencies;
     private final Clock clock;
 
     /**
-     * @param currency ISO 4217 code for new transactions, e.g. "USD" (per-account currencies come later)
+     * @param currencies the main currency and exchange rates
      * @param clock    "now", for timestamps and the future-date rule; fixed in tests
      */
     public TransactionService(TransactionRepository transactions, CategoryRepository categories,
-                              String currency, Clock clock) {
+                              CurrencyService currencies, Clock clock) {
         this.transactions = transactions;
         this.categories = categories;
-        this.currency = currency;
+        this.currencies = currencies;
         this.clock = clock;
     }
 
@@ -57,18 +61,18 @@ public final class TransactionService {
     public Transaction add(TransactionInput input) throws SQLException {
         Valid valid = validate(input);
         Transaction transaction = Transaction.create(valid.categoryId(), valid.type(), valid.amountMinor(),
-                currency, valid.occurredOn(), valid.note(), clock);
+                valid.currency().name(), valid.occurredOn(), valid.note(), clock);
         transactions.insert(transaction);
         return transaction;
     }
 
-    /** Replaces what the user can change; id, account, currency, and created_at stay. */
+    /** Replaces what the user can change; id, account, and created_at stay. */
     public Transaction edit(String id, TransactionInput input) throws SQLException {
         Transaction current = transactions.findById(id).orElseThrow(TransactionService::gone);
         Valid valid = validate(input);
         Instant now = clock.instant().truncatedTo(ChronoUnit.MILLIS);
         Transaction edited = new Transaction(current.id(), current.accountId(), valid.categoryId(), valid.type(),
-                valid.amountMinor(), current.currency(), valid.occurredOn(), valid.note(),
+                valid.amountMinor(), valid.currency().name(), valid.occurredOn(), valid.note(),
                 current.createdAt(), now, current.version() + 1);
         if (!transactions.update(edited)) {
             // Deleted, or changed since we read it: never overwrite silently.
@@ -86,7 +90,8 @@ public final class TransactionService {
     // ---- validation ------------------------------------------------------
 
     /** The checked, cleaned-up input. */
-    private record Valid(TransactionType type, long amountMinor, LocalDate occurredOn, String categoryId, String note) {
+    private record Valid(TransactionType type, long amountMinor, SupportedCurrency currency, LocalDate occurredOn,
+                         String categoryId, String note) {
     }
 
     private Valid validate(TransactionInput input) throws SQLException {
@@ -95,9 +100,20 @@ public final class TransactionService {
             throw new ValidationException("type", "Choose expense or income.");
         }
         long amount = parseAmount(input.amountText());
+        SupportedCurrency currency = checkCurrency(input.currency());
         LocalDate date = checkDate(input.occurredOn());
         Category category = checkCategory(input.categoryId(), input.type());
-        return new Valid(input.type(), amount, date, category.id(), cleanNote(input.note()));
+        return new Valid(input.type(), amount, currency, date, category.id(), cleanNote(input.note()));
+    }
+
+    private SupportedCurrency checkCurrency(SupportedCurrency requested) throws SQLException {
+        ExchangeRates rates = currencies.rates(); // fails if no main currency is chosen yet
+        SupportedCurrency currency = requested == null ? rates.main() : requested;
+        if (!rates.canConvert(currency)) {
+            throw new ValidationException("currency", "Set how much 1 " + currency + " is in " + rates.main()
+                    + " first, so this amount can be counted in your totals.");
+        }
+        return currency;
     }
 
     private static long parseAmount(String text) {

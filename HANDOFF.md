@@ -130,6 +130,11 @@ version check (`WHERE version = expected`) so a stale edit never overwrites sile
 constructor argument ("USD" until settings exist). Khalil asked to skip the quizzes for now (Nov
 11); offer them again later, don't push.
 
+Currencies (Nov 11, same branch): Khalil chose USD, ILS, RUB, **mixed and converted** into a
+main currency **the user picks when setting up** (not a fixed default), with manual rates. Rules
+are in `CLAUDE.md` → Features, item 9. The Dec 1 build therefore needs a small first-launch step
+(choose main currency) and a place to enter the rates.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

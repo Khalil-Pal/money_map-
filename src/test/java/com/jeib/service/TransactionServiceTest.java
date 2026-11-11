@@ -8,7 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.jeib.db.Database;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
+import com.jeib.model.SupportedCurrency;
 import com.jeib.repository.CategoryRepository;
+import com.jeib.repository.SettingsRepository;
 import com.jeib.repository.TransactionRepository;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -47,14 +49,19 @@ class TransactionServiceTest {
     private Database database;
 
     @BeforeEach
-    void migrate() {
+    void migrate() throws SQLException {
         database = new Database(tempDir.resolve("test.db"));
         database.migrate();
+        currencies().setMainCurrency(SupportedCurrency.USD);
+    }
+
+    private CurrencyService currencies() {
+        return new CurrencyService(new SettingsRepository(database));
     }
 
     private TransactionService serviceAt(Clock clock) {
         return new TransactionService(new TransactionRepository(database, clock),
-                new CategoryRepository(database, clock), "USD", clock);
+                new CategoryRepository(database, clock), currencies(), clock);
     }
 
     private TransactionService service() {
@@ -62,7 +69,7 @@ class TransactionServiceTest {
     }
 
     private static TransactionInput lunch() {
-        return new TransactionInput(TransactionType.EXPENSE, "12.50", TODAY, FOOD, "  Lunch with Sam ");
+        return new TransactionInput(TransactionType.EXPENSE, "12.50", null, TODAY, FOOD, "  Lunch with Sam ");
     }
 
     // ---- add -------------------------------------------------------------
@@ -80,13 +87,13 @@ class TransactionServiceTest {
 
     @Test
     void aBlankNoteIsStoredAsNoNote() throws SQLException {
-        Transaction saved = service().add(new TransactionInput(TransactionType.EXPENSE, "3", TODAY, FOOD, "   "));
+        Transaction saved = service().add(new TransactionInput(TransactionType.EXPENSE, "3", null, TODAY, FOOD, "   "));
         assertNull(saved.note());
     }
 
     @Test
     void incomeGoesIntoAnIncomeCategory() throws SQLException {
-        Transaction pay = service().add(new TransactionInput(TransactionType.INCOME, "2800", TODAY, SALARY, null));
+        Transaction pay = service().add(new TransactionInput(TransactionType.INCOME, "2800", null, TODAY, SALARY, null));
         assertEquals(280_000, pay.amountMinor());
     }
 
@@ -95,32 +102,32 @@ class TransactionServiceTest {
     @ValueSource(strings = {"", "  ", "abc", "-5", "0", "0.00", "1.234", "12.", "1000000000.00", "99999999999999999999"})
     void badAmountsAreRejected(String amount) {
         ValidationException error = assertThrows(ValidationException.class,
-                () -> service().add(new TransactionInput(TransactionType.EXPENSE, amount, TODAY, FOOD, null)));
+                () -> service().add(new TransactionInput(TransactionType.EXPENSE, amount, null, TODAY, FOOD, null)));
         assertEquals("amount", error.field());
     }
 
     @Test
     void theLargestAllowedAmountIsAccepted() throws SQLException {
-        Transaction big = service().add(new TransactionInput(TransactionType.EXPENSE, "999999999.99", TODAY, RENT, null));
+        Transaction big = service().add(new TransactionInput(TransactionType.EXPENSE, "999999999.99", null, TODAY, RENT, null));
         assertEquals(TransactionService.MAX_AMOUNT_MINOR, big.amountMinor());
     }
 
     @Test
     void theDateIsRequiredAndAtMostAYearAhead() throws SQLException {
         assertEquals("date", assertThrows(ValidationException.class, () -> service().add(
-                new TransactionInput(TransactionType.EXPENSE, "5", null, FOOD, null))).field());
+                new TransactionInput(TransactionType.EXPENSE, "5", null, null, FOOD, null))).field());
         assertEquals("date", assertThrows(ValidationException.class, () -> service().add(
-                new TransactionInput(TransactionType.EXPENSE, "5", TODAY.plusYears(1).plusDays(1), FOOD, null))).field());
+                new TransactionInput(TransactionType.EXPENSE, "5", null, TODAY.plusYears(1).plusDays(1), FOOD, null))).field());
 
         // Exactly a year ahead (a planned bill) and long ago are both fine.
-        service().add(new TransactionInput(TransactionType.EXPENSE, "5", TODAY.plusYears(1), FOOD, null));
-        service().add(new TransactionInput(TransactionType.EXPENSE, "5", LocalDate.parse("2019-02-28"), FOOD, null));
+        service().add(new TransactionInput(TransactionType.EXPENSE, "5", null, TODAY.plusYears(1), FOOD, null));
+        service().add(new TransactionInput(TransactionType.EXPENSE, "5", null, LocalDate.parse("2019-02-28"), FOOD, null));
     }
 
     @Test
     void theTypeIsRequired() {
         ValidationException error = assertThrows(ValidationException.class,
-                () -> service().add(new TransactionInput(null, "5", TODAY, FOOD, null)));
+                () -> service().add(new TransactionInput(null, "5", null, TODAY, FOOD, null)));
         assertEquals("type", error.field());
     }
 
@@ -133,7 +140,7 @@ class TransactionServiceTest {
     })
     void theCategoryMustExistAndMatchTheType(TransactionType type, String categoryId) {
         ValidationException error = assertThrows(ValidationException.class,
-                () -> service().add(new TransactionInput(type, "5", TODAY, categoryId, null)));
+                () -> service().add(new TransactionInput(type, "5", null, TODAY, categoryId, null)));
         assertEquals("category", error.field());
     }
 
@@ -147,17 +154,17 @@ class TransactionServiceTest {
     @Test
     void theMismatchMessageExplainsWhatToDo() {
         ValidationException error = assertThrows(ValidationException.class,
-                () -> service().add(new TransactionInput(TransactionType.EXPENSE, "5", TODAY, SALARY, null)));
+                () -> service().add(new TransactionInput(TransactionType.EXPENSE, "5", null, TODAY, SALARY, null)));
         assertEquals("\"Salary\" is an income category. Pick an expense category.", error.getMessage());
     }
 
     @Test
     void notesHaveALengthLimit() throws SQLException {
         String max = "n".repeat(TransactionService.MAX_NOTE_LENGTH);
-        assertEquals(max, service().add(new TransactionInput(TransactionType.EXPENSE, "5", TODAY, FOOD, max)).note());
+        assertEquals(max, service().add(new TransactionInput(TransactionType.EXPENSE, "5", null, TODAY, FOOD, max)).note());
 
         ValidationException error = assertThrows(ValidationException.class,
-                () -> service().add(new TransactionInput(TransactionType.EXPENSE, "5", TODAY, FOOD, max + "n")));
+                () -> service().add(new TransactionInput(TransactionType.EXPENSE, "5", null, TODAY, FOOD, max + "n")));
         assertEquals("note", error.field());
     }
 
@@ -169,7 +176,7 @@ class TransactionServiceTest {
         markAllSynced();
 
         Transaction edited = serviceAt(LATER).edit(original.id(),
-                new TransactionInput(TransactionType.EXPENSE, "40", TODAY.minusDays(1), RENT, "Fixed"));
+                new TransactionInput(TransactionType.EXPENSE, "40", null, TODAY.minusDays(1), RENT, "Fixed"));
 
         assertEquals(edited, new TransactionRepository(database, LATER).findById(original.id()).orElseThrow());
         assertEquals(4_000, edited.amountMinor());
@@ -185,7 +192,7 @@ class TransactionServiceTest {
         Transaction original = service().add(lunch());
 
         assertThrows(ValidationException.class, () -> service().edit(original.id(),
-                new TransactionInput(TransactionType.EXPENSE, "0", TODAY, FOOD, null)));
+                new TransactionInput(TransactionType.EXPENSE, "0", null, TODAY, FOOD, null)));
         assertEquals(1, new TransactionRepository(database, CREATED).findById(original.id()).orElseThrow().version());
     }
 
@@ -224,6 +231,44 @@ class TransactionServiceTest {
 
         assertTrue(service().listMonth(YearMonth.of(2026, 11)).isEmpty());
         assertThrows(ValidationException.class, () -> service().delete(original.id()));
+    }
+
+    // ---- currencies --------------------------------------------------------
+
+    @Test
+    void noCurrencyMeansTheMainCurrency() throws SQLException {
+        currencies().setMainCurrency(SupportedCurrency.RUB);
+        assertEquals("RUB", service().add(lunch()).currency());
+    }
+
+    @Test
+    void anotherCurrencyNeedsItsRateFirst() throws SQLException {
+        TransactionInput shekels = new TransactionInput(TransactionType.EXPENSE, "45", SupportedCurrency.ILS, TODAY, FOOD, null);
+        ValidationException error = assertThrows(ValidationException.class, () -> service().add(shekels));
+        assertEquals("currency", error.field());
+
+        currencies().setRate(SupportedCurrency.ILS, "0.27");
+        assertEquals("ILS", service().add(shekels).currency());
+    }
+
+    @Test
+    void nothingCanBeAddedBeforeAMainCurrencyIsChosen() throws SQLException {
+        new SettingsRepository(database).save(java.util.Collections.singletonMap("main_currency", null));
+
+        ValidationException error = assertThrows(ValidationException.class, () -> service().add(lunch()));
+        assertEquals("currency", error.field());
+    }
+
+    @Test
+    void editCanChangeTheCurrency() throws SQLException {
+        currencies().setRate(SupportedCurrency.RUB, "0.0108");
+        Transaction original = service().add(lunch());
+
+        Transaction edited = serviceAt(LATER).edit(original.id(),
+                new TransactionInput(TransactionType.EXPENSE, "950", SupportedCurrency.RUB, TODAY, FOOD, null));
+
+        assertEquals("RUB", edited.currency());
+        assertEquals(95_000, edited.amountMinor());
     }
 
     // ---- helpers ---------------------------------------------------------
