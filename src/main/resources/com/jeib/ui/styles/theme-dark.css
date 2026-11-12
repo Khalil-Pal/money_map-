@@ -31,6 +31,8 @@
     -toast-bg: #F5F0EB;                      /* inverted: light toast on the dark app */
     -toast-text: #1F1A17;
     -toast-action: #C2410C;
+    -status-none-text: #B5ABA1;              /* §4 "No limit": text-secondary on surface-elevated */
+    -status-none-tint: #27221E;
 
     -chart-0: #FF751F;
     -chart-1: #5BA4E6;

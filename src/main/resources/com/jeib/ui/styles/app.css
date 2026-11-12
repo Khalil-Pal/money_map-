@@ -638,6 +638,138 @@
     -fx-border-radius: 8;
 }
 
+/* ---- Limits: status tiles (color system §4) and bars ------------------- */
+
+.status {
+    -fx-spacing: 7;
+    -fx-alignment: center-left;
+}
+
+.status-tile {
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-background-radius: 6;
+}
+
+.status-icon {
+    -fx-fill: transparent;
+    -fx-stroke-width: 5; /* drawn at half size: 2.5 px on screen */
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.status-ok .status-tile { -fx-background-color: -success-tint; }
+.status-ok .status-icon { -fx-stroke: -success; -fx-stroke-width: 6; }
+.status-ok .status-label { -fx-text-fill: -success; }
+
+.status-warning .status-tile { -fx-background-color: -warning-tint; }
+.status-warning .status-icon { -fx-stroke: -warning-text; }
+.status-warning .status-label { -fx-text-fill: -warning-text; }
+
+.status-exceeded .status-tile { -fx-background-color: -danger-tint; }
+.status-exceeded .status-icon { -fx-stroke: -danger-text; }
+.status-exceeded .status-label { -fx-text-fill: -danger-text; }
+
+.status-none .status-tile { -fx-background-color: -status-none-tint; }
+.status-none .status-icon { -fx-stroke: -status-none-text; -fx-stroke-width: 6; }
+.status-none .status-label { -fx-text-fill: -status-none-text; }
+
+.limit-bar {
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.limit-bar > .track {
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+
+.limit-bar > .bar {
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+    -fx-padding: 4;
+}
+
+.limit-bar-ok > .bar { -fx-background-color: -success; }
+.limit-bar-warning > .bar { -fx-background-color: -warning-bar; }
+.limit-bar-exceeded > .bar { -fx-background-color: -danger-bar; }
+
+.percent {
+    -fx-font-weight: 600;
+}
+
+.percent-exceeded {
+    -fx-font-weight: 600;
+    -fx-text-fill: -danger-text;
+}
+
+.limit-big {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+}
+
+.limit-top {
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+}
+
+.limit-row {
+    -fx-alignment: center-left;
+}
+
+.limit-col-category {
+    -fx-min-width: 200;
+    -fx-pref-width: 200;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.limit-col-progress {
+    -fx-spacing: 6;
+    -fx-min-width: 160;
+}
+
+.limit-col-percent {
+    -fx-min-width: 60;
+    -fx-pref-width: 60;
+    -fx-alignment: center-right;
+}
+
+.limit-col-status {
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-padding: 0 0 0 12;
+    -fx-alignment: center-left;
+}
+
+.clickable-card {
+    -fx-cursor: hand;
+}
+
+.clickable-card:hover {
+    -fx-border-color: -primary;
+}
+
+.clickable-card:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+}
+
+.warning-note {
+    -fx-background-color: -warning-tint;
+    -fx-text-fill: -warning-text;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+}
+
 /* ---- Toasts ------------------------------------------------------------ */
 
 .toast {

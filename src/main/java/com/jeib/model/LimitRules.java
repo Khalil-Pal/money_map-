@@ -29,11 +29,15 @@ public final class LimitRules {
         return LimitStatus.OK;
     }
 
-    /** Percentage of the limit used, rounded half up, for display ("86%"). */
+    /**
+     * Percentage of the limit used, for display ("86%"), rounded <em>down</em>. Rounding down keeps
+     * the number and the status in agreement: 79.99% shows as 79% next to "Within limit", never as
+     * 80% (which would look like it should say "Near limit"). Same for 99.99% → 99%, not 100%.
+     */
     public static int percentUsed(long spentCents, long limitCents) {
         if (limitCents <= 0) {
             throw new IllegalArgumentException("limit must be positive");
         }
-        return Math.toIntExact((Math.multiplyExact(spentCents, 100) + limitCents / 2) / limitCents);
+        return Math.toIntExact(Math.multiplyExact(spentCents, 100) / limitCents);
     }
 }

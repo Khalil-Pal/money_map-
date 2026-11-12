@@ -31,7 +31,6 @@ public final class MainController {
 
     /** Placeholder text for screens that aren't built yet, by roadmap week. */
     private static final Map<String, String> COMING = Map.of(
-            "Budgets", "Built in Week 5: monthly limits per category and overall.",
             "Reports", "Built in Week 6: monthly report and Excel export.",
             "Accounts", "Built in Week 8: multiple accounts and currencies.",
             "Recurring", "Built in Week 8: recurring payments and bill reminders.",
@@ -63,6 +62,7 @@ public final class MainController {
     @FXML private Button previousMonth;
     @FXML private Button nextMonth;
     @FXML private VBox transactionsPage;
+    @FXML private VBox budgetsPage;
     @FXML private Label pageSubtitle;
     @FXML private VBox dashboardCards;
     @FXML private Label comingSoon;
@@ -198,17 +198,20 @@ public final class MainController {
         pageTitle.setText(page);
         boolean dashboard = "Dashboard".equals(page);
         boolean transactions = "Transactions".equals(page);
+        boolean budgets = "Budgets".equals(page);
         pageSubtitle.setText(dashboard ? "The app skeleton: theme, navigation, and the local database." : "");
         pageSubtitle.setVisible(dashboard);
         pageSubtitle.setManaged(dashboard);
         dashboardCards.setVisible(dashboard);
         dashboardCards.setManaged(dashboard);
         comingSoon.setText(COMING.getOrDefault(page, ""));
-        boolean built = dashboard || transactions;
+        boolean built = dashboard || transactions || budgets;
         comingSoon.setVisible(!built);
         comingSoon.setManaged(!built);
         transactionsPage.setVisible(transactions);
         transactionsPage.setManaged(transactions);
+        budgetsPage.setVisible(budgets);
+        budgetsPage.setManaged(budgets);
     }
 
     private void renderCategories() {

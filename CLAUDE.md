@@ -73,7 +73,9 @@ app image (no installer):
 3. Quick-add bar ("250 food lunch")
 4. Undo/redo through the service layer (Command pattern)
 5. Per-category + overall limits, OK/WARNING/EXCEEDED, in-app alert
-6. Dashboard: spent, remaining, **left per day until month end**, category chart
+6. Dashboard: spent, remaining, **left per day until month end**, category chart. Decided Nov 12:
+   "left per day" = (overall limit − spent this month) ÷ days left including today, **limit only**
+   (no income-based option, no switch); without an overall limit the card asks the user to set one.
 7. Automatic daily backup (keep 7) + crash log
 8. `Jeib.exe` app image, zipped
 9. Currencies (added Nov 11): **USD, ILS, RUB**. Each transaction has one of them; the user picks
@@ -246,8 +248,21 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   start of ≥2 letters, expense first, an income-only word makes it income, no match → built-in
   Other/Other income, rest = note, date = today) + `QuickAddViewModel` (live preview bar under the
   top bar, red on errors; Enter saves through `TransactionCommands` → toast "Added … · Undo"; Esc
-  clears). 194 tests passing. Week 4's milestone is complete (Nov 12).
-  Next: limits + dashboard (Nov 23-28 in the plan; can start now).
+  clears). Week 4's milestone is complete (Nov 12).
+  Nov 12 (later), branch `feature/limits` (from `feature/transactions`): limits. `V3` migration (one live
+  limit per category+month), `Budget`, `BudgetRepository` (defaults only: `month IS NULL`, same
+  limit every month), `TransactionRepository.sumExpensesByCategory` (SQL GROUP BY category,
+  currency), `BudgetService` (`forMonth` → `MonthBudget` with an overall `LimitLine` and one per
+  expense category, each currency converted once, unconverted currencies reported;
+  `setLimit`/`removeLimit` with validation). `LimitRules.percentUsed` now rounds **down** so the
+  shown % never contradicts the status (79.99% → 79%, not 80%). Budgets page (`budgets.fxml`,
+  `BudgetsController`/`ViewModel`, `StatusTile` = color system §4 icon tiles, status-colored
+  bars + % text), `limit-dialog.fxml` (set/change/remove). `LimitWatcher` toasts when a limit
+  becomes near/over after a change (first check after start is silent). `DataChanged` is the one
+  "data changed" signal: list, Budgets, and the watcher listen; dialogs, undo, quick add, and
+  deletes fire it. 224 tests passing.
+  Next: the Dashboard (spent, remaining, left per day, category chart, limit rows → Transactions).
+  Open: changing the main currency must convert existing limits (no UI for that change yet).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a

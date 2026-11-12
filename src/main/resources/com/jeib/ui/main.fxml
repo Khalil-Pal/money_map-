@@ -108,6 +108,7 @@
                         <Label fx:id="pageSubtitle" styleClass="muted"/>
                         <Label fx:id="comingSoon" styleClass="coming-soon" wrapText="true" maxWidth="Infinity"/>
                         <fx:include fx:id="transactionsPage" source="transactions.fxml"/>
+                        <fx:include fx:id="budgetsPage" source="budgets.fxml"/>
                         <VBox fx:id="dashboardCards" spacing="16">
                             <VBox styleClass="card">
                                 <Label text="Database" styleClass="card-title"/>

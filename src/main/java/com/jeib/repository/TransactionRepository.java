@@ -133,6 +133,36 @@ public final class TransactionRepository {
         }
     }
 
+    /** The sum of one category's expenses in one currency (minor units of that currency). */
+    public record Spend(String categoryId, String currency, long amountMinor) {
+    }
+
+    /**
+     * Live EXPENSE totals in the month, per category and currency. Summed in SQL so the database
+     * does the work (idx_tx_date covers the range); converting to the main currency is the
+     * service's job, once per currency rather than once per row.
+     */
+    public List<Spend> sumExpensesByCategory(YearMonth month) throws SQLException {
+        String sql = """
+                SELECT category_id, currency, SUM(amount) AS total
+                FROM transactions
+                WHERE deleted = 0 AND type = 'EXPENSE' AND occurred_on >= ? AND occurred_on < ?
+                GROUP BY category_id, currency""";
+        try (Connection connection = database.connect();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, month.atDay(1).toString());
+            statement.setString(2, month.plusMonths(1).atDay(1).toString());
+            try (ResultSet rows = statement.executeQuery()) {
+                List<Spend> result = new ArrayList<>();
+                while (rows.next()) {
+                    result.add(new Spend(rows.getString("category_id"), rows.getString("currency"),
+                            rows.getLong("total")));
+                }
+                return result;
+            }
+        }
+    }
+
     /**
      * Brings back a soft-deleted transaction (undo of a delete). Like every change it bumps version
      * and updated_at and marks the row for the next sync push, so other devices see it come back.

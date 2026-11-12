@@ -1,17 +1,24 @@
 package com.jeib;
 
 import com.jeib.db.Database;
+import com.jeib.repository.BudgetRepository;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.SettingsRepository;
 import com.jeib.repository.TransactionRepository;
+import com.jeib.service.BudgetService;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
 import com.jeib.service.UndoManager;
+import com.jeib.ui.BudgetsController;
+import com.jeib.ui.BudgetsViewModel;
+import com.jeib.ui.DataChanged;
 import com.jeib.ui.DialogHost;
 import com.jeib.ui.Dialogs;
 import com.jeib.ui.HistoryViewModel;
+import com.jeib.ui.LimitDialogViewModel;
+import com.jeib.ui.LimitWatcher;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
 import com.jeib.ui.QuickAddViewModel;
@@ -46,29 +53,54 @@ public class JeibApp extends Application {
         CategoryRepository categoryRepository = new CategoryRepository(database, clock);
         CategoryService categoryService = new CategoryService(categoryRepository);
         CurrencyService currencyService = new CurrencyService(new SettingsRepository(database));
+        TransactionRepository transactionRepository = new TransactionRepository(database, clock);
         TransactionService transactionService = new TransactionService(
-                new TransactionRepository(database, clock), categoryRepository, currencyService, clock);
+                transactionRepository, categoryRepository, currencyService, clock);
+        BudgetService budgetService = new BudgetService(new BudgetRepository(database, clock), transactionRepository,
+                categoryRepository, currencyService);
         // One undo history for the session; every UI change goes through these commands.
         TransactionCommands transactionCommands = new TransactionCommands(transactionService, new UndoManager());
 
         MainViewModel main = new MainViewModel(database, categoryRepository, currencyService, clock);
+        // Any save, delete, undo, or limit change fires this; every page that shows data listens.
+        DataChanged dataChanged = new DataChanged();
         TransactionsViewModel transactions = new TransactionsViewModel(transactionService, transactionCommands,
-                categoryService, main.monthProperty(), main.readyProperty());
+                categoryService, main.monthProperty(), main.readyProperty(), dataChanged);
+        BudgetsViewModel budgets = new BudgetsViewModel(budgetService, main.monthProperty(), main.readyProperty());
         Toasts toasts = new Toasts();
-        HistoryViewModel history = new HistoryViewModel(transactionCommands.history(), transactions::load, toasts::show);
+        LimitWatcher limitWatcher = new LimitWatcher(budgetService, clock, toasts::show);
+        dataChanged.listen(transactions::load);
+        dataChanged.listen(budgets::load);
+        dataChanged.listen(limitWatcher::check);
+        // First snapshot for the alerts (silent), and a refresh once setup has chosen the currency.
+        main.readyProperty().addListener((obs, was, ready) -> {
+            if (ready) {
+                limitWatcher.check();
+            }
+        });
+        main.setupNeededProperty().addListener((obs, was, needed) -> {
+            if (!needed) {
+                dataChanged.run();
+            }
+        });
+        HistoryViewModel history = new HistoryViewModel(transactionCommands.history(), dataChanged, toasts::show);
         QuickAddViewModel quickAdd = new QuickAddViewModel(transactionCommands, categoryService, currencyService,
-                clock, transactions::load);
+                clock, dataChanged);
         DialogHost dialogHost = new DialogHost();
         Dialogs dialogs = new Dialogs(dialogHost,
                 () -> new SetupViewModel(currencyService),
                 () -> new TransactionDialogViewModel(transactionCommands, categoryService, currencyService, clock),
-                transactions::load, toasts, history);
+                (line, mainCurrency) -> new LimitDialogViewModel(budgetService, line, mainCurrency),
+                dataChanged, toasts, history);
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
                 return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd);
+            }
+            if (type == BudgetsController.class) {
+                return new BudgetsController(budgets, dialogs);
             }
             if (type == TransactionsController.class) {
                 return new TransactionsController(transactions, dialogs, toasts, history);

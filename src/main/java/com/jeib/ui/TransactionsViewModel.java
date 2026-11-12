@@ -28,6 +28,7 @@ public final class TransactionsViewModel {
 
     private final TransactionService transactions;
     private final TransactionCommands commands;
+    private final Runnable afterChange;
     private final CategoryService categories;
     private final ReadOnlyObjectProperty<YearMonth> month;
 
@@ -42,9 +43,11 @@ public final class TransactionsViewModel {
      */
     public TransactionsViewModel(TransactionService transactions, TransactionCommands commands,
                                  CategoryService categories,
-                                 ReadOnlyObjectProperty<YearMonth> month, ReadOnlyBooleanProperty ready) {
+                                 ReadOnlyObjectProperty<YearMonth> month, ReadOnlyBooleanProperty ready,
+                                 Runnable afterChange) {
         this.transactions = transactions;
         this.commands = commands;
+        this.afterChange = afterChange;
         this.categories = categories;
         this.month = month;
         month.addListener((obs, oldMonth, newMonth) -> {
@@ -102,7 +105,7 @@ public final class TransactionsViewModel {
             }
         };
         task.setOnSucceeded(event -> {
-            load();
+            afterChange.run(); // reloads this list too
             onDeleted.run();
         });
         task.setOnFailed(event -> {

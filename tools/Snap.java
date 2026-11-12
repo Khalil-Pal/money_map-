@@ -62,6 +62,23 @@ public class Snap {
                     step(() -> type(scene, "#quickAdd", "lunch 250"));
                     step(() -> save(scene, out + "-03d-quick-add-error.png"));
                     step(() -> type(scene, "#quickAdd", ""));
+                    step(() -> open(scene, "Budgets"));
+                    step(() -> save(scene, out + "-03e-light-budgets.png"));
+                    step(() -> fire(scene, "#setOverallLimit"));
+                    step(() -> type(scene, "#limitField", "25000"));
+                    step(() -> save(scene, out + "-03f-limit-dialog.png"));
+                    step(() -> fire(scene, "#limitSave"));
+                    step(() -> save(scene, out + "-03g-overall-set.png"));
+                    step(() -> {
+                        Node row = scene.lookup(".limit-row");
+                        if (row != null) {
+                            row.getOnMouseClicked().handle(null);
+                        }
+                    });
+                    step(() -> type(scene, "#limitField", "2000"));
+                    step(() -> fire(scene, "#limitSave"));
+                    step(() -> save(scene, out + "-03h-food-limit-alert.png"));
+                    step(() -> open(scene, "Transactions"));
                     step(() -> fire(scene, "#newTransaction"));
                     step(() -> save(scene, out + "-04-light-new.png"));
                     step(() -> fire(scene, "#saveButton"));
@@ -89,6 +106,9 @@ public class Snap {
                     step(() -> clickFirstRow(scene));
                     step(() -> save(scene, out + "-08-dark-edit.png"));
                     step(() -> fire(scene, "#cancelButton"));
+                    step(() -> open(scene, "Budgets"));
+                    step(() -> save(scene, out + "-08b-dark-budgets.png"));
+                    step(() -> open(scene, "Transactions"));
                     step(vm::previousMonth);
                     step(() -> {
                         save(scene, out + "-09-dark-empty-month.png");

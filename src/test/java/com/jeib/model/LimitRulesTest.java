@@ -33,11 +33,13 @@ class LimitRulesTest {
     }
 
     @Test
-    void percentUsedRoundsHalfUp() {
-        assertEquals(92, LimitRules.percentUsed(41_260, LIMIT)); // 91.69%
-        assertEquals(80, LimitRules.percentUsed(36_000, LIMIT));
+    void percentUsedRoundsDownSoItNeverContradictsTheStatus() {
+        assertEquals(91, LimitRules.percentUsed(41_260, LIMIT)); // 91.69%
+        assertEquals(80, LimitRules.percentUsed(36_000, LIMIT)); // exactly 80%
+        assertEquals(79, LimitRules.percentUsed(35_999, LIMIT)); // 79.998%: OK, so not "80%"
+        assertEquals(99, LimitRules.percentUsed(44_999, LIMIT)); // 99.998%: WARNING, so not "100%"
         assertEquals(138, LimitRules.percentUsed(13_800, 10_000));
-        assertEquals(1, LimitRules.percentUsed(1, 200));         // 0.5% rounds up
+        assertEquals(0, LimitRules.percentUsed(1, 200));         // 0.5%
     }
 
     @Test

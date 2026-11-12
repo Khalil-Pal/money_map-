@@ -162,6 +162,11 @@ sums per currency via `ExchangeRates.toMain`, "left per day until month end" is 
 the survey). Round 2 mockups for Budgets/Dashboard were planned but aren't made; build from the
 color system (status icon tiles, §4) and keep it simple until the post-Dec 1 redesign.
 
+Nov 12 (later): limits done on `feature/limits` (see CLAUDE.md status). Khalil chose option A for the
+dashboard's "left per day": based on the overall limit only. Limit changes are not undoable
+(only transactions are); add if real use asks for it. When a Settings page lets the user change
+the main currency, existing limits must be converted with the rebased rates (CLAUDE.md rule).
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index
