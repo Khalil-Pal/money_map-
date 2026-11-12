@@ -25,6 +25,14 @@
     -danger-bar: #D32F2F;
     -danger-tint: #FDE8E8;
     -focus-ring: #2563EB;
+    -row-hover: #FFEFE4;                     /* §6.5: hovered row = primary-tint in light */
+    -backdrop: rgba(31, 26, 23, 0.40);       /* behind dialogs */
+    -dialog-shadow: rgba(31, 26, 23, 0.20);
+    -toast-bg: #1F1A17;                      /* inverted: dark toast on the light app */
+    -toast-text: #F5F0EB;
+    -toast-action: #FF8A42;
+    -status-none-text: #6B625A;              /* §4 "No limit": text-secondary on surface-alt */
+    -status-none-tint: #F3EEE8;
 
     -chart-0: #FF751F;
     -chart-1: #3B82C4;

@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +44,39 @@ public final class TransactionRepository {
             statement.setString(10, Timestamps.format(t.updatedAt()));
             statement.setInt(11, t.version());
             statement.executeUpdate();
+        }
+    }
+
+    /**
+     * Saves an edited transaction. {@code t} must carry the next version (stored version + 1) and
+     * its new updated_at; the row is marked for the next sync push.
+     *
+     * <p>Optimistic locking: the WHERE clause only matches if the stored version is still
+     * {@code t.version() - 1}. If something else changed the row in between (later: a sync pull),
+     * nothing is overwritten and this returns false.
+     *
+     * @return false if the transaction is deleted, missing, or was changed in the meantime
+     */
+    public boolean update(Transaction t) throws SQLException {
+        String sql = """
+                UPDATE transactions
+                SET account_id = ?, category_id = ?, type = ?, amount = ?, currency = ?, occurred_on = ?, note = ?,
+                    updated_at = ?, version = ?, sync_state = 'PENDING'
+                WHERE id = ? AND deleted = 0 AND version = ?""";
+        try (Connection connection = database.connect();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, t.accountId());
+            statement.setString(2, t.categoryId());
+            statement.setString(3, t.type().name());
+            statement.setLong(4, t.amountMinor());
+            statement.setString(5, t.currency());
+            statement.setString(6, t.occurredOn().toString());
+            statement.setString(7, t.note());
+            statement.setString(8, Timestamps.format(t.updatedAt()));
+            statement.setInt(9, t.version());
+            statement.setString(10, t.id());
+            statement.setInt(11, t.version() - 1);
+            return statement.executeUpdate() == 1;
         }
     }
 
@@ -95,7 +127,56 @@ public final class TransactionRepository {
                 WHERE id = ? AND deleted = 0""";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, Timestamps.format(clock.instant().truncatedTo(ChronoUnit.MILLIS)));
+            statement.setString(1, Timestamps.now(clock));
+            statement.setString(2, id);
+            return statement.executeUpdate() == 1;
+        }
+    }
+
+    /** The sum of one category's expenses in one currency (minor units of that currency). */
+    public record Spend(String categoryId, String currency, long amountMinor) {
+    }
+
+    /**
+     * Live EXPENSE totals in the month, per category and currency. Summed in SQL so the database
+     * does the work (idx_tx_date covers the range); converting to the main currency is the
+     * service's job, once per currency rather than once per row.
+     */
+    public List<Spend> sumExpensesByCategory(YearMonth month) throws SQLException {
+        String sql = """
+                SELECT category_id, currency, SUM(amount) AS total
+                FROM transactions
+                WHERE deleted = 0 AND type = 'EXPENSE' AND occurred_on >= ? AND occurred_on < ?
+                GROUP BY category_id, currency""";
+        try (Connection connection = database.connect();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, month.atDay(1).toString());
+            statement.setString(2, month.plusMonths(1).atDay(1).toString());
+            try (ResultSet rows = statement.executeQuery()) {
+                List<Spend> result = new ArrayList<>();
+                while (rows.next()) {
+                    result.add(new Spend(rows.getString("category_id"), rows.getString("currency"),
+                            rows.getLong("total")));
+                }
+                return result;
+            }
+        }
+    }
+
+    /**
+     * Brings back a soft-deleted transaction (undo of a delete). Like every change it bumps version
+     * and updated_at and marks the row for the next sync push, so other devices see it come back.
+     *
+     * @return false if there was no deleted transaction with that id
+     */
+    public boolean restore(String id) throws SQLException {
+        String sql = """
+                UPDATE transactions
+                SET deleted = 0, version = version + 1, updated_at = ?, sync_state = 'PENDING'
+                WHERE id = ? AND deleted = 1""";
+        try (Connection connection = database.connect();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, Timestamps.now(clock));
             statement.setString(2, id);
             return statement.executeUpdate() == 1;
         }

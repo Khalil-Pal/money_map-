@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Dashboard: three number cards, where the money went (donut + legend), and the most urgent limits. -->
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.DashboardController" styleClass="dashboard-page">
+
+    <Label fx:id="warning" styleClass="warning-note" wrapText="true" maxWidth="Infinity"/>
+    <Label fx:id="message" styleClass="tx-message" wrapText="true" maxWidth="Infinity"/>
+
+    <HBox fx:id="cards" styleClass="kpi-row"/>
+
+    <HBox styleClass="dashboard-row">
+        <VBox fx:id="chartCard" styleClass="card,dashboard-card" HBox.hgrow="ALWAYS" prefWidth="0" maxWidth="Infinity"/>
+        <VBox fx:id="limitsCard" styleClass="card,dashboard-card" HBox.hgrow="ALWAYS" prefWidth="0" maxWidth="Infinity"/>
+    </HBox>
+</VBox>

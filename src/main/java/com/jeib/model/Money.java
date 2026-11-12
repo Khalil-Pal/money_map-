@@ -20,7 +20,7 @@ public final class Money {
      * separator. Throws {@link IllegalArgumentException} for anything else ("-5", "1.234", "abc").
      */
     public static long parseMinorUnits(String text) {
-        String trimmed = text == null ? "" : text.trim();
+        String trimmed = text == null ? "" : Digits.normalize(text).trim(); // ٢٥٠ works too
         if (!AMOUNT.matcher(trimmed).matches()) {
             throw new IllegalArgumentException("Not an amount: \"" + text + "\"");
         }

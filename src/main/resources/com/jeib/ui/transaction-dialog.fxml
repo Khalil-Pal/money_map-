@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- New / Edit transaction. Every error label sits under its field; the view-model fills them. -->
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.TransactionDialogController" styleClass="dialog" maxWidth="560" maxHeight="-Infinity">
+
+    <Label fx:id="title" styleClass="dialog-title"/>
+
+    <VBox styleClass="field">
+        <HBox styleClass="segmented" maxWidth="-Infinity">
+            <ToggleButton fx:id="typeExpense" text="%Expense" styleClass="segment"/>
+            <ToggleButton fx:id="typeIncome" text="%Income" styleClass="segment"/>
+        </HBox>
+        <Label fx:id="typeError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+
+    <VBox styleClass="field">
+        <Label text="%Amount" styleClass="field-label"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <TextField fx:id="amountField" promptText="0.00" styleClass="amount-input" HBox.hgrow="ALWAYS"/>
+            <HBox fx:id="currencyBox" styleClass="segmented" minWidth="-Infinity"/>
+        </HBox>
+        <Label fx:id="amountError" styleClass="field-error" wrapText="true"/>
+        <Label fx:id="currencyError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+
+    <VBox fx:id="rateRow" styleClass="field,rate-row">
+        <Label text="%Exchange rate" styleClass="field-label"/>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label fx:id="rateLabel"/>
+            <TextField fx:id="rateField" prefWidth="140" promptText="%e.g. 92.50"/>
+            <Label fx:id="rateUnit"/>
+        </HBox>
+        <Label text="%Counts this amount in your totals. Update it whenever the rate changes." styleClass="hint" wrapText="true"/>
+        <Label fx:id="rateError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+
+    <VBox styleClass="field">
+        <Label text="%Date" styleClass="field-label"/>
+        <DatePicker fx:id="datePicker" maxWidth="Infinity"/>
+        <Label fx:id="dateError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+
+    <VBox styleClass="field">
+        <Label text="%Category" styleClass="field-label"/>
+        <FlowPane fx:id="categoryChips" hgap="8" vgap="8"/>
+        <HBox fx:id="newCategoryBox" spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="newCategoryField" promptText="%New category name, e.g. Coffee" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="addCategoryButton" text="%Add" styleClass="button-secondary"/>
+            <Button fx:id="cancelCategoryButton" text="%Cancel" styleClass="button-link"/>
+        </HBox>
+        <Label fx:id="categoryError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+
+    <VBox styleClass="field">
+        <Label text="%Note" styleClass="field-label"/>
+        <TextField fx:id="noteField" promptText="%Optional, e.g. Lunch with Sam"/>
+        <Label fx:id="noteError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+
+    <Label fx:id="formError" styleClass="field-error" wrapText="true"/>
+
+    <HBox styleClass="dialog-buttons">
+        <Button fx:id="deleteButton" text="%Delete" styleClass="button-danger"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="cancelButton" text="%Cancel" cancelButton="true" styleClass="button-secondary"/>
+        <Button fx:id="saveButton" text="%Save" defaultButton="true" styleClass="button-primary"/>
+    </HBox>
+</VBox>

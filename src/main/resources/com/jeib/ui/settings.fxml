@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Settings: appearance, currency (main + rates), and where the data is stored. -->
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.SettingsController" styleClass="dashboard-page">
+
+    <Label fx:id="error" styleClass="warning-note" wrapText="true" maxWidth="Infinity"/>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Language" styleClass="card-title"/>
+        <Label text="%Jeib speaks English and Arabic. The window reloads in the language you choose." styleClass="muted" wrapText="true"/>
+        <HBox fx:id="languageBox" styleClass="segmented" maxWidth="-Infinity"/>
+    </VBox>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Appearance" styleClass="card-title"/>
+        <Label text="%Jeib remembers your choice. Automatic is dark from 7 PM to 7 AM." styleClass="muted" wrapText="true"/>
+        <HBox styleClass="segmented" maxWidth="-Infinity">
+            <ToggleButton fx:id="themeLight" text="%Light mode" styleClass="segment"/>
+            <ToggleButton fx:id="themeDark" text="%Dark mode" styleClass="segment"/>
+            <ToggleButton fx:id="themeAuto" text="%Automatic" styleClass="segment"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Main currency" styleClass="card-title"/>
+        <Label text="%Totals, limits, and your daily budget are shown in it. You can still enter amounts in the other currencies."
+               styleClass="muted" wrapText="true"/>
+        <HBox fx:id="mainCurrencyBox" styleClass="segmented" maxWidth="-Infinity"/>
+        <HBox fx:id="switchBox" styleClass="confirm-box,switch-box">
+            <Label fx:id="switchText" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button fx:id="switchCancel" text="%Cancel" styleClass="button-secondary" minWidth="-Infinity"/>
+            <Button fx:id="switchConfirm" text="%Switch" styleClass="button-primary" minWidth="-Infinity"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Exchange rates" styleClass="card-title"/>
+        <Label text="%Used to count other currencies in your totals. Update them whenever rates change; it affects how all amounts in that currency are counted."
+               styleClass="muted" wrapText="true"/>
+        <VBox fx:id="ratesBox" spacing="10"/>
+        <HBox>
+            <Button fx:id="saveRates" text="%Save rates" styleClass="button-primary"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Your data" styleClass="card-title"/>
+        <Label text="%Everything stays on this computer, in one file:" styleClass="muted"/>
+        <Label fx:id="dataPath" styleClass="data-path" wrapText="true"/>
+    </VBox>
+</VBox>

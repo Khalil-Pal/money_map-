@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Budgets page: the overall limit card, then one row per expense category. BudgetsController fills both. -->
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.BudgetsController" styleClass="transactions-page">
+
+    <Label fx:id="intro" styleClass="muted" wrapText="true"/>
+    <Label fx:id="warning" styleClass="warning-note" wrapText="true" maxWidth="Infinity"/>
+    <Label fx:id="message" styleClass="tx-message" wrapText="true" maxWidth="Infinity"/>
+
+    <VBox fx:id="overallCard" styleClass="card"/>
+
+    <VBox styleClass="card,tx-card">
+        <HBox styleClass="tx-header">
+            <Label text="%Category" styleClass="limit-col-category"/>
+            <Label text="%Spent this month" styleClass="limit-col-progress" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Label text="%Used" styleClass="limit-col-percent"/>
+            <Label text="%Status" styleClass="limit-col-status"/>
+        </HBox>
+        <VBox fx:id="rowsBox"/>
+    </VBox>
+</VBox>

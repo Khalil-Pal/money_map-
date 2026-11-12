@@ -77,11 +77,6 @@
     -fx-stroke: -primary-text;
 }
 
-.theme-toggle {
-    -fx-alignment: center-left;
-    -fx-graphic-text-gap: 10;
-    -fx-pref-height: 38;
-}
 
 /* ---- Top bar ---------------------------------------------------------- */
 
@@ -98,6 +93,27 @@
     -fx-font-weight: 600;
     -fx-min-width: 120;
     -fx-alignment: center;
+}
+
+/* Quick-add preview: a thin line under the top bar while typing. */
+.quick-add-preview {
+    -fx-background-color: -bg-surface-alt;
+    -fx-border-color: transparent transparent -border transparent;
+    -fx-padding: 7 28 7 28;
+    -fx-alignment: center-left;
+}
+
+.quick-add-preview .label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -text-secondary;
+}
+
+.quick-add-error {
+    -fx-background-color: -danger-tint;
+}
+
+.quick-add-error .label {
+    -fx-text-fill: -danger-text;
 }
 
 /* ---- Buttons ---------------------------------------------------------- */
@@ -285,6 +301,808 @@
 .swatch-11 { -fx-background-color: -chart-11; }
 .swatch-12 { -fx-background-color: -chart-12; }
 .swatch-13 { -fx-background-color: -chart-13; }
+
+/* ---- Transactions list ------------------------------------------------ */
+
+.transactions-page {
+    -fx-spacing: 12;
+}
+
+/* The list is one card; header and rows run edge to edge inside it. */
+.tx-card {
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.tx-header {
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 12 12 0 0;
+    -fx-padding: 10 20 10 20;
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+}
+
+.tx-header .label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -text-secondary;
+}
+
+.tx-row {
+    -fx-padding: 12 20 12 20;
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
+.tx-col-date {
+    -fx-min-width: 110;
+    -fx-pref-width: 110;
+}
+
+.tx-col-note {
+    -fx-min-width: 120;
+}
+
+.tx-col-category {
+    -fx-min-width: 180;
+    -fx-pref-width: 180;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.tx-col-amount {
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-alignment: center-right;
+}
+
+/* Expenses stay in normal text (not red), income is green with "+" (jeib-color-system.md §6). */
+.amount {
+    -fx-text-fill: -text-primary;
+    -fx-font-weight: 600;
+}
+
+.amount-income {
+    -fx-text-fill: -success;
+    -fx-font-weight: 600;
+}
+
+.tx-message {
+    -fx-padding: 40 24 40 24;
+    -fx-text-fill: -text-secondary;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+/* Clickable rows: hover and keyboard focus (CLAUDE.md: hover only on clickable things). */
+.tx-row-clickable {
+    -fx-cursor: hand;
+}
+
+.tx-row-clickable:hover {
+    -fx-background-color: -row-hover;
+}
+
+.tx-row-clickable:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+}
+
+/* ---- Dialogs (DialogHost) --------------------------------------------- */
+
+/* The window behind an open dialog is disabled, but shouldn't fade: the backdrop dims it. */
+.app-content:disabled {
+    -fx-opacity: 1;
+}
+
+.dialog-layer {
+    -fx-background-color: -backdrop;
+    -fx-padding: 24;
+}
+
+.dialog {
+    -fx-background-color: -bg-surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -border;
+    -fx-border-radius: 12;
+    -fx-padding: 24;
+    -fx-spacing: 14;
+    -fx-effect: dropshadow(gaussian, -dialog-shadow, 32, 0, 0, 8);
+}
+
+.dialog-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+}
+
+.field {
+    -fx-spacing: 6;
+}
+
+.field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -text-secondary;
+}
+
+.field-error {
+    -fx-font-size: 12px;
+    -fx-text-fill: -danger-text;
+}
+
+.hint {
+    -fx-font-size: 12px;
+    -fx-text-fill: -text-secondary;
+}
+
+.dialog-buttons {
+    -fx-spacing: 8;
+    -fx-alignment: center-right;
+    -fx-padding: 6 0 0 0;
+}
+
+.dialog-buttons .button-secondary {
+    -fx-pref-height: 36;
+    -fx-padding: 0 16 0 16;
+}
+
+.amount-input {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+    -fx-pref-height: 44;
+}
+
+/* Segmented control: Expense | Income, and the currency picker. */
+.segmented {
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 8;
+    -fx-padding: 3;
+    -fx-spacing: 2;
+    -fx-alignment: center-left;
+}
+
+.segment {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-text-fill: -text-secondary;
+    -fx-font-weight: 500;
+    -fx-pref-height: 32;
+    -fx-padding: 0 14 0 14;
+    -fx-cursor: hand;
+}
+
+.segment:hover {
+    -fx-text-fill: -text-primary;
+}
+
+.segment:selected {
+    -fx-background-color: -primary-tint;
+    -fx-text-fill: -primary-text;
+    -fx-font-weight: 600;
+}
+
+.segment:focus-visible,
+.category-chip:focus-visible,
+.currency-option:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+}
+
+.category-chip {
+    -fx-background-color: -bg-surface-alt;
+    -fx-border-color: -border;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 6 12 6 12;
+    -fx-graphic-text-gap: 7;
+    -fx-text-fill: -text-primary;
+    -fx-cursor: hand;
+}
+
+.category-chip:hover {
+    -fx-border-color: -primary;
+}
+
+.category-chip:selected {
+    -fx-background-color: -primary-tint;
+    -fx-border-color: -primary;
+    -fx-text-fill: -primary-text;
+    -fx-font-weight: 600;
+}
+
+/* First-launch currency options. */
+.currency-option {
+    -fx-background-color: -bg-surface-alt;
+    -fx-border-color: -border;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 16;
+    -fx-alignment: top-left;
+    -fx-cursor: hand;
+}
+
+.currency-option:hover {
+    -fx-border-color: -primary;
+}
+
+.currency-option:selected {
+    -fx-background-color: -primary-tint;
+    -fx-border-color: -primary;
+}
+
+.currency-option-symbol {
+    -fx-font-size: 24px;
+    -fx-font-weight: 600;
+}
+
+.currency-option-code {
+    -fx-font-weight: 600;
+}
+
+/* Date picker: looks like the other inputs; its calendar popup follows the theme. */
+.date-picker {
+    -fx-background-color: -border, -bg-surface-alt;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-pref-height: 36;
+}
+
+.date-picker > .text-field {
+    -fx-background-color: transparent;
+}
+
+.date-picker > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 12 0 12;
+    -fx-cursor: hand;
+}
+
+.date-picker > .arrow-button > .arrow {
+    -fx-background-color: -text-secondary;
+}
+
+.date-picker-popup {
+    -fx-background-color: -border, -bg-surface;
+    -fx-background-insets: 0, 1;
+}
+
+.date-picker-popup > .month-year-pane {
+    -fx-background-color: -bg-surface-alt;
+}
+
+.date-picker-popup .label {
+    -fx-text-fill: -text-primary;
+}
+
+.date-picker-popup .spinner .button {
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup .spinner .left-arrow,
+.date-picker-popup .spinner .right-arrow {
+    -fx-background-color: -text-secondary;
+}
+
+.date-picker-popup .day-name-cell,
+.date-picker-popup .day-cell {
+    -fx-background-color: -bg-surface;
+    -fx-text-fill: -text-primary;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: -text-secondary;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: -row-hover;
+}
+
+.date-picker-popup .previous-month,
+.date-picker-popup .next-month {
+    -fx-text-fill: -text-disabled;
+}
+
+.date-picker-popup .today {
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup .selected {
+    -fx-background-color: -primary;
+    -fx-text-fill: -on-primary;
+}
+
+/* Destructive button: danger text, no fill; deletes are undoable, so no confirmation (§6.2). */
+.button-danger {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-text-fill: -danger-text;
+    -fx-font-weight: 500;
+    -fx-pref-height: 36;
+    -fx-padding: 0 12 0 12;
+    -fx-cursor: hand;
+}
+
+.button-danger:hover {
+    -fx-background-color: -danger-tint;
+}
+
+.button-danger:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+}
+
+/* ---- Limits: status tiles (color system §4) and bars ------------------- */
+
+.status {
+    -fx-spacing: 7;
+    -fx-alignment: center-left;
+}
+
+.status-tile {
+    -fx-min-width: 20;
+    -fx-min-height: 20;
+    -fx-max-width: 20;
+    -fx-max-height: 20;
+    -fx-background-radius: 6;
+}
+
+.status-icon {
+    -fx-fill: transparent;
+    -fx-stroke-width: 5; /* drawn at half size: 2.5 px on screen */
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+}
+
+.status-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: 600;
+}
+
+.status-ok .status-tile { -fx-background-color: -success-tint; }
+.status-ok .status-icon { -fx-stroke: -success; -fx-stroke-width: 6; }
+.status-ok .status-label { -fx-text-fill: -success; }
+
+.status-warning .status-tile { -fx-background-color: -warning-tint; }
+.status-warning .status-icon { -fx-stroke: -warning-text; }
+.status-warning .status-label { -fx-text-fill: -warning-text; }
+
+.status-exceeded .status-tile { -fx-background-color: -danger-tint; }
+.status-exceeded .status-icon { -fx-stroke: -danger-text; }
+.status-exceeded .status-label { -fx-text-fill: -danger-text; }
+
+.status-none .status-tile { -fx-background-color: -status-none-tint; }
+.status-none .status-icon { -fx-stroke: -status-none-text; -fx-stroke-width: 6; }
+.status-none .status-label { -fx-text-fill: -status-none-text; }
+
+.limit-bar {
+    -fx-pref-height: 8;
+    -fx-max-height: 8;
+}
+
+.limit-bar > .track {
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+
+.limit-bar > .bar {
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+    -fx-padding: 4;
+}
+
+.limit-bar-ok > .bar { -fx-background-color: -success; }
+.limit-bar-warning > .bar { -fx-background-color: -warning-bar; }
+.limit-bar-exceeded > .bar { -fx-background-color: -danger-bar; }
+
+.percent {
+    -fx-font-weight: 600;
+}
+
+.percent-exceeded {
+    -fx-font-weight: 600;
+    -fx-text-fill: -danger-text;
+}
+
+.limit-big {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+}
+
+.limit-top {
+    -fx-spacing: 16;
+    -fx-alignment: center-left;
+}
+
+.limit-row {
+    -fx-alignment: center-left;
+}
+
+.limit-col-category {
+    -fx-min-width: 200;
+    -fx-pref-width: 200;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.limit-col-progress {
+    -fx-spacing: 6;
+    -fx-min-width: 160;
+}
+
+.limit-col-percent {
+    -fx-min-width: 60;
+    -fx-pref-width: 60;
+    -fx-alignment: center-right;
+}
+
+.limit-col-status {
+    -fx-min-width: 140;
+    -fx-pref-width: 140;
+    -fx-padding: 0 0 0 12;
+    -fx-alignment: center-left;
+}
+
+.clickable-card {
+    -fx-cursor: hand;
+}
+
+.clickable-card:hover {
+    -fx-border-color: -primary;
+}
+
+.clickable-card:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+}
+
+.warning-note {
+    -fx-background-color: -warning-tint;
+    -fx-text-fill: -warning-text;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+}
+
+/* ---- Dashboard ----------------------------------------------------------- */
+
+.dashboard-page {
+    -fx-spacing: 16;
+}
+
+.kpi-row,
+.dashboard-row {
+    -fx-spacing: 16;
+}
+
+.kpi-card {
+    -fx-spacing: 6;
+}
+
+.kpi-caption {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -text-secondary;
+}
+
+.kpi-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: 600;
+}
+
+.kpi-value-danger {
+    -fx-font-size: 26px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -danger-text;
+}
+
+.kpi-danger-note {
+    -fx-text-fill: -danger-text;
+}
+
+.kpi-sub {
+    -fx-alignment: center-left;
+}
+
+.card-header {
+    -fx-alignment: center-left;
+}
+
+.chart-body {
+    -fx-alignment: center-left;
+    -fx-padding: 8 0 0 0;
+}
+
+.donut {
+    -fx-min-width: 190;
+    -fx-min-height: 190;
+}
+
+.donut-track {
+    -fx-fill: transparent;
+    -fx-stroke: -bg-surface-alt;
+    -fx-stroke-width: 22;
+}
+
+.donut-slice {
+    -fx-fill: transparent;
+    -fx-stroke-width: 22;
+    -fx-stroke-line-cap: butt;
+}
+
+.slice-0 { -fx-stroke: -chart-0; }
+.slice-1 { -fx-stroke: -chart-1; }
+.slice-2 { -fx-stroke: -chart-2; }
+.slice-3 { -fx-stroke: -chart-3; }
+.slice-4 { -fx-stroke: -chart-4; }
+.slice-5 { -fx-stroke: -chart-5; }
+.slice-6 { -fx-stroke: -chart-6; }
+.slice-7 { -fx-stroke: -chart-7; }
+.slice-8 { -fx-stroke: -chart-8; }
+.slice-9 { -fx-stroke: -chart-9; }
+.slice-10 { -fx-stroke: -chart-10; }
+.slice-11 { -fx-stroke: -chart-11; }
+.slice-12 { -fx-stroke: -chart-12; }
+.slice-13 { -fx-stroke: -chart-13; }
+
+.donut-center {
+    -fx-alignment: center;
+}
+
+.donut-total {
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+}
+
+.legend-row {
+    -fx-padding: 7 10 7 10;
+    -fx-background-radius: 8;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+
+.legend-row:hover {
+    -fx-background-color: -row-hover;
+}
+
+.legend-row:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+}
+
+.legend-percent {
+    -fx-min-width: 40;
+    -fx-alignment: center-right;
+    -fx-text-fill: -text-secondary;
+}
+
+.limit-mini-top,
+.limit-mini-bottom {
+    -fx-alignment: center-left;
+}
+
+.card .button-secondary {
+    -fx-pref-height: 34;
+    -fx-padding: 0 14 0 14;
+}
+
+.button-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -primary-text;
+    -fx-font-weight: 500;
+    -fx-padding: 4 6 4 6;
+    -fx-cursor: hand;
+}
+
+.button-link:hover {
+    -fx-underline: true;
+}
+
+.button-link:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 6;
+}
+
+.filter-bar {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+/* ---- Categories ---------------------------------------------------------- */
+
+.category-row {
+    -fx-spacing: 10;
+}
+
+.row-action {
+    -fx-text-fill: -primary-text;
+    -fx-font-size: 13px;
+}
+
+.new-category-chip {
+    -fx-text-fill: -primary-text;
+    -fx-border-style: segments(4, 3);
+}
+
+/* Color picker: 14 round swatches; used ones greyed out (color system §5, rule 2). */
+.color-option {
+    -fx-background-color: transparent;
+    -fx-background-radius: 999;
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-radius: 999;
+    -fx-padding: 3;
+    -fx-cursor: hand;
+}
+
+.color-option:hover {
+    -fx-border-color: -border-strong;
+}
+
+.color-option:selected {
+    -fx-border-color: -text-primary;
+}
+
+.color-option:disabled {
+    -fx-opacity: 0.25;
+}
+
+.color-option:focus-visible {
+    -fx-border-color: -focus-ring;
+}
+
+.color-dot {
+    -fx-min-width: 22;
+    -fx-min-height: 22;
+    -fx-max-width: 22;
+    -fx-max-height: 22;
+    -fx-background-radius: 999;
+}
+
+.confirm-box {
+    -fx-background-color: -danger-tint;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12 10 14;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+}
+
+.confirm-box .label {
+    -fx-text-fill: -danger-text;
+}
+
+/* ---- Settings ------------------------------------------------------------ */
+
+.settings-card {
+    -fx-spacing: 12;
+}
+
+.rate-row-line {
+    -fx-alignment: center-left;
+}
+
+.rate-label {
+    -fx-min-width: 64;
+}
+
+/* Switching currency needs attention but isn't destructive: amber, not red. */
+.confirm-box.switch-box {
+    -fx-background-color: -warning-tint;
+}
+
+.switch-box .label {
+    -fx-text-fill: -warning-text;
+}
+
+.data-path {
+    -fx-font-family: "Consolas", "Cascadia Mono", monospace;
+    -fx-font-size: 13px;
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10 6 10;
+}
+
+.setup-top {
+    -fx-alignment: center-left;
+}
+
+/* ---- Top-right group: settings, theme, language ------------------------- */
+
+.topbar-tools {
+    -fx-spacing: 6;
+    -fx-alignment: center;
+    -fx-padding: 0 0 0 6;
+}
+
+/* The language pill: an orange earth and the language, in its own language. */
+.language-pill {
+    -fx-background-color: -primary, -bg-surface;
+    -fx-background-insets: 0, 1.5;
+    -fx-background-radius: 999, 999;
+    -fx-text-fill: -text-primary;
+    -fx-font-weight: 600;
+    -fx-pref-height: 34;
+    -fx-padding: 0 14 0 10;
+    -fx-graphic-text-gap: 7;
+    -fx-cursor: hand;
+}
+
+.language-pill:hover {
+    -fx-background-color: -primary, -primary-tint;
+}
+
+.language-pill .globe-icon {
+    -fx-stroke: -primary;
+}
+
+.language-pill:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 999;
+}
+
+.context-menu {
+    -fx-background-color: -border, -bg-surface;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, -dialog-shadow, 20, 0, 0, 4);
+}
+
+.context-menu .menu-item {
+    -fx-background-radius: 6;
+    -fx-padding: 7 14 7 10;
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: -text-primary;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: -row-hover;
+}
+
+.context-menu .check-menu-item:checked .mark {
+    -fx-background-color: -primary;
+}
+
+.tooltip {
+    -fx-background-color: -toast-bg;
+    -fx-text-fill: -toast-text;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+    -fx-padding: 5 9 5 9;
+}
+
+/* ---- Toasts ------------------------------------------------------------ */
+
+.toast {
+    -fx-background-color: -toast-bg;
+    -fx-background-radius: 10;
+    -fx-padding: 10 10 10 16;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+    -fx-effect: dropshadow(gaussian, -dialog-shadow, 20, 0, 0, 4);
+}
+
+.toast-text {
+    -fx-text-fill: -toast-text;
+}
+
+.toast-action {
+    -fx-background-color: transparent;
+    -fx-text-fill: -toast-action;
+    -fx-font-weight: 600;
+    -fx-padding: 4 8 4 8;
+    -fx-cursor: hand;
+}
+
+.toast-action:hover {
+    -fx-underline: true;
+}
 
 /* ---- Scroll bars ------------------------------------------------------ */
 

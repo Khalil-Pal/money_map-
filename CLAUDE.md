@@ -54,15 +54,49 @@ Python is secondary: fake-data generation (100k-500k transactions), analysis, lo
 **Explicitly out of scope:** microservices, Kubernetes, GraphQL, web frontend, mobile app.
 Recommend against them if they come up — a well-structured monolith is the decision.
 
-**Open question (Oct 24, 2026):** the user wants a very modern-looking UI and asked whether to keep
-JavaFX. Not decided yet — update this section once they choose.
+**Design (Nov 11, 2026):** JavaFX stays for now. Khalil wants a much more professional design that
+doesn't look like a basic AI-made UI, but that overhaul comes **after Dec 1**. Until then keep every
+color, size, and radius in the CSS tokens and keep screens simple, so the redesign is mostly CSS
+and layout, not rewritten logic.
 
 ### Features (final scope, agreed Oct 24, 2026)
 
 Rule: **v1.0 (Dec 20, 2026) has every feature that works without a server. v2.0 (Jan 17, 2027)
 adds sync and everything that depends on it.** Numbers are the ones used when the scope was agreed.
 
-**v1.0 — 34 features, by roadmap week:**
+**Ready to use by Dec 1, 2026 (decided Nov 11; replaces the week-by-week order below).** Plan
+by scope, not by roadmap week. Dec 1 build, for Khalil plus 2-3 survey respondents, as a zipped
+app image (no installer):
+
+1. Categories: create, rename/recolor, delete (transactions move to "Other")
+2. Transactions: add, edit, delete, monthly list, working month switcher, validation
+3. Quick-add bar ("250 food lunch")
+4. Undo/redo through the service layer (Command pattern)
+5. Per-category + overall limits, OK/WARNING/EXCEEDED, in-app alert
+6. Dashboard: spent, remaining, **left per day until month end**, category chart. Decided Nov 12:
+   "left per day" = (overall limit − spent this month) ÷ days left including today, **limit only**
+   (no income-based option, no switch); without an overall limit the card asks the user to set one.
+7. Automatic daily backup (keep 7) + crash log
+8. `Jeib.exe` app image, zipped
+9. Currencies (added Nov 11): **USD, ILS, RUB**. Each transaction has one of them; the user picks
+   a **main currency** when setting up their plan (a small first-launch step), and totals, limits,
+   and "left per day" are shown in it using **manual exchange rates** ("1 USD = 92.50 RUB") they
+   can update any time. Changing the main currency re-expresses the rates automatically.
+
+Currency rules: all three have 2 decimals (what `Money` assumes; a 3-decimal currency like JOD
+needs `Money` changes first). Rates are `BigDecimal` (max 6 decimals), stored in `settings` as
+`main_currency` and `rate.<CODE>` (main currency's own rate is never stored). Convert sums per
+currency, then convert once (`ExchangeRates.toMain`, half-even rounding). A transaction in a
+non-main currency needs its rate set first. **Budgets (Week 5):** limits are in the main currency;
+when the main currency changes, existing limits must be converted too.
+
+Milestones: Nov 11-14 categories → `TransactionService` → Transactions screen · Nov 16-21
+add/edit dialog, quick-add, delete, undo/redo · Nov 23-28 limits, statuses, dashboard · Nov 30 -
+Dec 1 backup, crash log, packaging, bug bash. After Dec 1: monthly report + Excel/PDF (needed by
+the first month end, Dec 31), then the rest of the list below in the order real use shows.
+Student survey findings that shaped this: `docs/user-research.md`.
+
+**v1.0 — 34 features, by roadmap week (original order, now flexible):**
 
 | Week | Features |
 |---|---|
@@ -92,6 +126,27 @@ status indicator · (30) server-generated reports (RabbitMQ) · (39) shared hous
 (stretch: only if sync is solid).
 
 **Not planned:** bank API integrations, AI chat, investment tracking, receipt OCR, web/mobile.
+
+### Languages (decided Nov 12, 2026): English + Arabic
+
+- **Every user-facing string goes through `Messages.t("English text", args…)`** (gettext-style: the
+  English sentence is the key; placeholders `{0}`, `{1}` are replaced literally, no MessageFormat).
+  In FXML write `text="%English text"` (loaders use `Messages.bundle()`). Add the Arabic in
+  `i18n/Arabic.java`; `ArabicCoverageTest` fails if a sentence or a placeholder is missing.
+  Keys reached through a variable (page names, color names…) are listed in that test's `INDIRECT`.
+- Arabic is right-to-left: the window root gets `NodeOrientation.RIGHT_TO_LEFT`, which mirrors
+  every layout. Amounts and other left-to-right snippets go through `Messages.ltr` (built into
+  `SupportedCurrency.format`; use `formatPlain` + `ltr` when adding a sign: "+$300.00").
+  Arabic counts are phrased "عدد المعاملات: 12" to avoid plural agreement.
+- Digits: Arabic-Indic input (٢٥٠٫٥) is accepted everywhere amounts are parsed (`model/Digits`);
+  displayed numbers stay Western (250.50). Dates and month names follow the language.
+- The 11 default categories show in the app's language while their names are unchanged
+  (`i18n/DefaultCategories`, applied in `CategoryRepository.map`). Quick add knows Arabic
+  currency words (دولار، شيكل، روبل).
+- The language is saved in settings (`PreferencesService`, key `language`), read in
+  `JeibApp.init()` before the window is built (default: Arabic on an Arabic Windows, else
+  English). Switching (setup or Settings) saves it and rebuilds the window (`LanguageSwitcher`,
+  `JeibApp.rebuildIn`). Sidebar items use `userData` as their fixed page id, never their text.
 
 ## Non-negotiable engineering rules
 
@@ -124,6 +179,8 @@ Server adds `users`, `devices`, `user_id` + `server_seq BIGSERIAL` on each synce
 ## Timeline
 
 Rescheduled Oct 24, 2026 so all local features fit in v1.0; the April deadline is unchanged.
+Nov 11, 2026: Phase 2's weekly order no longer binds; the hard date is the Dec 1 usable build
+(see Features). Dec 20 v1.0 stays the target, to be re-checked on Dec 1.
 
 | Phase | Weeks | Dates | Output |
 |---|---|---|---|
@@ -138,7 +195,7 @@ Rescheduled Oct 24, 2026 so all local features fit in v1.0; the April deadline i
 Parallel tracks: DSA from Week 6 (2-3/week → 4-5/week in Phase 5), weekly communication practice,
 Sunday review in `journal.md`, applications from Week 16 (daily from Week 21).
 
-**If behind schedule, protect:** the Nov 29 private build (self-test), then the released MVP (Phase 2), sync basics (auth + push/pull), and
+**If behind schedule, protect:** the Dec 1 usable build (self-test), then the released MVP (Phase 2), sync basics (auth + push/pull), and
 the documentation package (Phase 4). Cut extras, fancy Excel formatting, and Phase 5 volume first.
 
 ## Commands
@@ -176,11 +233,88 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   `main`). Phase 1 skeleton done: Maven project, V1 schema + V2 default categories, themed app shell
   (light/dark) matching the mockups, jpackage app image builds. Week 3 step 1 done: `Transaction`
   record, `TransactionRepository` (insert, findById, findByMonth, softDelete), `Timestamps`
-  (fixed-width UTC text); 40 tests passing. Both are on branch `feature/skeleton` (PR to `main`).
+  (fixed-width UTC text); 40 tests passing. Both merged into `main` via PR #1 (Oct 25).
+  For session history, decisions, and pending items, see `HANDOFF.md`.
   `developer-roadmap.docx` is git-ignored (personal).
-- Week 3 next: categories create/rename/delete (built-ins protected, first free color, case-insensitive
-  unique names, deleting moves its transactions to "Other"), then `TransactionService` validation,
-  then the Transactions screen.
+- Nov 1 - Nov 10: no work. Nov 11: plan changed to "usable by Dec 1" (see Features); branch
+  `feature/categories` (from `docs/handoff`, PR #2): `CategoryService` + repository methods for
+  create/update/delete. Branch `feature/transactions` (stacked on it): `TransactionService`
+  (add/edit/delete/listMonth with validation; `ValidationException.field()` names the form field),
+  `TransactionRepository.update` with an optimistic version check. Then currencies:
+  `SupportedCurrency`, `ExchangeRates`, `SettingsRepository`, `CurrencyService`; transactions
+  carry USD/ILS/RUB. Nov 12: Transactions screen (`transactions.fxml` + `TransactionsController` +
+  `TransactionsViewModel`, rows built by `TransactionRow.from`), working ◀ ▶ month switcher (month
+  lives in `MainViewModel`, shared by all pages), `SupportedCurrency.format` ("$12.50", "₪45.00",
+  "950.00 ₽"). `JeibApp.createMainWindow(database, clock)` is the one place that wires the app (also
+  used by `tools/Snap.java`, which now also captures the Transactions page).
+  Then: dialogs open inside the window over a dimmed backdrop (`DialogHost`, opened via `Dialogs`;
+  the content behind is disabled). First launch shows `setup.fxml` (choose main currency, can't be
+  skipped). New/Edit transaction dialog (`transaction-dialog.fxml`, `TransactionDialogViewModel`):
+  type, amount + currency, an exchange-rate row when the currency isn't the main one (prefilled,
+  saved first if new or changed), date, category chips, note; each `ValidationException` shows
+  under its field. Opened by the New transaction button, Ctrl+N, or clicking / Enter on a list row.
+  View-models keep DB work in plain methods (`loadData`/`apply`, `request`/`perform`) so tests run
+  without JavaFX. `tools/Snap.java` clicks through setup → new → errors → rate → save → dark edit.
+  Then undo/redo (Command pattern, `service/`): `Command`, `UndoManager` (undo + redo stacks, per
+  session, last 100, failed commands not recorded, new change clears redo), `TransactionCommands`
+  (Add/Edit/Delete; the UI saves through these, never `TransactionService` directly). Undo of a
+  delete = `TransactionService.restore` (repository `restore`: deleted 0, version + 1, PENDING);
+  undo of an add = soft delete, its redo = restore of the same row; undo of an edit re-applies the
+  old values through normal validation. Delete: red Delete button in the edit dialog (no
+  confirmation) or Delete/Backspace on a focused row → `Toasts` "Transaction deleted · Undo".
+  Ctrl+Z / Ctrl+Y (also Ctrl+Shift+Z) via `HistoryViewModel`, as a root key handler so text fields
+  keep their own undo; ignored while a dialog is open.
+  Then the quick-add bar: `service/QuickAddParser` (pure; rules in its Javadoc: amount first, `+`
+  = income, currency glued or next word incl. usd/nis/rub/$/₪/₽, category by full name or a unique
+  start of ≥2 letters, expense first, an income-only word makes it income, no match → built-in
+  Other/Other income, rest = note, date = today) + `QuickAddViewModel` (live preview bar under the
+  top bar, red on errors; Enter saves through `TransactionCommands` → toast "Added … · Undo"; Esc
+  clears). Week 4's milestone is complete (Nov 12).
+  Nov 12 (later), branch `feature/limits` (from `feature/transactions`): limits. `V3` migration (one live
+  limit per category+month), `Budget`, `BudgetRepository` (defaults only: `month IS NULL`, same
+  limit every month), `TransactionRepository.sumExpensesByCategory` (SQL GROUP BY category,
+  currency), `BudgetService` (`forMonth` → `MonthBudget` with an overall `LimitLine` and one per
+  expense category, each currency converted once, unconverted currencies reported;
+  `setLimit`/`removeLimit` with validation). `LimitRules.percentUsed` now rounds **down** so the
+  shown % never contradicts the status (79.99% → 79%, not 80%). Budgets page (`budgets.fxml`,
+  `BudgetsController`/`ViewModel`, `StatusTile` = color system §4 icon tiles, status-colored
+  bars + % text), `limit-dialog.fxml` (set/change/remove). `LimitWatcher` toasts when a limit
+  becomes near/over after a change (first check after start is silent). `DataChanged` is the one
+  "data changed" signal: list, Budgets, and the watcher listen; dialogs, undo, quick add, and
+  deletes fire it. 224 tests passing.
+  Then the Dashboard (`dashboard.fxml`, `DashboardController`/`ViewModel`, `DashboardData.from` is
+  pure): cards Spent / Remaining / Left per day (`model/LeftPerDay`: remaining ÷ days left incl.
+  today, rounded down; future month = all days; past month = none), a donut drawn with `Arc`s in
+  the category colors + a legend (share %, "<1%" for tiny ones), and the 5 most urgent category
+  limits. Everything is clickable: legend/limit rows → Transactions filtered to that category
+  (`Navigation`, `TransactionsViewModel.filterBy`, "Showing only X · Show all" bar; a sidebar click
+  shows all again), cards → Transactions/Budgets or the limit dialog. The old placeholder dashboard
+  (DB status + category chips) is gone. 238 tests passing.
+  Then categories UI, branch `feature/categories-ui` (from `feature/limits`): a Categories page
+  in the sidebar (expense and income lists, "+ New", rows open the dialog) and
+  `category-dialog.fxml` (`CategoryDialogViewModel`): name, a 14-color picker (colors used by
+  other categories are greyed out until all 14 are taken), delete with a confirmation step
+  (it moves transactions to Other and isn't undoable; built-ins can't be deleted). The
+  transaction dialog has an inline "+ New category" (name only, first free color, selected
+  right away). 245 tests passing.
+  Then Settings, branch `feature/settings`: theme (Light/Dark, remembered via
+  `PreferencesService` → settings key `theme`), main currency (switching asks to confirm and
+  calls `BudgetService.changeMainCurrency`, which needs a rate for the new currency and converts
+  every limit by dividing by the typed rate, so 92,500 RUB at 92.5 is exactly $1,000.00), the
+  exchange rates for the other two currencies (each saved separately; one bad rate doesn't block
+  the others), and the data file path. `CurrencyService.setMainCurrency` now refuses a switch to
+  a currency without a rate.
+  Then English + Arabic, branch `feature/arabic` (see "Languages" above for the rules). Language
+  picker in first-launch setup and in Settings.
+  Then the top-right controls, branch `feature/top-bar-controls`: ⚙️ Settings shortcut, a theme
+  button cycling Light → Dark → Automatic (`ThemeMode`; Automatic = dark from 19:00 to 07:00,
+  fixed hours, re-checked every 30 s while open; saved as LIGHT/DARK/AUTO), and an orange
+  language pill (earth icon + "English"/"العربية", menu with both). The sidebar theme button
+  is gone. Motion (`ThemeTransition`): the new theme is revealed as a circle growing from the
+  theme button over a snapshot of the old one (520 ms, emphasized ease-out), the icon turns into
+  the next one, and a language switch fades out/in. Arabic names: الوضع النهاري / الوضع الليلي /
+  تلقائي. No accent-color picker (decided: Jeib stays orange). 273 tests passing.
+  Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a
