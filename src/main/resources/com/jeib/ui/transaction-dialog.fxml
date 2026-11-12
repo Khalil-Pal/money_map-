@@ -54,6 +54,11 @@
     <VBox styleClass="field">
         <Label text="Category" styleClass="field-label"/>
         <FlowPane fx:id="categoryChips" hgap="8" vgap="8"/>
+        <HBox fx:id="newCategoryBox" spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="newCategoryField" promptText="New category name, e.g. Coffee" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="addCategoryButton" text="Add" styleClass="button-secondary"/>
+            <Button fx:id="cancelCategoryButton" text="Cancel" styleClass="button-link"/>
+        </HBox>
         <Label fx:id="categoryError" styleClass="field-error" wrapText="true"/>
     </VBox>
 

@@ -32,6 +32,11 @@ public final class CategoryService {
         return categories.findActive();
     }
 
+    /** How many live categories use each palette color (index = color), for the color picker. */
+    public int[] colorUsage() throws SQLException {
+        return categories.colorUsage();
+    }
+
     /**
      * @param colorIndex the color picked by the user, or null to take the first free one
      */
@@ -75,7 +80,7 @@ public final class CategoryService {
     }
 
     /** The color used by the fewest categories; the lowest index wins a tie. Free colors have 0 uses. */
-    static int leastUsedColor(int[] usage) {
+    public static int leastUsedColor(int[] usage) {
         int best = 0;
         for (int i = 1; i < usage.length; i++) {
             if (usage[i] < usage[best]) {

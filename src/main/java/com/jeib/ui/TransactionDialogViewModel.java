@@ -76,6 +76,8 @@ public final class TransactionDialogViewModel {
             () -> currency.get() == null ? "" : "1 " + currency.get() + " =", currency);
     private final Map<String, StringProperty> errors = new LinkedHashMap<>();
     private final BooleanProperty saving = new SimpleBooleanProperty(false);
+    private final BooleanProperty addingCategory = new SimpleBooleanProperty(false);
+    private final StringProperty newCategoryName = new SimpleStringProperty("");
 
     /** @param transactions every save goes through these commands, so it can be undone */
     public TransactionDialogViewModel(TransactionCommands transactions, CategoryService categories,
@@ -249,6 +251,51 @@ public final class TransactionDialogViewModel {
         Thread.ofVirtual().name("jeib-dialog-save").start(task);
     }
 
+    // ---- "+ New category" without leaving the dialog -----------------------
+
+    /** What {@link #addCategoryNow} returns: the new category and the refreshed list. */
+    record Added(Category category, List<Category> all) {
+    }
+
+    /** Database work for {@link #addCategory}: creates it (first free color) and reloads the list. */
+    Added addCategoryNow(String name, TransactionType type) throws SQLException {
+        Category created = categories.create(name, type, null);
+        return new Added(created, categories.list());
+    }
+
+    /** Shows the inline "new category" field. */
+    public void startAddingCategory() {
+        newCategoryName.set("");
+        errors.get("category").set("");
+        addingCategory.set(true);
+    }
+
+    public void cancelAddingCategory() {
+        addingCategory.set(false);
+    }
+
+    /** Creates the typed category for the current type, selects it, and hides the inline field. */
+    public void addCategory() {
+        String name = newCategoryName.get();
+        TransactionType forType = type.get();
+        Task<Added> task = new Task<>() {
+            @Override
+            protected Added call() throws Exception {
+                return addCategoryNow(name, forType);
+            }
+        };
+        task.setOnSucceeded(event -> {
+            allCategories.setAll(task.getValue().all());
+            categoryId.set(task.getValue().category().id());
+            addingCategory.set(false);
+        });
+        task.setOnFailed(event -> {
+            Throwable e = task.getException();
+            errors.get("category").set(e instanceof ValidationException ? e.getMessage() : message(e));
+        });
+        Thread.ofVirtual().name("jeib-add-category").start(task);
+    }
+
     /** Database work for {@link #delete}; tests call it directly. */
     void deleteNow(String id) throws SQLException {
         transactions.delete(id);
@@ -293,6 +340,15 @@ public final class TransactionDialogViewModel {
 
     public ReadOnlyStringProperty titleProperty() {
         return title;
+    }
+
+    /** True while the inline "new category" field is shown. */
+    public ReadOnlyBooleanProperty addingCategoryProperty() {
+        return addingCategory;
+    }
+
+    public StringProperty newCategoryNameProperty() {
+        return newCategoryName;
     }
 
     /** True when editing an existing transaction (the dialog then offers Delete). */

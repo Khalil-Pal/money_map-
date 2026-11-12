@@ -40,6 +40,10 @@ public final class TransactionDialogController {
     @FXML private Label rateUnit;
     @FXML private DatePicker datePicker;
     @FXML private FlowPane categoryChips;
+    @FXML private HBox newCategoryBox;
+    @FXML private TextField newCategoryField;
+    @FXML private Button addCategoryButton;
+    @FXML private Button cancelCategoryButton;
     @FXML private TextField noteField;
     @FXML private Label typeError;
     @FXML private Label amountError;
@@ -116,6 +120,26 @@ public final class TransactionDialogController {
 
         saveButton.disableProperty().bind(viewModel.savingProperty());
         saveButton.setOnAction(event -> viewModel.save(onSaved));
+
+        newCategoryField.textProperty().bindBidirectional(viewModel.newCategoryNameProperty());
+        newCategoryBox.visibleProperty().bind(viewModel.addingCategoryProperty());
+        newCategoryBox.managedProperty().bind(viewModel.addingCategoryProperty());
+        viewModel.addingCategoryProperty().addListener((obs, was, adding) -> {
+            if (adding) {
+                Platform.runLater(newCategoryField::requestFocus);
+            }
+        });
+        // Enter in the field adds the category (and doesn't save the whole transaction);
+        // Esc closes only the inline field, not the dialog.
+        newCategoryField.setOnAction(event -> viewModel.addCategory());
+        newCategoryField.setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                viewModel.cancelAddingCategory();
+                event.consume();
+            }
+        });
+        addCategoryButton.setOnAction(event -> viewModel.addCategory());
+        cancelCategoryButton.setOnAction(event -> viewModel.cancelAddingCategory());
         cancelButton.setOnAction(event -> onCancel.run());
         // No "are you sure?": deleting is undoable (toast + Ctrl+Z), which is faster and safer.
         deleteButton.visibleProperty().bind(viewModel.editingProperty());
@@ -164,6 +188,11 @@ public final class TransactionDialogController {
             chip.setToggleGroup(categoryGroup);
             return chip;
         }).toList());
+        Button add = new Button("+ New category");
+        add.setId("newCategoryChip");
+        add.getStyleClass().addAll("category-chip", "new-category-chip");
+        add.setOnAction(event -> viewModel.startAddingCategory());
+        categoryChips.getChildren().add(add);
         selectCategory(viewModel.categoryIdProperty().get());
     }
 

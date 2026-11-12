@@ -87,6 +87,24 @@ public class Snap {
                         }
                     });
                     step(() -> save(scene, out + "-03j-drill-down.png"));
+                    step(() -> open(scene, "Categories"));
+                    step(() -> save(scene, out + "-03k-categories.png"));
+                    step(() -> fire(scene, "#newExpense"));
+                    step(() -> type(scene, "#nameField", "Coffee"));
+                    step(() -> save(scene, out + "-03l-new-category.png"));
+                    step(() -> fire(scene, "#categorySave"));
+                    step(() -> save(scene, out + "-03m-category-added.png"));
+                    step(() -> clickFirst(scene, ".category-row")); // Food
+                    step(() -> fire(scene, "#deleteButton"));
+                    step(() -> save(scene, out + "-03n-delete-confirm.png"));
+                    step(() -> fire(scene, "#keepButton"));
+                    step(() -> fire(scene, "#cancelButton"));
+                    step(() -> fire(scene, "#newTransaction"));
+                    step(() -> fire(scene, "#newCategoryChip"));
+                    step(() -> type(scene, "#newCategoryField", "Gym"));
+                    step(() -> fire(scene, "#addCategoryButton"));
+                    step(() -> save(scene, out + "-03o-inline-category.png"));
+                    step(() -> fire(scene, "#cancelButton"));
                     step(() -> open(scene, "Transactions"));
                     step(() -> fire(scene, "#newTransaction"));
                     step(() -> save(scene, out + "-04-light-new.png"));
@@ -151,6 +169,13 @@ public class Snap {
 
     static void type(Scene scene, String selector, String text) {
         ((javafx.scene.control.TextField) scene.lookup(selector)).setText(text);
+    }
+
+    static void clickFirst(Scene scene, String selector) {
+        Node node = scene.lookup(selector);
+        if (node != null) {
+            node.getOnMouseClicked().handle(null);
+        }
     }
 
     static void clickFirstRow(Scene scene) {

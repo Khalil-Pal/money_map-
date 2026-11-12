@@ -46,6 +46,10 @@
                 <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
                     content="M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20zM12 6a6 6 0 1 0 0 12a6 6 0 1 0 0-12zM12 10a2 2 0 1 0 0 4a2 2 0 1 0 0-4z"/></Group></graphic>
             </ToggleButton>
+            <ToggleButton text="Categories" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+                <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                    content="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42zM7.5 7.5h.01"/></Group></graphic>
+            </ToggleButton>
             <ToggleButton text="Reports" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
                 <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
                     content="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></Group></graphic>
@@ -106,6 +110,7 @@
                         <Label fx:id="comingSoon" styleClass="coming-soon" wrapText="true" maxWidth="Infinity"/>
                         <fx:include fx:id="transactionsPage" source="transactions.fxml"/>
                         <fx:include fx:id="budgetsPage" source="budgets.fxml"/>
+                        <fx:include fx:id="categoriesPage" source="categories.fxml"/>
                         <fx:include fx:id="dashboardPage" source="dashboard.fxml"/>
                     </VBox>
                 </ScrollPane>

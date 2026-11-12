@@ -186,6 +186,17 @@ class TransactionDialogViewModelTest {
     }
 
     @Test
+    void aCategoryCanBeAddedWithoutLeavingTheDialog() throws SQLException {
+        TransactionDialogViewModel viewModel = opened(null);
+
+        TransactionDialogViewModel.Added added = viewModel.addCategoryNow("Coffee", TransactionType.EXPENSE);
+
+        assertEquals("Coffee", added.category().name());
+        assertEquals(TransactionType.EXPENSE, added.category().kind());
+        assertTrue(added.all().contains(added.category()));
+    }
+
+    @Test
     void editingFillsTheFormAndSavesTheChange() throws SQLException {
         TransactionDialogViewModel adding = opened(null);
         adding.amountProperty().set("12.5");

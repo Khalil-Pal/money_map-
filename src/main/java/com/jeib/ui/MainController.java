@@ -58,6 +58,7 @@ public final class MainController {
     @FXML private Button nextMonth;
     @FXML private VBox transactionsPage;
     @FXML private VBox budgetsPage;
+    @FXML private VBox categoriesPage;
     @FXML private VBox dashboardPage;
     @FXML private Label comingSoon;
     @FXML private Button themeToggle;
@@ -191,16 +192,19 @@ public final class MainController {
         boolean dashboard = "Dashboard".equals(page);
         boolean transactions = "Transactions".equals(page);
         boolean budgets = "Budgets".equals(page);
+        boolean categories = "Categories".equals(page);
         dashboardPage.setVisible(dashboard);
         dashboardPage.setManaged(dashboard);
         comingSoon.setText(COMING.getOrDefault(page, ""));
-        boolean built = dashboard || transactions || budgets;
+        boolean built = dashboard || transactions || budgets || categories;
         comingSoon.setVisible(!built);
         comingSoon.setManaged(!built);
         transactionsPage.setVisible(transactions);
         transactionsPage.setManaged(transactions);
         budgetsPage.setVisible(budgets);
         budgetsPage.setManaged(budgets);
+        categoriesPage.setVisible(categories);
+        categoriesPage.setManaged(categories);
         navigation.pageShown(page);
     }
 }

@@ -12,6 +12,9 @@ import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
 import com.jeib.service.UndoManager;
 import com.jeib.ui.BudgetsController;
+import com.jeib.ui.CategoriesController;
+import com.jeib.ui.CategoriesViewModel;
+import com.jeib.ui.CategoryDialogViewModel;
 import com.jeib.ui.BudgetsViewModel;
 import com.jeib.ui.DashboardController;
 import com.jeib.ui.DashboardViewModel;
@@ -73,11 +76,13 @@ public class JeibApp extends Application {
         DashboardViewModel dashboard = new DashboardViewModel(budgetService, main.monthProperty(),
                 main.readyProperty(), clock);
         Navigation navigation = new Navigation(transactions);
+        CategoriesViewModel categoriesPage = new CategoriesViewModel(categoryService, main.readyProperty());
         Toasts toasts = new Toasts();
         LimitWatcher limitWatcher = new LimitWatcher(budgetService, clock, toasts::show);
         dataChanged.listen(transactions::load);
         dataChanged.listen(budgets::load);
         dataChanged.listen(dashboard::load);
+        dataChanged.listen(categoriesPage::load);
         dataChanged.listen(limitWatcher::check);
         // First snapshot for the alerts (silent), and a refresh once setup has chosen the currency.
         main.readyProperty().addListener((obs, was, ready) -> {
@@ -98,6 +103,7 @@ public class JeibApp extends Application {
                 () -> new SetupViewModel(currencyService),
                 () -> new TransactionDialogViewModel(transactionCommands, categoryService, currencyService, clock),
                 (line, mainCurrency) -> new LimitDialogViewModel(budgetService, line, mainCurrency),
+                (category, kind) -> new CategoryDialogViewModel(categoryService, category, kind),
                 dataChanged, toasts, history);
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
@@ -108,6 +114,9 @@ public class JeibApp extends Application {
             }
             if (type == DashboardController.class) {
                 return new DashboardController(dashboard, navigation, dialogs);
+            }
+            if (type == CategoriesController.class) {
+                return new CategoriesController(categoriesPage, dialogs);
             }
             if (type == BudgetsController.class) {
                 return new BudgetsController(budgets, dialogs);

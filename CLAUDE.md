@@ -269,7 +269,15 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   (`Navigation`, `TransactionsViewModel.filterBy`, "Showing only X · Show all" bar; a sidebar click
   shows all again), cards → Transactions/Budgets or the limit dialog. The old placeholder dashboard
   (DB status + category chips) is gone. 238 tests passing.
-  Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
+  Then categories UI, branch `feature/categories-ui` (from `feature/limits`): a Categories page
+  in the sidebar (expense and income lists, "+ New", rows open the dialog) and
+  `category-dialog.fxml` (`CategoryDialogViewModel`): name, a 14-color picker (colors used by
+  other categories are greyed out until all 14 are taken), delete with a confirmation step
+  (it moves transactions to Other and isn't undoable; built-ins can't be deleted). The
+  transaction dialog has an inline "+ New category" (name only, first free color, selected
+  right away). 245 tests passing.
+  Next (before Dec 1): a small Settings page (edit exchange rates, remember the theme),
+  automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
   Open: changing the main currency must convert existing limits (no UI for that change yet).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).

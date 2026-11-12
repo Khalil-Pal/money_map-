@@ -1,7 +1,9 @@
 package com.jeib.ui;
 
+import com.jeib.model.Category;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
+import com.jeib.model.TransactionType;
 import com.jeib.service.BudgetService.LimitLine;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -22,6 +24,7 @@ public final class Dialogs {
     private final Supplier<SetupViewModel> setupViewModels;
     private final Supplier<TransactionDialogViewModel> transactionViewModels;
     private final BiFunction<LimitLine, SupportedCurrency, LimitDialogViewModel> limitViewModels;
+    private final BiFunction<Category, TransactionType, CategoryDialogViewModel> categoryViewModels;
     private final Runnable afterChange;
     private final Toasts toasts;
     private final HistoryViewModel history;
@@ -33,12 +36,14 @@ public final class Dialogs {
     public Dialogs(DialogHost host, Supplier<SetupViewModel> setupViewModels,
                    Supplier<TransactionDialogViewModel> transactionViewModels,
                    BiFunction<LimitLine, SupportedCurrency, LimitDialogViewModel> limitViewModels,
+                   BiFunction<Category, TransactionType, CategoryDialogViewModel> categoryViewModels,
                    Runnable afterChange,
                    Toasts toasts, HistoryViewModel history) {
         this.host = host;
         this.setupViewModels = setupViewModels;
         this.transactionViewModels = transactionViewModels;
         this.limitViewModels = limitViewModels;
+        this.categoryViewModels = categoryViewModels;
         this.afterChange = afterChange;
         this.toasts = toasts;
         this.history = history;
@@ -70,7 +75,10 @@ public final class Dialogs {
         }
         TransactionDialogViewModel viewModel = transactionViewModels.get();
         prepare.accept(viewModel);
-        host.show(load("transaction-dialog.fxml", new TransactionDialogController(viewModel, host::close, () -> {
+        host.show(load("transaction-dialog.fxml", new TransactionDialogController(viewModel, () -> {
+            host.close();
+            afterChange.run(); // a category may have been added inline
+        }, () -> {
             host.close();
             afterChange.run();
         }, () -> {
@@ -92,6 +100,20 @@ public final class Dialogs {
                     host.close();
                     afterChange.run();
                 })));
+    }
+
+    /** New category of {@code kind} (editing null), or edit / delete {@code editing}. */
+    public void openCategory(Category editing, TransactionType kind) {
+        if (host.isOpen()) {
+            return;
+        }
+        CategoryDialogViewModel viewModel = categoryViewModels.apply(editing, kind);
+        host.show(load("category-dialog.fxml", new CategoryDialogController(viewModel, host::close, message -> {
+            host.close();
+            afterChange.run();
+            toasts.show(message);
+        })));
+        viewModel.load();
     }
 
     private static Parent load(String fxml, Object controller) {

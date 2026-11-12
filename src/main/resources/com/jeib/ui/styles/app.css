@@ -916,6 +916,69 @@
     -fx-alignment: center-left;
 }
 
+/* ---- Categories ---------------------------------------------------------- */
+
+.category-row {
+    -fx-spacing: 10;
+}
+
+.row-action {
+    -fx-text-fill: -primary-text;
+    -fx-font-size: 13px;
+}
+
+.new-category-chip {
+    -fx-text-fill: -primary-text;
+    -fx-border-style: segments(4, 3);
+}
+
+/* Color picker: 14 round swatches; used ones greyed out (color system §5, rule 2). */
+.color-option {
+    -fx-background-color: transparent;
+    -fx-background-radius: 999;
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-radius: 999;
+    -fx-padding: 3;
+    -fx-cursor: hand;
+}
+
+.color-option:hover {
+    -fx-border-color: -border-strong;
+}
+
+.color-option:selected {
+    -fx-border-color: -text-primary;
+}
+
+.color-option:disabled {
+    -fx-opacity: 0.25;
+}
+
+.color-option:focus-visible {
+    -fx-border-color: -focus-ring;
+}
+
+.color-dot {
+    -fx-min-width: 22;
+    -fx-min-height: 22;
+    -fx-max-width: 22;
+    -fx-max-height: 22;
+    -fx-background-radius: 999;
+}
+
+.confirm-box {
+    -fx-background-color: -danger-tint;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12 10 14;
+    -fx-spacing: 12;
+    -fx-alignment: center-left;
+}
+
+.confirm-box .label {
+    -fx-text-fill: -danger-text;
+}
+
 /* ---- Toasts ------------------------------------------------------------ */
 
 .toast {
