@@ -84,8 +84,18 @@ idempotent (client-generated UUIDs).
 
 ## Getting started
 
-Installers will be published on the GitHub Releases page starting with v1.0 (planned for
-December 20, 2026). Users won't need Java installed.
+### Try it on Windows (test build)
+
+1. Download `Jeib-0.1.0-windows.zip` and unzip it anywhere (for example, your Desktop).
+2. Open the `Jeib` folder and double-click **Jeib.exe**. You don't need Java.
+3. Windows may say **"Windows protected your PC"**, because the test build isn't signed yet.
+   Click **More info → Run anyway**. This only happens the first time.
+4. Pick your language (English or العربية) and your main currency, and start adding.
+
+Your data stays on your computer in `%APPDATA%\Jeib`. Jeib makes a backup there every day
+(Settings → Backups). Found a problem? Settings → Help → **Report a problem**.
+
+Proper installers will be on the GitHub Releases page from v1.0 (planned for December 20, 2026).
 
 ### Build from source
 

@@ -324,9 +324,17 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   Settings has Backups (list, Back up now, Restore with confirmation, open folder) and Help cards.
   Uses `java.awt.Desktop` to open the browser/Explorer, so a jlink-trimmed runtime must keep
   `java.desktop`. 283 tests passing.
-  Next (before Dec 1): the zipped `Jeib.exe`.
-- Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
-  with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
+  Then packaging, branch `feature/packaging`: `scripts/package-windows.ps1` reads the version from
+  pom.xml, builds a trimmed runtime with jlink (java.base, desktop, sql, logging, naming,
+  management, xml, scripting, jdk.unsupported, jdk.localedata with en/ar/ru/he, charsets, zipfs)
+  and jpackage `--runtime-image`, then zips `dist\Jeib-<version>-windows.zip`. 76 MB app image
+  (was 178 MB), 59 MB zip. Checked by running the real Jeib.exe with APPDATA pointed at a temp
+  folder: opens in Arabic with Arabic month names, makes its daily backup, no crash log.
+  README has tester steps (including the unsigned-app SmartScreen warning).
+  **All Dec 1 items are built (Nov 12).** Next: daily use and fixing what it finds; then the
+  monthly report + Excel/PDF before Dec 31; the design overhaul; re-plan the rest of v1.0.
+- Not done yet: Inter font isn't bundled (falls back to Segoe UI); real installers need the WiX
+  Toolset; the exe isn't code-signed (Windows shows a SmartScreen warning the first time).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a
   Design canvas artifact: https://claude.ai/artifact/7Ju8TzxGXtYCpKLRMvBWFu. Round 2 covers the
   remaining screens.
