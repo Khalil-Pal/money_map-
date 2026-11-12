@@ -1005,6 +1005,16 @@
     -fx-padding: 6 10 6 10;
 }
 
+.backup-rows {
+    -fx-spacing: 2;
+}
+
+.backup-row {
+    -fx-alignment: center-left;
+    -fx-padding: 6 0 6 0;
+    -fx-border-color: transparent transparent -border transparent;
+}
+
 .setup-top {
     -fx-alignment: center-left;
 }

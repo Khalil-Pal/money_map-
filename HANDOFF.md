@@ -198,6 +198,19 @@ checked: the language menu popup (scene snapshots don't include popups) and the 
 fade. Small gap: in Arabic, quick add matches Arabic category names only ("250 food" goes to
 Other); could also match the default categories' English names later.
 
+Nov 12 (night): PR #3 merged everything into `main`; old branches deleted locally (Khalil deletes
+the remote ones). `main` has a ruleset (no deletion, no force push, PR required, 0 approvals).
+Backups + crash log + Report a problem / Send feedback on `feature/backup-crash-log`. Not checked
+live: the app reload after a real restore (Snap's rebuild hook is a no-op; the file restore is
+tested), and opening the browser. Last Dec 1 item: package the zipped `Jeib.exe`.
+
+Nov 12 (end): packaging done on `feature/packaging` (stacked on `feature/backup-crash-log`).
+Every Dec 1 item is built, about 19 days early. Testing the exe without touching real data:
+set `$env:APPDATA` to a temp folder in PowerShell, then Start-Process dist\Jeib\Jeib.exe (the
+child inherits it). Next: Khalil uses it daily and sends the zip to 2-3 survey testers; ask them
+to read the Arabic and to try Report a problem. Then: monthly report + Excel/PDF (by Dec 31),
+design overhaul, and on Dec 1 re-plan what's left of v1.0 (unlikely to all fit by Dec 20).
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

@@ -22,6 +22,8 @@ public final class SettingsController {
     private final MainViewModel main;
     private final Path dataFile;
     private final LanguageSwitcher languages;
+    private final BackupsViewModel backups;
+    private final com.jeib.service.CrashLog crashLog;
 
     @FXML private HBox languageBox;
     @FXML private ToggleButton themeLight;
@@ -36,17 +38,30 @@ public final class SettingsController {
     @FXML private Button saveRates;
     @FXML private Label error;
     @FXML private Label dataPath;
+    @FXML private Button openDataFolder;
+    @FXML private VBox backupRows;
+    @FXML private HBox restoreBox;
+    @FXML private Label restoreText;
+    @FXML private Button restoreCancel;
+    @FXML private Button restoreConfirm;
+    @FXML private Label backupError;
+    @FXML private Button backupNow;
+    @FXML private Button openBackups;
+    @FXML private Button reportProblem;
+    @FXML private Button sendFeedback;
 
     private final ToggleGroup themeGroup = new ToggleGroup();
     private final ToggleGroup currencyGroup = new ToggleGroup();
     private boolean updating; // true while the view sets toggles itself, so listeners don't react
 
     public SettingsController(SettingsViewModel viewModel, MainViewModel main, Path dataFile,
-                              LanguageSwitcher languages) {
+                              LanguageSwitcher languages, BackupsViewModel backups, com.jeib.service.CrashLog crashLog) {
         this.viewModel = viewModel;
         this.main = main;
         this.dataFile = dataFile;
         this.languages = languages;
+        this.backups = backups;
+        this.crashLog = crashLog;
     }
 
     @FXML
@@ -116,6 +131,64 @@ public final class SettingsController {
         error.managedProperty().bind(error.visibleProperty());
 
         dataPath.setText(dataFile.toString());
+        openDataFolder.setOnAction(event -> Links.openFolder(dataFile.getParent()));
+        wireBackups();
+        reportProblem.setOnAction(event -> Links.browse(
+                com.jeib.service.ProblemReport.problemUrl(crashLog.lastLines(40))));
+        sendFeedback.setOnAction(event -> Links.browse(com.jeib.service.ProblemReport.feedbackUrl()));
+    }
+
+    private void wireBackups() {
+        backups.backups().addListener((javafx.collections.ListChangeListener<com.jeib.service.BackupService.Backup>)
+                change -> renderBackups());
+        renderBackups();
+        restoreBox.visibleProperty().bind(backups.pendingRestoreProperty().isNotNull());
+        restoreBox.managedProperty().bind(restoreBox.visibleProperty());
+        backups.pendingRestoreProperty().addListener((obs, old, backup) -> {
+            if (backup != null) {
+                restoreText.setText(t("Restore the backup from {0}? Everything you changed after that day will be replaced. "
+                        + "Your data right now is saved first, in the backups folder.", longDate(backup.day())));
+            }
+        });
+        restoreCancel.setOnAction(event -> backups.cancelRestore());
+        restoreConfirm.setOnAction(event -> backups.confirmRestore());
+        restoreConfirm.disableProperty().bind(backups.busyProperty());
+        backupNow.setOnAction(event -> backups.backUpNow());
+        backupNow.disableProperty().bind(backups.busyProperty());
+        openBackups.setOnAction(event -> Links.openFolder(backups.folder()));
+        backupError.textProperty().bind(backups.errorProperty());
+        backupError.visibleProperty().bind(Bindings.isNotEmpty(backups.errorProperty()));
+        backupError.managedProperty().bind(backupError.visibleProperty());
+    }
+
+    private void renderBackups() {
+        backupRows.getChildren().clear();
+        if (backups.backups().isEmpty()) {
+            Label none = new Label(t("No backups yet. The first one is made today."));
+            none.getStyleClass().add("muted");
+            backupRows.getChildren().add(none);
+            return;
+        }
+        for (com.jeib.service.BackupService.Backup backup : backups.backups()) {
+            Label day = new Label(longDate(backup.day()));
+            Label size = new Label(com.jeib.i18n.Messages.ltr(Math.max(1, backup.sizeBytes() / 1024) + " KB"));
+            size.getStyleClass().add("muted");
+            javafx.scene.layout.Region gap = new javafx.scene.layout.Region();
+            HBox.setHgrow(gap, javafx.scene.layout.Priority.ALWAYS);
+            Button restore = new Button(t("Restore"));
+            restore.getStyleClass().add("button-link");
+            restore.setOnAction(event -> backups.askRestore(backup));
+            HBox row = new HBox(12, day, size, gap, restore);
+            row.getStyleClass().add("backup-row");
+            backupRows.getChildren().add(row);
+        }
+    }
+
+    private static String longDate(java.time.LocalDate day) {
+        return java.time.format.DateTimeFormatter.ofPattern(
+                        com.jeib.i18n.Messages.rightToLeft() ? "EEEE، d MMMM yyyy" : "EEEE, d MMMM yyyy",
+                        com.jeib.i18n.Messages.locale())
+                .format(day);
     }
 
     private void selectCurrency(SupportedCurrency currency) {

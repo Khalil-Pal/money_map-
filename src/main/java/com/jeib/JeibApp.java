@@ -7,13 +7,16 @@ import com.jeib.repository.BudgetRepository;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.SettingsRepository;
 import com.jeib.repository.TransactionRepository;
+import com.jeib.service.BackupService;
 import com.jeib.service.BudgetService;
+import com.jeib.service.CrashLog;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.PreferencesService;
 import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
 import com.jeib.service.UndoManager;
+import com.jeib.ui.BackupsViewModel;
 import com.jeib.ui.BudgetsController;
 import com.jeib.ui.CategoriesController;
 import com.jeib.ui.CategoriesViewModel;
@@ -68,8 +71,8 @@ public class JeibApp extends Application {
      * @param clock     the system clock in the app; a fixed one in tools and tests
      * @param rebuildIn called after the user picks another language, to rebuild the window in it
      */
-    public static MainWindow createMainWindow(Database database, Clock clock, Consumer<Language> rebuildIn)
-            throws IOException {
+    public static MainWindow createMainWindow(Database database, Clock clock, Consumer<Language> rebuildIn,
+                                              CrashLog crashLog) throws IOException {
         PreferencesService preferences = new PreferencesService(new SettingsRepository(database));
         LanguageSwitcher languages = new LanguageSwitcher(preferences, rebuildIn);
         CategoryRepository categoryRepository = new CategoryRepository(database, clock);
@@ -114,6 +117,17 @@ public class JeibApp extends Application {
         HistoryViewModel history = new HistoryViewModel(transactionCommands.history(), dataChanged, toasts::show);
         SettingsViewModel settings = new SettingsViewModel(currencyService, budgetService, dataChanged, toasts::show);
         dataChanged.listen(settings::load); // a rate can also change in the transaction dialog
+        // After a restore every view-model must read the new file: rebuild the window like a language switch.
+        BackupsViewModel backups = new BackupsViewModel(new BackupService(database, clock),
+                () -> rebuildIn.accept(Messages.language()), toasts::show);
+        main.readyProperty().addListener((obs, was, ready) -> {
+            if (ready) {
+                backups.backupIfNeeded(); // the daily copy, once the schema is up to date
+            }
+        });
+        crashLog.onCrash(error -> javafx.application.Platform.runLater(() -> toasts.show(
+                Messages.t("Something went wrong. Details were saved to the crash log."), Messages.t("Report"),
+                () -> com.jeib.ui.Dialogs.browse(com.jeib.service.ProblemReport.problemUrl(crashLog.lastLines(40))))));
         main.readyProperty().addListener((obs, was, ready) -> {
             if (ready) {
                 settings.load();
@@ -140,7 +154,7 @@ public class JeibApp extends Application {
                 return new DashboardController(dashboard, navigation, dialogs);
             }
             if (type == SettingsController.class) {
-                return new SettingsController(settings, main, database.file(), languages);
+                return new SettingsController(settings, main, database.file(), languages, backups, crashLog);
             }
             if (type == CategoriesController.class) {
                 return new CategoriesController(categoriesPage, dialogs);
@@ -160,6 +174,7 @@ public class JeibApp extends Application {
     }
 
     private Database database;
+    private CrashLog crashLog;
     private Stage stage;
     // The local time zone decides "today" and which month the app opens on.
     private final Clock clock = Clock.systemDefaultZone();
@@ -168,6 +183,9 @@ public class JeibApp extends Application {
     @Override
     public void init() {
         database = Database.openDefault();
+        // Errors nothing else catches go to logs/jeib.log from here on (feature 37).
+        crashLog = new CrashLog(database.file().getParent(), clock);
+        crashLog.install();
         Messages.setLanguage(savedLanguage(database));
     }
 
@@ -189,7 +207,7 @@ public class JeibApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         this.stage = stage;
-        MainWindow window = createMainWindow(database, clock, this::rebuildIn);
+        MainWindow window = createMainWindow(database, clock, this::rebuildIn, crashLog);
 
         stage.setScene(new Scene(window.root(), 1280, 800));
         stage.setTitle("Jeib");
@@ -208,7 +226,7 @@ public class JeibApp extends Application {
         com.jeib.ui.ThemeTransition.fadeOut(stage.getScene().getRoot(), () -> {
             Messages.setLanguage(language);
             try {
-                MainWindow window = createMainWindow(database, clock, this::rebuildIn);
+                MainWindow window = createMainWindow(database, clock, this::rebuildIn, crashLog);
                 stage.getScene().setRoot(window.root());
                 com.jeib.ui.ThemeTransition.fadeIn(window.root());
                 window.viewModel().load();

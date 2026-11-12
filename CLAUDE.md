@@ -313,10 +313,28 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   is gone. Motion (`ThemeTransition`): the new theme is revealed as a circle growing from the
   theme button over a snapshot of the old one (520 ms, emphasized ease-out), the icon turns into
   the next one, and a language switch fades out/in. Arabic names: الوضع النهاري / الوضع الليلي /
-  تلقائي. No accent-color picker (decided: Jeib stays orange). 273 tests passing.
-  Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
-- Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
-  with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
+  تلقائي. No accent-color picker (decided: Jeib stays orange). Merged to `main` via PR #3 (Nov 12).
+  Then backups + crash log, branch `feature/backup-crash-log`: `BackupService` makes
+  `backups/jeib-YYYY-MM-DD.db` next to the database on the first launch of each day (SQLite
+  `VACUUM INTO` to a `.part` file, then an atomic rename) and keeps the newest 7; restore saves
+  the current file as `jeib-before-restore-<time>.db` first, then rebuilds the window.
+  `CrashLog` (installed in `JeibApp.init`) writes uncaught errors to `logs/jeib.log` (rotated at
+  512 KB) and shows a toast with "Report". `ProblemReport` builds prefilled GitHub-issue links
+  (Report a problem with the log tail, Send feedback); nothing is sent by the app itself.
+  Settings has Backups (list, Back up now, Restore with confirmation, open folder) and Help cards.
+  Uses `java.awt.Desktop` to open the browser/Explorer, so a jlink-trimmed runtime must keep
+  `java.desktop`. 283 tests passing.
+  Then packaging, branch `feature/packaging`: `scripts/package-windows.ps1` reads the version from
+  pom.xml, builds a trimmed runtime with jlink (java.base, desktop, sql, logging, naming,
+  management, xml, scripting, jdk.unsupported, jdk.localedata with en/ar/ru/he, charsets, zipfs)
+  and jpackage `--runtime-image`, then zips `dist\Jeib-<version>-windows.zip`. 76 MB app image
+  (was 178 MB), 59 MB zip. Checked by running the real Jeib.exe with APPDATA pointed at a temp
+  folder: opens in Arabic with Arabic month names, makes its daily backup, no crash log.
+  README has tester steps (including the unsigned-app SmartScreen warning).
+  **All Dec 1 items are built (Nov 12).** Next: daily use and fixing what it finds; then the
+  monthly report + Excel/PDF before Dec 31; the design overhaul; re-plan the rest of v1.0.
+- Not done yet: Inter font isn't bundled (falls back to Segoe UI); real installers need the WiX
+  Toolset; the exe isn't code-signed (Windows shows a SmartScreen warning the first time).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a
   Design canvas artifact: https://claude.ai/artifact/7Ju8TzxGXtYCpKLRMvBWFu. Round 2 covers the
   remaining screens.
