@@ -13,6 +13,8 @@ import com.jeib.service.TransactionService;
 import com.jeib.service.UndoManager;
 import com.jeib.ui.BudgetsController;
 import com.jeib.ui.BudgetsViewModel;
+import com.jeib.ui.DashboardController;
+import com.jeib.ui.DashboardViewModel;
 import com.jeib.ui.DataChanged;
 import com.jeib.ui.DialogHost;
 import com.jeib.ui.Dialogs;
@@ -21,6 +23,7 @@ import com.jeib.ui.LimitDialogViewModel;
 import com.jeib.ui.LimitWatcher;
 import com.jeib.ui.MainController;
 import com.jeib.ui.MainViewModel;
+import com.jeib.ui.Navigation;
 import com.jeib.ui.QuickAddViewModel;
 import com.jeib.ui.SetupViewModel;
 import com.jeib.ui.Toasts;
@@ -67,10 +70,14 @@ public class JeibApp extends Application {
         TransactionsViewModel transactions = new TransactionsViewModel(transactionService, transactionCommands,
                 categoryService, main.monthProperty(), main.readyProperty(), dataChanged);
         BudgetsViewModel budgets = new BudgetsViewModel(budgetService, main.monthProperty(), main.readyProperty());
+        DashboardViewModel dashboard = new DashboardViewModel(budgetService, main.monthProperty(),
+                main.readyProperty(), clock);
+        Navigation navigation = new Navigation(transactions);
         Toasts toasts = new Toasts();
         LimitWatcher limitWatcher = new LimitWatcher(budgetService, clock, toasts::show);
         dataChanged.listen(transactions::load);
         dataChanged.listen(budgets::load);
+        dataChanged.listen(dashboard::load);
         dataChanged.listen(limitWatcher::check);
         // First snapshot for the alerts (silent), and a refresh once setup has chosen the currency.
         main.readyProperty().addListener((obs, was, ready) -> {
@@ -97,7 +104,10 @@ public class JeibApp extends Application {
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
-                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd);
+                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd, navigation);
+            }
+            if (type == DashboardController.class) {
+                return new DashboardController(dashboard, navigation, dialogs);
             }
             if (type == BudgetsController.class) {
                 return new BudgetsController(budgets, dialogs);

@@ -78,6 +78,15 @@ public class Snap {
                     step(() -> type(scene, "#limitField", "2000"));
                     step(() -> fire(scene, "#limitSave"));
                     step(() -> save(scene, out + "-03h-food-limit-alert.png"));
+                    step(() -> open(scene, "Dashboard"));
+                    step(() -> save(scene, out + "-03i-dashboard-limits.png"));
+                    step(() -> {
+                        Node legendRow = scene.lookup(".legend-row");
+                        if (legendRow != null) {
+                            legendRow.getOnMouseClicked().handle(null); // drill down into the biggest category
+                        }
+                    });
+                    step(() -> save(scene, out + "-03j-drill-down.png"));
                     step(() -> open(scene, "Transactions"));
                     step(() -> fire(scene, "#newTransaction"));
                     step(() -> save(scene, out + "-04-light-new.png"));
@@ -108,6 +117,8 @@ public class Snap {
                     step(() -> fire(scene, "#cancelButton"));
                     step(() -> open(scene, "Budgets"));
                     step(() -> save(scene, out + "-08b-dark-budgets.png"));
+                    step(() -> open(scene, "Dashboard"));
+                    step(() -> save(scene, out + "-08c-dark-dashboard.png"));
                     step(() -> open(scene, "Transactions"));
                     step(vm::previousMonth);
                     step(() -> {

@@ -1,5 +1,6 @@
 package com.jeib.ui;
 
+import com.jeib.model.Category;
 import com.jeib.service.CategoryService;
 import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
@@ -7,11 +8,14 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -20,7 +24,8 @@ import javafx.concurrent.Task;
 
 /**
  * State for the Transactions page: the selected month's transactions, newest first. Reloads by
- * itself when the month changes (top bar ◀ ▶) or when the database becomes ready.
+ * itself when the month changes (top bar ◀ ▶) or when the database becomes ready. Can be narrowed
+ * to one category (the Dashboard's drill-downs).
  */
 public final class TransactionsViewModel {
 
@@ -36,6 +41,7 @@ public final class TransactionsViewModel {
     private final BooleanProperty loading = new SimpleBooleanProperty(false);
     private final StringProperty message = new SimpleStringProperty("");
     private final StringProperty summary = new SimpleStringProperty("");
+    private final ObjectProperty<Category> filter = new SimpleObjectProperty<>();
 
     /**
      * @param month the month chosen in the top bar (shared with the other pages)
@@ -62,24 +68,40 @@ public final class TransactionsViewModel {
         });
     }
 
+    /** Shows only {@code category}'s transactions, or all of them for null. */
+    public void filterBy(Category category) {
+        if (Objects.equals(filter.get(), category)) {
+            return;
+        }
+        filter.set(category);
+        load();
+    }
+
     /** Loads the current month in the background. */
     public void load() {
         YearMonth requested = month.get();
+        Category only = filter.get();
         Task<List<TransactionRow>> task = new Task<>() {
             @Override
             protected List<TransactionRow> call() throws Exception {
-                return TransactionRow.from(transactions.listMonth(requested), categories.list());
+                var list = transactions.listMonth(requested);
+                if (only != null) {
+                    list = list.stream().filter(t -> t.categoryId().equals(only.id())).toList();
+                }
+                return TransactionRow.from(list, categories.list());
             }
         };
         task.setOnSucceeded(event -> {
             // Clicking ◀ ▶ quickly starts several loads; only the one for the month on screen counts.
-            if (!requested.equals(month.get())) {
+            if (!requested.equals(month.get()) || !Objects.equals(only, filter.get())) {
                 return;
             }
             rows.setAll(task.getValue());
             int count = rows.size();
-            summary.set(count == 0 ? "" : count == 1 ? "1 transaction" : count + " transactions");
-            message.set(count == 0 ? "No transactions in " + MONTH.format(requested) + "." : "");
+            String in = only == null ? "" : " in " + only.name();
+            summary.set(count == 0 ? "" : (count == 1 ? "1 transaction" : count + " transactions") + in);
+            message.set(count == 0 ? "No " + (only == null ? "" : only.name() + " ") + "transactions in "
+                    + MONTH.format(requested) + "." : "");
             loading.set(false);
         });
         task.setOnFailed(event -> {
@@ -117,6 +139,11 @@ public final class TransactionsViewModel {
 
     public ObservableList<TransactionRow> rows() {
         return rows;
+    }
+
+    /** The category the list is narrowed to, or null for all. */
+    public ReadOnlyObjectProperty<Category> filterProperty() {
+        return filter;
     }
 
     public ReadOnlyBooleanProperty loadingProperty() {

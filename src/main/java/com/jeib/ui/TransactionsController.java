@@ -4,6 +4,7 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
@@ -19,6 +20,9 @@ public final class TransactionsController {
     private final Toasts toasts;
     private final HistoryViewModel history;
 
+    @FXML private HBox filterBar;
+    @FXML private HBox filterChip;
+    @FXML private Button showAll;
     @FXML private Label summary;
     @FXML private HBox header;
     @FXML private VBox rowsBox;
@@ -39,6 +43,16 @@ public final class TransactionsController {
         showOnlyWhen(message, Bindings.isNotEmpty(viewModel.messageProperty()));
         showOnlyWhen(summary, Bindings.isNotEmpty(viewModel.summaryProperty()));
         showOnlyWhen(header, Bindings.isNotEmpty(viewModel.rows()));
+
+        showOnlyWhen(filterBar, viewModel.filterProperty().isNotNull());
+        viewModel.filterProperty().addListener((obs, old, category) -> {
+            if (category != null) {
+                Region dot = new Region();
+                dot.getStyleClass().addAll("swatch", "swatch-" + category.colorIndex());
+                filterChip.getChildren().setAll(dot, new Label(category.name()));
+            }
+        });
+        showAll.setOnAction(event -> viewModel.filterBy(null));
 
         viewModel.rows().addListener((ListChangeListener<TransactionRow>) change -> render());
         render();

@@ -1,11 +1,7 @@
 package com.jeib.ui;
 
-import com.jeib.model.Category;
-import com.jeib.model.TransactionType;
 import java.util.Map;
-import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.beans.binding.Bindings;
@@ -19,9 +15,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.SVGPath;
@@ -47,6 +41,7 @@ public final class MainController {
     private final Toasts toasts;
     private final HistoryViewModel history;
     private final QuickAddViewModel quickAddViewModel;
+    private final Navigation navigation;
 
     @FXML private StackPane root;
     @FXML private BorderPane appContent;
@@ -63,12 +58,8 @@ public final class MainController {
     @FXML private Button nextMonth;
     @FXML private VBox transactionsPage;
     @FXML private VBox budgetsPage;
-    @FXML private Label pageSubtitle;
-    @FXML private VBox dashboardCards;
+    @FXML private VBox dashboardPage;
     @FXML private Label comingSoon;
-    @FXML private Label databaseStatus;
-    @FXML private FlowPane expenseChips;
-    @FXML private FlowPane incomeChips;
     @FXML private Button themeToggle;
     @FXML private SVGPath themeIcon;
 
@@ -78,13 +69,14 @@ public final class MainController {
             new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
 
     public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs, Toasts toasts,
-                          HistoryViewModel history, QuickAddViewModel quickAddViewModel) {
+                          HistoryViewModel history, QuickAddViewModel quickAddViewModel, Navigation navigation) {
         this.viewModel = viewModel;
         this.dialogHost = dialogHost;
         this.dialogs = dialogs;
         this.toasts = toasts;
         this.history = history;
         this.quickAddViewModel = quickAddViewModel;
+        this.navigation = navigation;
     }
 
     @FXML
@@ -113,13 +105,9 @@ public final class MainController {
             }
         });
 
-        databaseStatus.textProperty().bind(viewModel.statusProperty());
         monthLabel.textProperty().bind(viewModel.monthLabel());
         previousMonth.setOnAction(event -> viewModel.previousMonth());
         nextMonth.setOnAction(event -> viewModel.nextMonth());
-
-        viewModel.categories().addListener((ListChangeListener<Category>) change -> renderCategories());
-        renderCategories();
 
         // Keep one nav item selected at all times, and swap the page when it changes.
         navGroup.selectedToggleProperty().addListener((obs, previous, current) -> {
@@ -130,6 +118,10 @@ public final class MainController {
             }
         });
         showPage(navGroup.getSelectedToggle());
+        navigation.attach(page -> navGroup.getToggles().stream()
+                .filter(toggle -> page.equals(((ToggleButton) toggle).getText()))
+                .findFirst()
+                .ifPresent(navGroup::selectToggle));
 
         themeToggle.setOnAction(event -> viewModel.toggleTheme());
         root.sceneProperty().addListener((obs, oldScene, scene) -> {
@@ -199,11 +191,8 @@ public final class MainController {
         boolean dashboard = "Dashboard".equals(page);
         boolean transactions = "Transactions".equals(page);
         boolean budgets = "Budgets".equals(page);
-        pageSubtitle.setText(dashboard ? "The app skeleton: theme, navigation, and the local database." : "");
-        pageSubtitle.setVisible(dashboard);
-        pageSubtitle.setManaged(dashboard);
-        dashboardCards.setVisible(dashboard);
-        dashboardCards.setManaged(dashboard);
+        dashboardPage.setVisible(dashboard);
+        dashboardPage.setManaged(dashboard);
         comingSoon.setText(COMING.getOrDefault(page, ""));
         boolean built = dashboard || transactions || budgets;
         comingSoon.setVisible(!built);
@@ -212,26 +201,6 @@ public final class MainController {
         transactionsPage.setManaged(transactions);
         budgetsPage.setVisible(budgets);
         budgetsPage.setManaged(budgets);
-    }
-
-    private void renderCategories() {
-        expenseChips.getChildren().setAll(viewModel.categories().stream()
-                .filter(c -> c.kind() == TransactionType.EXPENSE).map(MainController::chip).toList());
-        incomeChips.getChildren().setAll(viewModel.categories().stream()
-                .filter(c -> c.kind() == TransactionType.INCOME).map(MainController::chip).toList());
-    }
-
-    private static Node chip(Category category) {
-        Region swatch = new Region();
-        swatch.getStyleClass().addAll("swatch", "swatch-" + category.colorIndex());
-        Label name = new Label(category.name());
-        HBox chip = new HBox(swatch, name);
-        chip.getStyleClass().add("chip");
-        if (category.builtIn()) {
-            Label builtIn = new Label("built-in");
-            builtIn.getStyleClass().add("chip-note");
-            chip.getChildren().add(builtIn);
-        }
-        return chip;
+        navigation.pageShown(page);
     }
 }

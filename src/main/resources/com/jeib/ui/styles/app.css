@@ -770,6 +770,152 @@
     -fx-padding: 10 14 10 14;
 }
 
+/* ---- Dashboard ----------------------------------------------------------- */
+
+.dashboard-page {
+    -fx-spacing: 16;
+}
+
+.kpi-row,
+.dashboard-row {
+    -fx-spacing: 16;
+}
+
+.kpi-card {
+    -fx-spacing: 6;
+}
+
+.kpi-caption {
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -text-secondary;
+}
+
+.kpi-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: 600;
+}
+
+.kpi-value-danger {
+    -fx-font-size: 26px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -danger-text;
+}
+
+.kpi-danger-note {
+    -fx-text-fill: -danger-text;
+}
+
+.kpi-sub {
+    -fx-alignment: center-left;
+}
+
+.card-header {
+    -fx-alignment: center-left;
+}
+
+.chart-body {
+    -fx-alignment: center-left;
+    -fx-padding: 8 0 0 0;
+}
+
+.donut {
+    -fx-min-width: 190;
+    -fx-min-height: 190;
+}
+
+.donut-track {
+    -fx-fill: transparent;
+    -fx-stroke: -bg-surface-alt;
+    -fx-stroke-width: 22;
+}
+
+.donut-slice {
+    -fx-fill: transparent;
+    -fx-stroke-width: 22;
+    -fx-stroke-line-cap: butt;
+}
+
+.slice-0 { -fx-stroke: -chart-0; }
+.slice-1 { -fx-stroke: -chart-1; }
+.slice-2 { -fx-stroke: -chart-2; }
+.slice-3 { -fx-stroke: -chart-3; }
+.slice-4 { -fx-stroke: -chart-4; }
+.slice-5 { -fx-stroke: -chart-5; }
+.slice-6 { -fx-stroke: -chart-6; }
+.slice-7 { -fx-stroke: -chart-7; }
+.slice-8 { -fx-stroke: -chart-8; }
+.slice-9 { -fx-stroke: -chart-9; }
+.slice-10 { -fx-stroke: -chart-10; }
+.slice-11 { -fx-stroke: -chart-11; }
+.slice-12 { -fx-stroke: -chart-12; }
+.slice-13 { -fx-stroke: -chart-13; }
+
+.donut-center {
+    -fx-alignment: center;
+}
+
+.donut-total {
+    -fx-font-size: 15px;
+    -fx-font-weight: 600;
+}
+
+.legend-row {
+    -fx-padding: 7 10 7 10;
+    -fx-background-radius: 8;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+
+.legend-row:hover {
+    -fx-background-color: -row-hover;
+}
+
+.legend-row:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+}
+
+.legend-percent {
+    -fx-min-width: 40;
+    -fx-alignment: center-right;
+    -fx-text-fill: -text-secondary;
+}
+
+.limit-mini-top,
+.limit-mini-bottom {
+    -fx-alignment: center-left;
+}
+
+.card .button-secondary {
+    -fx-pref-height: 34;
+    -fx-padding: 0 14 0 14;
+}
+
+.button-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -primary-text;
+    -fx-font-weight: 500;
+    -fx-padding: 4 6 4 6;
+    -fx-cursor: hand;
+}
+
+.button-link:hover {
+    -fx-underline: true;
+}
+
+.button-link:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 6;
+}
+
+.filter-bar {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
 /* ---- Toasts ------------------------------------------------------------ */
 
 .toast {

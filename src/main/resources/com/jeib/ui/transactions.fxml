@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -8,6 +9,11 @@
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.jeib.ui.TransactionsController" styleClass="transactions-page">
 
+    <HBox fx:id="filterBar" styleClass="filter-bar">
+        <Label text="Showing only"/>
+        <HBox fx:id="filterChip" styleClass="chip"/>
+        <Button fx:id="showAll" text="Show all" styleClass="button-link"/>
+    </HBox>
     <Label fx:id="summary" styleClass="muted"/>
 
     <VBox styleClass="card,tx-card">

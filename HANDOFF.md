@@ -167,6 +167,11 @@ dashboard's "left per day": based on the overall limit only. Limit changes are n
 (only transactions are); add if real use asks for it. When a Settings page lets the user change
 the main currency, existing limits must be converted with the rebased rates (CLAUDE.md rule).
 
+Nov 12 (later still): Dashboard done on `feature/limits` (same branch as limits). All Dec 1
+features except backup + crash log + packaging are built. Charts are hand-drawn `Arc`s, not
+JavaFX `PieChart`, so slice colors come straight from the palette tokens. Motion is still none
+(instant hovers, no transitions): planned for the post-Dec 1 redesign.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

@@ -261,7 +261,15 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   becomes near/over after a change (first check after start is silent). `DataChanged` is the one
   "data changed" signal: list, Budgets, and the watcher listen; dialogs, undo, quick add, and
   deletes fire it. 224 tests passing.
-  Next: the Dashboard (spent, remaining, left per day, category chart, limit rows → Transactions).
+  Then the Dashboard (`dashboard.fxml`, `DashboardController`/`ViewModel`, `DashboardData.from` is
+  pure): cards Spent / Remaining / Left per day (`model/LeftPerDay`: remaining ÷ days left incl.
+  today, rounded down; future month = all days; past month = none), a donut drawn with `Arc`s in
+  the category colors + a legend (share %, "<1%" for tiny ones), and the 5 most urgent category
+  limits. Everything is clickable: legend/limit rows → Transactions filtered to that category
+  (`Navigation`, `TransactionsViewModel.filterBy`, "Showing only X · Show all" bar; a sidebar click
+  shows all again), cards → Transactions/Budgets or the limit dialog. The old placeholder dashboard
+  (DB status + category chips) is gone. 238 tests passing.
+  Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
   Open: changing the main currency must convert existing limits (no UI for that change yet).
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
