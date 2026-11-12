@@ -198,6 +198,12 @@ checked: the language menu popup (scene snapshots don't include popups) and the 
 fade. Small gap: in Arabic, quick add matches Arabic category names only ("250 food" goes to
 Other); could also match the default categories' English names later.
 
+Nov 12 (night): PR #3 merged everything into `main`; old branches deleted locally (Khalil deletes
+the remote ones). `main` has a ruleset (no deletion, no force push, PR required, 0 approvals).
+Backups + crash log + Report a problem / Send feedback on `feature/backup-crash-log`. Not checked
+live: the app reload after a real restore (Snap's rebuild hook is a no-op; the file restore is
+tested), and opening the browser. Last Dec 1 item: package the zipped `Jeib.exe`.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

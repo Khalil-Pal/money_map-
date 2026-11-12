@@ -38,7 +38,8 @@ public class Snap {
                 if (args.length > 3 && "ar".equals(args[3])) {
                     com.jeib.i18n.Messages.setLanguage(com.jeib.i18n.Language.ARABIC);
                 }
-                JeibApp.MainWindow window = JeibApp.createMainWindow(new Database(Path.of(args[0])), clock, language -> { });
+                JeibApp.MainWindow window = JeibApp.createMainWindow(new Database(Path.of(args[0])), clock, language -> { },
+                        new com.jeib.service.CrashLog(Path.of(args[0]).toAbsolutePath().getParent(), clock));
                 MainViewModel vm = window.viewModel();
                 Scene scene = new Scene(window.root(), 1280, 800);
                 Stage stage = new Stage();
@@ -152,6 +153,12 @@ public class Snap {
                     step(() -> save(scene, out + "-11-switch-confirm.png"));
                     step(() -> fire(scene, "#switchConfirm"));
                     step(() -> save(scene, out + "-12-switched.png"));
+                    step(() -> ((javafx.scene.control.ScrollPane) scene.lookup(".page-scroll")).setVvalue(1.0));
+                    step(() -> save(scene, out + "-13-backups-help.png"));
+                    step(() -> fire(scene, ".backup-row .button-link")); // Restore on the newest backup
+                    step(() -> ((javafx.scene.control.ScrollPane) scene.lookup(".page-scroll")).setVvalue(1.0));
+                    step(() -> save(scene, out + "-14-restore-confirm.png"));
+                    step(() -> fire(scene, "#restoreCancel"));
                     step(() -> {
                         System.out.println("status: " + vm.statusProperty().get());
                         Platform.exit();

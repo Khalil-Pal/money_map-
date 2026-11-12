@@ -293,6 +293,26 @@ final class Arabic {
         m.put("Exchange rates saved.", "حُفظت أسعار الصرف.");
         m.put("Your main currency is now {0}. Limits and rates were converted.", "عملتك الرئيسية الآن {0}. حُوِّلت الحدود والأسعار.");
         m.put("Your data", "بياناتك");
+        m.put("Open data folder", "فتح مجلد البيانات");
+        m.put("Backups", "النسخ الاحتياطية");
+        m.put("Jeib saves a copy of your data once a day and keeps the last 7. Restoring one replaces everything since that day.",
+                "يحفظ جيب نسخة من بياناتك مرة كل يوم ويحتفظ بآخر 7 نسخ. استعادة نسخة تستبدل كل ما تغيّر بعد ذلك اليوم.");
+        m.put("Back up now", "انسخ الآن");
+        m.put("Open backups folder", "فتح مجلد النسخ");
+        m.put("Restore", "استعادة");
+        m.put("No backups yet. The first one is made today.", "لا توجد نسخ بعد. تُنشأ أول نسخة اليوم.");
+        m.put("Restore the backup from {0}? Everything you changed after that day will be replaced. "
+                + "Your data right now is saved first, in the backups folder.",
+                "استعادة نسخة {0}؟ سيُستبدل كل ما غيّرته بعد ذلك اليوم. تُحفظ بياناتك الحالية أولًا في مجلد النسخ.");
+        m.put("Today's backup is saved.", "حُفظت نسخة اليوم.");
+        m.put("That backup file is gone.", "ملف هذه النسخة لم يعد موجودًا.");
+        m.put("Help", "المساعدة");
+        m.put("Found a problem or have an idea? Both buttons open a GitHub issue in your browser, filled in for you to read, change, and send.",
+                "وجدت مشكلة أو لديك فكرة؟ يفتح الزرّان صفحة بلاغ على GitHub في متصفحك، معبّأة مسبقًا لتقرأها وتعدّلها وترسلها.");
+        m.put("Report a problem", "الإبلاغ عن مشكلة");
+        m.put("Send feedback", "إرسال ملاحظات");
+        m.put("Something went wrong. Details were saved to the crash log.", "حدث خطأ. حُفظت التفاصيل في سجل الأعطال.");
+        m.put("Report", "إبلاغ");
         m.put("Everything stays on this computer, in one file:", "كل بياناتك تبقى على هذا الحاسوب، في ملف واحد:");
         return Map.copyOf(m);
     }

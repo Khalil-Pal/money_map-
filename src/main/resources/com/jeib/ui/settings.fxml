@@ -56,5 +56,35 @@
         <Label text="%Your data" styleClass="card-title"/>
         <Label text="%Everything stays on this computer, in one file:" styleClass="muted"/>
         <Label fx:id="dataPath" styleClass="data-path" wrapText="true"/>
+        <HBox>
+            <Button fx:id="openDataFolder" text="%Open data folder" styleClass="button-link"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Backups" styleClass="card-title"/>
+        <Label text="%Jeib saves a copy of your data once a day and keeps the last 7. Restoring one replaces everything since that day."
+               styleClass="muted" wrapText="true"/>
+        <VBox fx:id="backupRows" styleClass="backup-rows"/>
+        <HBox fx:id="restoreBox" styleClass="confirm-box">
+            <Label fx:id="restoreText" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button fx:id="restoreCancel" text="%Cancel" styleClass="button-secondary" minWidth="-Infinity"/>
+            <Button fx:id="restoreConfirm" text="%Restore" styleClass="button-primary" minWidth="-Infinity"/>
+        </HBox>
+        <Label fx:id="backupError" styleClass="field-error" wrapText="true"/>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button fx:id="backupNow" text="%Back up now" styleClass="button-secondary"/>
+            <Button fx:id="openBackups" text="%Open backups folder" styleClass="button-link"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="card,settings-card">
+        <Label text="%Help" styleClass="card-title"/>
+        <Label text="%Found a problem or have an idea? Both buttons open a GitHub issue in your browser, filled in for you to read, change, and send."
+               styleClass="muted" wrapText="true"/>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <Button fx:id="reportProblem" text="%Report a problem" styleClass="button-secondary"/>
+            <Button fx:id="sendFeedback" text="%Send feedback" styleClass="button-secondary"/>
+        </HBox>
     </VBox>
 </VBox>

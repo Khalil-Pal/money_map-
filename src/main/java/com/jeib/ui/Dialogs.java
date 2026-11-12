@@ -118,6 +118,11 @@ public final class Dialogs {
         viewModel.load();
     }
 
+    /** Opens a web page in the browser (used by the crash toast's "Report"). */
+    public static void browse(String url) {
+        Links.browse(url);
+    }
+
     private static Parent load(String fxml, Object controller) {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(Dialogs.class.getResource(fxml), fxml));
         loader.setResources(com.jeib.i18n.Messages.bundle());

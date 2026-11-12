@@ -313,8 +313,18 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   is gone. Motion (`ThemeTransition`): the new theme is revealed as a circle growing from the
   theme button over a snapshot of the old one (520 ms, emphasized ease-out), the icon turns into
   the next one, and a language switch fades out/in. Arabic names: الوضع النهاري / الوضع الليلي /
-  تلقائي. No accent-color picker (decided: Jeib stays orange). 273 tests passing.
-  Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
+  تلقائي. No accent-color picker (decided: Jeib stays orange). Merged to `main` via PR #3 (Nov 12).
+  Then backups + crash log, branch `feature/backup-crash-log`: `BackupService` makes
+  `backups/jeib-YYYY-MM-DD.db` next to the database on the first launch of each day (SQLite
+  `VACUUM INTO` to a `.part` file, then an atomic rename) and keeps the newest 7; restore saves
+  the current file as `jeib-before-restore-<time>.db` first, then rebuilds the window.
+  `CrashLog` (installed in `JeibApp.init`) writes uncaught errors to `logs/jeib.log` (rotated at
+  512 KB) and shows a toast with "Report". `ProblemReport` builds prefilled GitHub-issue links
+  (Report a problem with the log tail, Send feedback); nothing is sent by the app itself.
+  Settings has Backups (list, Back up now, Restore with confirmation, open folder) and Help cards.
+  Uses `java.awt.Desktop` to open the browser/Explorer, so a jlink-trimmed runtime must keep
+  `java.desktop`. 283 tests passing.
+  Next (before Dec 1): the zipped `Jeib.exe`.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a
