@@ -21,10 +21,11 @@
 
     <VBox styleClass="card,settings-card">
         <Label text="%Appearance" styleClass="card-title"/>
-        <Label text="%Jeib remembers your choice for the next time you open it." styleClass="muted"/>
+        <Label text="%Jeib remembers your choice. Automatic is dark from 7 PM to 7 AM." styleClass="muted" wrapText="true"/>
         <HBox styleClass="segmented" maxWidth="-Infinity">
-            <ToggleButton fx:id="themeLight" text="%Light" styleClass="segment"/>
-            <ToggleButton fx:id="themeDark" text="%Dark" styleClass="segment"/>
+            <ToggleButton fx:id="themeLight" text="%Light mode" styleClass="segment"/>
+            <ToggleButton fx:id="themeDark" text="%Dark mode" styleClass="segment"/>
+            <ToggleButton fx:id="themeAuto" text="%Automatic" styleClass="segment"/>
         </HBox>
     </VBox>
 

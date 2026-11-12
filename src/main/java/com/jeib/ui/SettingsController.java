@@ -26,6 +26,7 @@ public final class SettingsController {
     @FXML private HBox languageBox;
     @FXML private ToggleButton themeLight;
     @FXML private ToggleButton themeDark;
+    @FXML private ToggleButton themeAuto;
     @FXML private HBox mainCurrencyBox;
     @FXML private HBox switchBox;
     @FXML private Label switchText;
@@ -53,20 +54,24 @@ public final class SettingsController {
         LanguagePicker.fill(languageBox, languages);
 
         // Appearance
-        themeLight.setUserData(Theme.LIGHT);
-        themeDark.setUserData(Theme.DARK);
-        themeLight.setToggleGroup(themeGroup);
-        themeDark.setToggleGroup(themeGroup);
-        themeGroup.selectToggle(main.themeProperty().get() == Theme.DARK ? themeDark : themeLight);
+        themeLight.setUserData(ThemeMode.LIGHT);
+        themeDark.setUserData(ThemeMode.DARK);
+        themeAuto.setUserData(ThemeMode.AUTO);
+        for (ToggleButton option : new ToggleButton[] {themeLight, themeDark, themeAuto}) {
+            option.setToggleGroup(themeGroup);
+            option.setSelected(option.getUserData() == main.themeModeProperty().get());
+        }
         themeGroup.selectedToggleProperty().addListener((obs, old, selected) -> {
             if (selected == null) {
                 themeGroup.selectToggle(old);
-            } else if (main.themeProperty().get() != selected.getUserData()) {
-                main.setTheme((Theme) selected.getUserData());
+            } else if (main.themeModeProperty().get() != selected.getUserData()) {
+                main.setThemeMode((ThemeMode) selected.getUserData());
             }
         });
-        main.themeProperty().addListener((obs, old, theme) ->
-                themeGroup.selectToggle(theme == Theme.DARK ? themeDark : themeLight));
+        main.themeModeProperty().addListener((obs, old, mode) -> themeGroup.getToggles().stream()
+                .filter(toggle -> toggle.getUserData() == mode)
+                .findFirst()
+                .ifPresent(themeGroup::selectToggle));
 
         // Main currency: picking one asks to confirm, because limits get converted.
         for (SupportedCurrency currency : SupportedCurrency.values()) {

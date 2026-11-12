@@ -131,7 +131,9 @@ public class Snap {
                             javafx.scene.input.KeyEvent.KEY_PRESSED, "", "", javafx.scene.input.KeyCode.Z,
                             false, true, false, false)));
                     step(() -> save(scene, out + "-06e-ctrl-z.png"));
-                    step(vm::toggleTheme);
+                    step(() -> fire(scene, "#themeButton")); // Light → Dark, with the circle reveal
+                    sleep(230);
+                    Platform.runLater(() -> save(scene, out + "-07a-theme-reveal-mid.png"));
                     step(() -> save(scene, out + "-07-dark-transactions.png"));
                     step(() -> clickFirstRow(scene));
                     step(() -> save(scene, out + "-08-dark-edit.png"));

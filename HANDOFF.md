@@ -191,6 +191,13 @@ default category while in Arabic saves its Arabic name (it then stays Arabic in 
 a user category named "طعام" next to the default Food shows two "طعام" in Arabic. The Arabic
 text was written by Claude; ask an Arabic-speaking tester to read through it.
 
+Nov 12 (late): top-right controls + theme/language motion on `feature/top-bar-controls`. Khalil
+decided: Automatic theme with fixed hours 19:00-07:00; no accent picker (Jeib stays orange, the
+globe too). Checked with screenshots, including a frame 230 ms into the circle reveal. Not
+checked: the language menu popup (scene snapshots don't include popups) and the live language
+fade. Small gap: in Arabic, quick add matches Arabic category names only ("250 food" goes to
+Other); could also match the default categories' English names later.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

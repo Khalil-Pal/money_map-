@@ -34,6 +34,11 @@ public final class Navigation {
         transactions.filterBy(category);   // … then applies this one
     }
 
+    /** Opens a page by its fixed id ("Settings"). */
+    public void openPage(String page) {
+        pageOpener.accept(page);
+    }
+
     public void openBudgets() {
         pageOpener.accept("Budgets");
     }

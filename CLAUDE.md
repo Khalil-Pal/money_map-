@@ -305,7 +305,15 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   the others), and the data file path. `CurrencyService.setMainCurrency` now refuses a switch to
   a currency without a rate.
   Then English + Arabic, branch `feature/arabic` (see "Languages" above for the rules). Language
-  picker in first-launch setup and in Settings. 263 tests passing.
+  picker in first-launch setup and in Settings.
+  Then the top-right controls, branch `feature/top-bar-controls`: ⚙️ Settings shortcut, a theme
+  button cycling Light → Dark → Automatic (`ThemeMode`; Automatic = dark from 19:00 to 07:00,
+  fixed hours, re-checked every 30 s while open; saved as LIGHT/DARK/AUTO), and an orange
+  language pill (earth icon + "English"/"العربية", menu with both). The sidebar theme button
+  is gone. Motion (`ThemeTransition`): the new theme is revealed as a circle growing from the
+  theme button over a snapshot of the old one (520 ms, emphasized ease-out), the icon turns into
+  the next one, and a language switch fades out/in. Arabic names: الوضع النهاري / الوضع الليلي /
+  تلقائي. No accent-color picker (decided: Jeib stays orange). 273 tests passing.
   Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).

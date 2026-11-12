@@ -2,7 +2,17 @@ package com.jeib.ui;
 
 import static com.jeib.i18n.Messages.t;
 
+import com.jeib.i18n.Language;
+import com.jeib.i18n.Messages;
 import java.util.Map;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.geometry.Side;
+import javafx.scene.Group;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Tooltip;
+import javafx.util.Duration;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -33,6 +43,9 @@ public final class MainController {
             "Goals", "Built in Week 8: savings goals.");
 
     private static final String MOON = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z";
+    /** Lucide "sun-moon": the Automatic mode. */
+    private static final String SUN_MOON = "M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4M12 2v2M12 20v2M4.9 4.9l1.4 1.4"
+            + "M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4";
     private static final String SUN = "M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41"
             + "M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41";
 
@@ -43,6 +56,7 @@ public final class MainController {
     private final HistoryViewModel history;
     private final QuickAddViewModel quickAddViewModel;
     private final Navigation navigation;
+    private final LanguageSwitcher languages;
 
     @FXML private StackPane root;
     @FXML private BorderPane appContent;
@@ -63,8 +77,11 @@ public final class MainController {
     @FXML private VBox settingsPage;
     @FXML private VBox dashboardPage;
     @FXML private Label comingSoon;
-    @FXML private Button themeToggle;
+    @FXML private Button settingsButton;
+    @FXML private Button themeButton;
+    @FXML private Group themeIconGroup;
     @FXML private SVGPath themeIcon;
+    @FXML private Button languageButton;
 
     private static final KeyCombination UNDO = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN);
     private static final KeyCombination REDO = new KeyCodeCombination(KeyCode.Y, KeyCombination.SHORTCUT_DOWN);
@@ -72,7 +89,8 @@ public final class MainController {
             new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
 
     public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs, Toasts toasts,
-                          HistoryViewModel history, QuickAddViewModel quickAddViewModel, Navigation navigation) {
+                          HistoryViewModel history, QuickAddViewModel quickAddViewModel, Navigation navigation,
+                          LanguageSwitcher languages) {
         this.viewModel = viewModel;
         this.dialogHost = dialogHost;
         this.dialogs = dialogs;
@@ -80,6 +98,7 @@ public final class MainController {
         this.history = history;
         this.quickAddViewModel = quickAddViewModel;
         this.navigation = navigation;
+        this.languages = languages;
     }
 
     @FXML
@@ -126,10 +145,10 @@ public final class MainController {
                 .findFirst()
                 .ifPresent(navGroup::selectToggle));
 
-        themeToggle.setOnAction(event -> viewModel.toggleTheme());
+        wireTopRight();
         root.sceneProperty().addListener((obs, oldScene, scene) -> {
             if (scene != null) {
-                applyTheme(scene);
+                viewModel.themeProperty().get().applyTo(scene); // first time: no animation
                 // Ctrl+N (Cmd+N on macOS): new transaction, from anywhere in the window.
                 scene.getAccelerators().put(new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN),
                         dialogs::openNewTransaction);
@@ -137,7 +156,8 @@ public final class MainController {
         });
         viewModel.themeProperty().addListener((obs, oldTheme, theme) -> {
             if (root.getScene() != null) {
-                applyTheme(root.getScene());
+                // The new theme spreads out as a circle from the theme button.
+                ThemeTransition.reveal(root, themeButton, () -> theme.applyTo(root.getScene()));
             }
         });
     }
@@ -181,11 +201,47 @@ public final class MainController {
         });
     }
 
-    private void applyTheme(Scene scene) {
-        Theme theme = viewModel.themeProperty().get();
-        theme.applyTo(scene);
-        themeToggle.setText(theme == Theme.LIGHT ? t("Dark mode") : t("Light mode"));
-        themeIcon.setContent(theme == Theme.LIGHT ? MOON : SUN);
+    /** Settings shortcut, the theme button (Light / Dark / Automatic), and the language pill. */
+    private void wireTopRight() {
+        settingsButton.setTooltip(new Tooltip(t("Settings")));
+        settingsButton.setOnAction(event -> navigation.openPage("Settings"));
+
+        themeButton.setOnAction(event -> viewModel.toggleTheme());
+        showThemeMode(viewModel.themeModeProperty().get());
+        viewModel.themeModeProperty().addListener((obs, old, mode) -> {
+            showThemeMode(mode);
+            ThemeTransition.spin(themeIconGroup);
+        });
+        // Automatic mode follows the clock while the app is open (dark at 7 PM, light at 7 AM).
+        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(30), event -> viewModel.refreshTheme()));
+        clock.setCycleCount(Timeline.INDEFINITE);
+        clock.play();
+
+        languageButton.setText(Messages.language().nativeName());
+        languageButton.setTooltip(new Tooltip(t("Language")));
+        ContextMenu menu = new ContextMenu();
+        for (Language language : Language.values()) {
+            CheckMenuItem item = new CheckMenuItem(language.nativeName());
+            item.setSelected(language == Messages.language());
+            item.setOnAction(event -> languages.switchTo(language));
+            menu.getItems().add(item);
+        }
+        languageButton.setOnAction(event -> menu.show(languageButton, Side.BOTTOM, 0, 6));
+    }
+
+    private void showThemeMode(ThemeMode mode) {
+        String name = switch (mode) {
+            case LIGHT -> t("Light mode");
+            case DARK -> t("Dark mode");
+            case AUTO -> t("Automatic: dark from 7 PM to 7 AM");
+        };
+        themeIcon.setContent(switch (mode) {
+            case LIGHT -> SUN;
+            case DARK -> MOON;
+            case AUTO -> SUN_MOON;
+        });
+        themeButton.setTooltip(new Tooltip(name + " · " + t("Click to switch")));
+        themeButton.setAccessibleText(name);
     }
 
     private void showPage(Toggle toggle) {

@@ -28,8 +28,13 @@ final class Arabic {
         m.put("Recurring", "المتكررة");
         m.put("Goals", "الأهداف");
         m.put("Settings", "الإعدادات");
-        m.put("Dark mode", "الوضع الداكن");
-        m.put("Light mode", "الوضع الفاتح");
+        m.put("Dark mode", "الوضع الليلي");
+        m.put("Light mode", "الوضع النهاري");
+        m.put("Automatic", "تلقائي");
+        m.put("Automatic: dark from 7 PM to 7 AM", "تلقائي: ليلي من 7 مساءً حتى 7 صباحًا");
+        m.put("Click to switch", "انقر للتبديل");
+        m.put("Jeib remembers your choice. Automatic is dark from 7 PM to 7 AM.",
+                "يتذكر جيب اختيارك. الوضع التلقائي ليلي من 7 مساءً حتى 7 صباحًا.");
         m.put("Previous month", "الشهر السابق");
         m.put("Next month", "الشهر التالي");
         m.put("Quick add", "إضافة سريعة");

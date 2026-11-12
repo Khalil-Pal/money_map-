@@ -73,9 +73,6 @@
                 <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
                     content="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6z"/></Group></graphic>
             </ToggleButton>
-            <Button fx:id="themeToggle" text="%Dark mode" styleClass="button-secondary,theme-toggle" maxWidth="Infinity">
-                <graphic><Group><SVGPath fx:id="themeIcon" styleClass="icon" scaleX="0.75" scaleY="0.75"/></Group></graphic>
-            </Button>
         </VBox>
     </left>
 
@@ -96,6 +93,21 @@
                     <Button fx:id="newTransaction" text="%New transaction" styleClass="button-primary">
                         <graphic><Group><SVGPath styleClass="icon" scaleX="0.67" scaleY="0.67" content="M5 12h14M12 5v14"/></Group></graphic>
                     </Button>
+
+                    <!-- Top-right group: settings, theme (Light / Dark / Automatic), language. -->
+                    <HBox styleClass="topbar-tools">
+                        <Button fx:id="settingsButton" styleClass="icon-button" accessibleText="%Settings">
+                            <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
+                                content="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6z"/></Group></graphic>
+                        </Button>
+                        <Button fx:id="themeButton" styleClass="icon-button">
+                            <graphic><Group fx:id="themeIconGroup"><SVGPath fx:id="themeIcon" styleClass="icon" scaleX="0.75" scaleY="0.75"/></Group></graphic>
+                        </Button>
+                        <Button fx:id="languageButton" styleClass="language-pill" accessibleText="%Language">
+                            <graphic><Group><SVGPath styleClass="icon,globe-icon" scaleX="0.75" scaleY="0.75"
+                                content="M21.54 15H17a2 2 0 0 0-2 2v4.54M7 3.34V5a3 3 0 0 0 3 3a2 2 0 0 1 2 2c0 1.1.9 2 2 2a2 2 0 0 0 2-2c0-1.1.9-2 2-2h3.17M11 21.95V18a2 2 0 0 0-2-2a2 2 0 0 1-2-2v-1a2 2 0 0 0-2-2H2.05M12 2a10 10 0 1 0 0 20a10 10 0 1 0 0-20z"/></Group></graphic>
+                        </Button>
+                    </HBox>
                 </HBox>
                 <!-- What Enter will save; only shown while typing in quick add. -->
                 <HBox fx:id="quickAddPreviewBar" styleClass="quick-add-preview">

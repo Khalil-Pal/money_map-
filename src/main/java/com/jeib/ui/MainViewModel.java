@@ -36,12 +36,15 @@ public final class MainViewModel {
     private final CategoryRepository categories;
     private final CurrencyService currencies;
     private final PreferencesService preferences;
+    private final Clock clock;
 
     private final ObservableList<Category> categoryList = FXCollections.observableArrayList();
     private final StringProperty status = new SimpleStringProperty("Opening the database…");
     private final BooleanProperty loading = new SimpleBooleanProperty(false);
     private final BooleanProperty ready = new SimpleBooleanProperty(false);
     private final BooleanProperty setupNeeded = new SimpleBooleanProperty(false);
+    private final ObjectProperty<ThemeMode> themeMode = new SimpleObjectProperty<>(ThemeMode.LIGHT);
+    /** The theme actually shown: the mode, resolved by the clock when it's Automatic. */
     private final ObjectProperty<Theme> theme = new SimpleObjectProperty<>(Theme.LIGHT);
     private final ObjectProperty<YearMonth> month;
     private final StringBinding monthLabel;
@@ -50,6 +53,7 @@ public final class MainViewModel {
     public MainViewModel(Database database, CategoryRepository categories, CurrencyService currencies,
                          PreferencesService preferences, Clock clock) {
         this.preferences = preferences;
+        this.clock = clock;
         this.database = database;
         this.categories = categories;
         this.currencies = currencies;
@@ -75,9 +79,8 @@ public final class MainViewModel {
         };
         task.setOnSucceeded(event -> {
             categoryList.setAll(task.getValue().categories());
-            if (Theme.DARK.name().equals(task.getValue().theme())) {
-                theme.set(Theme.DARK);
-            }
+            themeMode.set(ThemeMode.parse(task.getValue().theme()));
+            refreshTheme();
             setupNeeded.set(!task.getValue().hasMainCurrency());
             status.set("Database ready · " + categoryList.size() + " categories · " + database.file());
             loading.set(false);
@@ -104,13 +107,23 @@ public final class MainViewModel {
         month.set(month.get().plusMonths(1));
     }
 
+    /** The theme button: Light → Dark → Automatic → Light. */
     public void toggleTheme() {
-        setTheme(theme.get().toggled());
+        setThemeMode(themeMode.get().next());
     }
 
-    /** Switches the theme and remembers it for the next launch (saved in the background). */
-    public void setTheme(Theme chosen) {
-        theme.set(chosen);
+    /**
+     * Re-checks the clock: in Automatic mode the theme turns dark at 7 PM and light at 7 AM while
+     * the app is open. MainController calls this every minute.
+     */
+    public void refreshTheme() {
+        theme.set(themeMode.get().resolve(java.time.LocalTime.now(clock)));
+    }
+
+    /** Switches the mode and remembers it for the next launch (saved in the background). */
+    public void setThemeMode(ThemeMode chosen) {
+        themeMode.set(chosen);
+        refreshTheme();
         Task<Void> save = new Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -143,8 +156,14 @@ public final class MainViewModel {
         return setupNeeded;
     }
 
-    public ObjectProperty<Theme> themeProperty() {
+    /** The theme shown right now (Light or Dark). */
+    public ReadOnlyObjectProperty<Theme> themeProperty() {
         return theme;
+    }
+
+    /** What the user chose: Light, Dark, or Automatic. */
+    public ReadOnlyObjectProperty<ThemeMode> themeModeProperty() {
+        return themeMode;
     }
 
     public ReadOnlyObjectProperty<YearMonth> monthProperty() {

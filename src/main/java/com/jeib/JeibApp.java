@@ -134,7 +134,7 @@ public class JeibApp extends Application {
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
-                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd, navigation);
+                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd, navigation, languages);
             }
             if (type == DashboardController.class) {
                 return new DashboardController(dashboard, navigation, dialogs);
@@ -204,14 +204,18 @@ public class JeibApp extends Application {
 
     /** Switches the language: rebuilds the window's content in it, keeping the same window. */
     private void rebuildIn(Language language) {
-        Messages.setLanguage(language);
-        try {
-            MainWindow window = createMainWindow(database, clock, this::rebuildIn);
-            stage.getScene().setRoot(window.root());
-            window.viewModel().load();
-        } catch (IOException e) {
-            throw new java.io.UncheckedIOException(e);
-        }
+        // A soft fade instead of a jump: out, rebuild in the new language, back in.
+        com.jeib.ui.ThemeTransition.fadeOut(stage.getScene().getRoot(), () -> {
+            Messages.setLanguage(language);
+            try {
+                MainWindow window = createMainWindow(database, clock, this::rebuildIn);
+                stage.getScene().setRoot(window.root());
+                com.jeib.ui.ThemeTransition.fadeIn(window.root());
+                window.viewModel().load();
+            } catch (IOException e) {
+                throw new java.io.UncheckedIOException(e);
+            }
+        });
     }
 
     public static void main(String[] args) {

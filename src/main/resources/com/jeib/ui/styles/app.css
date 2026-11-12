@@ -77,11 +77,6 @@
     -fx-stroke: -primary-text;
 }
 
-.theme-toggle {
-    -fx-alignment: center-left;
-    -fx-graphic-text-gap: 10;
-    -fx-pref-height: 38;
-}
 
 /* ---- Top bar ---------------------------------------------------------- */
 
@@ -1012,6 +1007,74 @@
 
 .setup-top {
     -fx-alignment: center-left;
+}
+
+/* ---- Top-right group: settings, theme, language ------------------------- */
+
+.topbar-tools {
+    -fx-spacing: 6;
+    -fx-alignment: center;
+    -fx-padding: 0 0 0 6;
+}
+
+/* The language pill: an orange earth and the language, in its own language. */
+.language-pill {
+    -fx-background-color: -primary, -bg-surface;
+    -fx-background-insets: 0, 1.5;
+    -fx-background-radius: 999, 999;
+    -fx-text-fill: -text-primary;
+    -fx-font-weight: 600;
+    -fx-pref-height: 34;
+    -fx-padding: 0 14 0 10;
+    -fx-graphic-text-gap: 7;
+    -fx-cursor: hand;
+}
+
+.language-pill:hover {
+    -fx-background-color: -primary, -primary-tint;
+}
+
+.language-pill .globe-icon {
+    -fx-stroke: -primary;
+}
+
+.language-pill:focus-visible {
+    -fx-border-color: -focus-ring;
+    -fx-border-width: 2;
+    -fx-border-radius: 999;
+}
+
+.context-menu {
+    -fx-background-color: -border, -bg-surface;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 10, 9;
+    -fx-padding: 6;
+    -fx-effect: dropshadow(gaussian, -dialog-shadow, 20, 0, 0, 4);
+}
+
+.context-menu .menu-item {
+    -fx-background-radius: 6;
+    -fx-padding: 7 14 7 10;
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: -text-primary;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: -row-hover;
+}
+
+.context-menu .check-menu-item:checked .mark {
+    -fx-background-color: -primary;
+}
+
+.tooltip {
+    -fx-background-color: -toast-bg;
+    -fx-text-fill: -toast-text;
+    -fx-background-radius: 6;
+    -fx-font-size: 12px;
+    -fx-padding: 5 9 5 9;
 }
 
 /* ---- Toasts ------------------------------------------------------------ */
