@@ -111,6 +111,7 @@
                         <fx:include fx:id="transactionsPage" source="transactions.fxml"/>
                         <fx:include fx:id="budgetsPage" source="budgets.fxml"/>
                         <fx:include fx:id="categoriesPage" source="categories.fxml"/>
+                        <fx:include fx:id="settingsPage" source="settings.fxml"/>
                         <fx:include fx:id="dashboardPage" source="dashboard.fxml"/>
                     </VBox>
                 </ScrollPane>

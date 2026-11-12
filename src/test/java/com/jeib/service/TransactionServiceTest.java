@@ -237,6 +237,7 @@ class TransactionServiceTest {
 
     @Test
     void noCurrencyMeansTheMainCurrency() throws SQLException {
+        currencies().setRate(SupportedCurrency.RUB, "0.0108"); // a switch needs a rate for the new main
         currencies().setMainCurrency(SupportedCurrency.RUB);
         assertEquals("RUB", service().add(lunch()).currency());
     }

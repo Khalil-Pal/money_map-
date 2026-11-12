@@ -48,6 +48,7 @@ class BudgetServiceTest {
     private CurrencyService currencies;
     private TransactionService transactions;
     private BudgetRepository budgetRepository;
+    private TransactionRepository transactionRepository;
     private BudgetService budgets;
 
     @BeforeEach
@@ -58,7 +59,7 @@ class BudgetServiceTest {
         currencies.setMainCurrency(SupportedCurrency.RUB);
         currencies.setRate(SupportedCurrency.USD, "92.5");
         CategoryRepository categories = new CategoryRepository(database, CLOCK);
-        TransactionRepository transactionRepository = new TransactionRepository(database, CLOCK);
+        transactionRepository = new TransactionRepository(database, CLOCK);
         transactions = new TransactionService(transactionRepository, categories, currencies, CLOCK);
         budgetRepository = new BudgetRepository(database, CLOCK);
         budgets = new BudgetService(budgetRepository, transactionRepository, categories, currencies);
@@ -181,14 +182,40 @@ class BudgetServiceTest {
 
     @Test
     void spendingInACurrencyWithoutARateIsReportedNotSilentlyDropped() throws SQLException {
-        spend("10", SupportedCurrency.USD, "2026-11-05", FOOD);
         spend("100", null, "2026-11-05", FOOD);
-        // Switching to ILS with no ILS rate drops all rates (nothing can be expressed in ILS yet).
-        currencies.setMainCurrency(SupportedCurrency.ILS);
+        // The service never saves an ILS amount without an ILS rate, so write the row directly, as
+        // an old or imported row could look.
+        transactionRepository.insert(com.jeib.model.Transaction.create(FOOD, TransactionType.EXPENSE, 4_500, "ILS",
+                LocalDate.parse("2026-11-05"), null, CLOCK));
 
         MonthBudget month = budgets.forMonth(NOVEMBER);
 
-        assertEquals(Set.of(SupportedCurrency.USD, SupportedCurrency.RUB), month.unconverted());
-        assertEquals(0, month.overall().spentMinor());
+        assertEquals(Set.of(SupportedCurrency.ILS), month.unconverted());
+        assertEquals(10_000, month.overall().spentMinor()); // the RUB part still counts
+    }
+
+    @Test
+    void changingTheMainCurrencyConvertsTheLimits() throws SQLException {
+        budgets.setLimit(FOOD, "10000");   // 10,000 RUB
+        budgets.setLimit(null, "92500");   // 92,500 RUB
+        currencies.setRate(SupportedCurrency.ILS, "25");
+
+        budgets.changeMainCurrency(SupportedCurrency.USD); // 1 USD = 92.5 RUB
+
+        assertEquals(SupportedCurrency.USD, budgets.forMonth(NOVEMBER).mainCurrency());
+        assertEquals(10_811, food().limitMinor());              // 10,000 / 92.5 = 108.11 USD
+        assertEquals(100_000, budgets.forMonth(NOVEMBER).overall().limitMinor()); // exactly 1,000 USD
+    }
+
+    @Test
+    void theMainCurrencyCantChangeToOneWithoutARate() throws SQLException {
+        budgets.setLimit(FOOD, "10000");
+
+        ValidationException error = assertThrows(ValidationException.class,
+                () -> budgets.changeMainCurrency(SupportedCurrency.ILS)); // no ILS rate yet
+
+        assertEquals("currency", error.field());
+        assertEquals(SupportedCurrency.RUB, budgets.forMonth(NOVEMBER).mainCurrency());
+        assertEquals(1_000_000, food().limitMinor()); // untouched
     }
 }

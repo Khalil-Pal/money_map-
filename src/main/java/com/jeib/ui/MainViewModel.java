@@ -4,6 +4,7 @@ import com.jeib.db.Database;
 import com.jeib.model.Category;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.service.CurrencyService;
+import com.jeib.service.PreferencesService;
 import java.time.Clock;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -35,6 +36,7 @@ public final class MainViewModel {
     private final Database database;
     private final CategoryRepository categories;
     private final CurrencyService currencies;
+    private final PreferencesService preferences;
 
     private final ObservableList<Category> categoryList = FXCollections.observableArrayList();
     private final StringProperty status = new SimpleStringProperty("Opening the database…");
@@ -46,7 +48,9 @@ public final class MainViewModel {
     private final StringBinding monthLabel;
 
     /** @param clock decides which month the app opens on */
-    public MainViewModel(Database database, CategoryRepository categories, CurrencyService currencies, Clock clock) {
+    public MainViewModel(Database database, CategoryRepository categories, CurrencyService currencies,
+                         PreferencesService preferences, Clock clock) {
+        this.preferences = preferences;
         this.database = database;
         this.categories = categories;
         this.currencies = currencies;
@@ -54,7 +58,7 @@ public final class MainViewModel {
         this.monthLabel = Bindings.createStringBinding(() -> MONTH_LABEL.format(month.get()), month);
     }
 
-    private record Loaded(List<Category> categories, boolean hasMainCurrency) {
+    private record Loaded(List<Category> categories, boolean hasMainCurrency, String theme) {
     }
 
     /**
@@ -66,11 +70,15 @@ public final class MainViewModel {
             @Override
             protected Loaded call() throws Exception {
                 database.migrate();
-                return new Loaded(categories.findActive(), currencies.mainCurrency().isPresent());
+                return new Loaded(categories.findActive(), currencies.mainCurrency().isPresent(),
+                        preferences.theme().orElse(null));
             }
         };
         task.setOnSucceeded(event -> {
             categoryList.setAll(task.getValue().categories());
+            if (Theme.DARK.name().equals(task.getValue().theme())) {
+                theme.set(Theme.DARK);
+            }
             setupNeeded.set(!task.getValue().hasMainCurrency());
             status.set("Database ready · " + categoryList.size() + " categories · " + database.file());
             loading.set(false);
@@ -98,7 +106,20 @@ public final class MainViewModel {
     }
 
     public void toggleTheme() {
-        theme.set(theme.get().toggled());
+        setTheme(theme.get().toggled());
+    }
+
+    /** Switches the theme and remembers it for the next launch (saved in the background). */
+    public void setTheme(Theme chosen) {
+        theme.set(chosen);
+        Task<Void> save = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                preferences.setTheme(chosen.name());
+                return null;
+            }
+        };
+        Thread.ofVirtual().name("jeib-theme").start(save);
     }
 
     public ObservableList<Category> categories() {

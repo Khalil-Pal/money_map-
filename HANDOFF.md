@@ -177,6 +177,12 @@ category's limit row stays in the table but is ignored (forMonth only shows live
 undoing an edit whose old category was deleted fails with "Can't undo: …" (by design). Still
 missing for Dec 1: Settings (rates editing, remembered theme), backup + crash log, packaging.
 
+Nov 12 (night): Settings done on `feature/settings`. The currency switch writes the currency
+first, then each limit (separate repositories, not one DB transaction); fine on a local DB, but a
+shared `Database.inTransaction` would make it atomic if it ever matters. Branch stack now:
+`feature/settings` → `feature/categories-ui` → `feature/limits` → `feature/transactions` → PR #2.
+Left for Dec 1: daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

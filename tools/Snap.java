@@ -139,8 +139,15 @@ public class Snap {
                     step(() -> save(scene, out + "-08c-dark-dashboard.png"));
                     step(() -> open(scene, "Transactions"));
                     step(vm::previousMonth);
+                    step(() -> save(scene, out + "-09-dark-empty-month.png"));
+                    step(vm::nextMonth);
+                    step(() -> open(scene, "Settings"));
+                    step(() -> save(scene, out + "-10-dark-settings.png"));
+                    step(() -> fire(scene, "#main-USD"));
+                    step(() -> save(scene, out + "-11-switch-confirm.png"));
+                    step(() -> fire(scene, "#switchConfirm"));
+                    step(() -> save(scene, out + "-12-switched.png"));
                     step(() -> {
-                        save(scene, out + "-09-dark-empty-month.png");
                         System.out.println("status: " + vm.statusProperty().get());
                         Platform.exit();
                     });

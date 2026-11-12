@@ -11,6 +11,8 @@ import com.jeib.model.TransactionType;
 import com.jeib.repository.BudgetRepository;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.TransactionRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.time.YearMonth;
 import java.util.EnumSet;
@@ -131,6 +133,34 @@ public final class BudgetService {
             budgets.updateLimit(existing.get().id(), limit);
         } else {
             budgets.insert(Budget.create(categoryId, limit));
+        }
+    }
+
+    /**
+     * Switches the main currency and converts every limit with it (CLAUDE.md: limits are in the
+     * main currency). 10,000 RUB with 1 ILS = 25 RUB becomes 400 ILS. Needs a rate for the new
+     * currency, or nothing changes.
+     *
+     * <p>The currency switch and the limit updates are separate writes (different repositories), so
+     * the currency goes first: if it fails, nothing changed. Converting the limits afterwards is a
+     * handful of small updates on a local database.
+     */
+    public void changeMainCurrency(SupportedCurrency newMain) throws SQLException {
+        ExchangeRates rates = currencies.rates();
+        SupportedCurrency old = rates.main();
+        if (newMain == old) {
+            return;
+        }
+        // Divide by the rate the user typed ("1 USD = 92.5 RUB"), not multiply by its rounded inverse
+        // (0.010811): 92,500 RUB must become exactly 1,000.00 USD, not 1,000.02.
+        BigDecimal newInOld = rates.rate(newMain).orElseThrow(() -> new ValidationException(
+                "currency", "Set how much 1 " + newMain + " is in " + old + " first, so your limits can be converted."));
+        List<Budget> limits = budgets.findDefaults();
+        currencies.setMainCurrency(newMain);
+        for (Budget limit : limits) {
+            long converted = BigDecimal.valueOf(limit.limitMinor())
+                    .divide(newInOld, 0, RoundingMode.HALF_EVEN).longValueExact();
+            budgets.updateLimit(limit.id(), Math.max(1, converted));
         }
     }
 

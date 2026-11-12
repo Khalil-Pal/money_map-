@@ -979,6 +979,37 @@
     -fx-text-fill: -danger-text;
 }
 
+/* ---- Settings ------------------------------------------------------------ */
+
+.settings-card {
+    -fx-spacing: 12;
+}
+
+.rate-row-line {
+    -fx-alignment: center-left;
+}
+
+.rate-label {
+    -fx-min-width: 64;
+}
+
+/* Switching currency needs attention but isn't destructive: amber, not red. */
+.confirm-box.switch-box {
+    -fx-background-color: -warning-tint;
+}
+
+.switch-box .label {
+    -fx-text-fill: -warning-text;
+}
+
+.data-path {
+    -fx-font-family: "Consolas", "Cascadia Mono", monospace;
+    -fx-font-size: 13px;
+    -fx-background-color: -bg-surface-alt;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10 6 10;
+}
+
 /* ---- Toasts ------------------------------------------------------------ */
 
 .toast {

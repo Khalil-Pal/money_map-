@@ -28,8 +28,7 @@ public final class MainController {
             "Reports", "Built in Week 6: monthly report and Excel export.",
             "Accounts", "Built in Week 8: multiple accounts and currencies.",
             "Recurring", "Built in Week 8: recurring payments and bill reminders.",
-            "Goals", "Built in Week 8: savings goals.",
-            "Settings", "Built in Week 10: password lock, backups, theme, updates.");
+            "Goals", "Built in Week 8: savings goals.");
 
     private static final String MOON = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z";
     private static final String SUN = "M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8zM12 2v2M12 20v2M4.93 4.93l1.41 1.41"
@@ -59,6 +58,7 @@ public final class MainController {
     @FXML private VBox transactionsPage;
     @FXML private VBox budgetsPage;
     @FXML private VBox categoriesPage;
+    @FXML private VBox settingsPage;
     @FXML private VBox dashboardPage;
     @FXML private Label comingSoon;
     @FXML private Button themeToggle;
@@ -193,10 +193,11 @@ public final class MainController {
         boolean transactions = "Transactions".equals(page);
         boolean budgets = "Budgets".equals(page);
         boolean categories = "Categories".equals(page);
+        boolean settings = "Settings".equals(page);
         dashboardPage.setVisible(dashboard);
         dashboardPage.setManaged(dashboard);
         comingSoon.setText(COMING.getOrDefault(page, ""));
-        boolean built = dashboard || transactions || budgets || categories;
+        boolean built = dashboard || transactions || budgets || categories || settings;
         comingSoon.setVisible(!built);
         comingSoon.setManaged(!built);
         transactionsPage.setVisible(transactions);
@@ -205,6 +206,8 @@ public final class MainController {
         budgetsPage.setManaged(budgets);
         categoriesPage.setVisible(categories);
         categoriesPage.setManaged(categories);
+        settingsPage.setVisible(settings);
+        settingsPage.setManaged(settings);
         navigation.pageShown(page);
     }
 }

@@ -276,9 +276,14 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   (it moves transactions to Other and isn't undoable; built-ins can't be deleted). The
   transaction dialog has an inline "+ New category" (name only, first free color, selected
   right away). 245 tests passing.
-  Next (before Dec 1): a small Settings page (edit exchange rates, remember the theme),
-  automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
-  Open: changing the main currency must convert existing limits (no UI for that change yet).
+  Then Settings, branch `feature/settings`: theme (Light/Dark, remembered via
+  `PreferencesService` → settings key `theme`), main currency (switching asks to confirm and
+  calls `BudgetService.changeMainCurrency`, which needs a rate for the new currency and converts
+  every limit by dividing by the typed rate, so 92,500 RUB at 92.5 is exactly $1,000.00), the
+  exchange rates for the other two currencies (each saved separately; one bad rate doesn't block
+  the others), and the data file path. `CurrencyService.setMainCurrency` now refuses a switch to
+  a currency without a rate. 254 tests passing.
+  Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).
 - Round 1 mockups (app shell, Dashboard, Transactions, New transaction dialog; light + dark) are a

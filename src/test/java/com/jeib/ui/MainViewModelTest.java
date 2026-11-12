@@ -6,6 +6,7 @@ import com.jeib.db.Database;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.SettingsRepository;
 import com.jeib.service.CurrencyService;
+import com.jeib.service.PreferencesService;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
@@ -20,7 +21,8 @@ class MainViewModelTest {
         Database unused = new Database(Path.of("never-opened.db"));
         Clock clock = Clock.fixed(Instant.parse(instant), ZoneId.of(zone));
         return new MainViewModel(unused, new CategoryRepository(unused, clock),
-                new CurrencyService(new SettingsRepository(unused)), clock);
+                new CurrencyService(new SettingsRepository(unused)),
+                new PreferencesService(new SettingsRepository(unused)), clock);
     }
 
     @Test

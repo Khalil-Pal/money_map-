@@ -48,7 +48,9 @@ public final class CurrencyService {
 
     /**
      * Sets or changes the main currency. On a change the stored rates are re-expressed in the new
-     * currency (see {@link ExchangeRates#withMain}), in the same settings transaction.
+     * currency (see {@link ExchangeRates#withMain}), in the same settings transaction. A change
+     * needs a rate for the new currency first. Limits are converted by
+     * {@link BudgetService#changeMainCurrency}, which is what the UI calls.
      */
     public void setMainCurrency(SupportedCurrency newMain) throws SQLException {
         Optional<SupportedCurrency> current = mainCurrency();
@@ -56,7 +58,12 @@ public final class CurrencyService {
             settings.save(Map.of(MAIN_KEY, newMain.name()));
             return;
         }
-        ExchangeRates rebased = rates().withMain(newMain);
+        ExchangeRates currentRates = rates();
+        if (newMain != current.get() && !currentRates.canConvert(newMain)) {
+            throw new ValidationException("currency", "Set how much 1 " + newMain + " is in " + current.get()
+                    + " first, so your amounts and limits can be converted.");
+        }
+        ExchangeRates rebased = currentRates.withMain(newMain);
         Map<String, String> changes = new HashMap<>();
         changes.put(MAIN_KEY, newMain.name());
         for (SupportedCurrency currency : SupportedCurrency.values()) {
