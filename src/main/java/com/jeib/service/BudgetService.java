@@ -1,5 +1,7 @@
 package com.jeib.service;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Budget;
 import com.jeib.model.Category;
 import com.jeib.model.ExchangeRates;
@@ -122,9 +124,9 @@ public final class BudgetService {
     public void setLimit(String categoryId, String amountText) throws SQLException {
         if (categoryId != null) {
             Category category = categories.findActiveById(categoryId)
-                    .orElseThrow(() -> new ValidationException("This category no longer exists."));
+                    .orElseThrow(() -> new ValidationException(t("This category no longer exists.")));
             if (category.kind() != TransactionType.EXPENSE) {
-                throw new ValidationException("Limits are for expense categories only.");
+                throw new ValidationException(t("Limits are for expense categories only."));
             }
         }
         long limit = parseLimit(amountText);
@@ -154,7 +156,7 @@ public final class BudgetService {
         // Divide by the rate the user typed ("1 USD = 92.5 RUB"), not multiply by its rounded inverse
         // (0.010811): 92,500 RUB must become exactly 1,000.00 USD, not 1,000.02.
         BigDecimal newInOld = rates.rate(newMain).orElseThrow(() -> new ValidationException(
-                "currency", "Set how much 1 " + newMain + " is in " + old + " first, so your limits can be converted."));
+                "currency", t("Set how much 1 {0} is in {1} first, so your limits can be converted.", newMain, old)));
         List<Budget> limits = budgets.findDefaults();
         currencies.setMainCurrency(newMain);
         for (Budget limit : limits) {
@@ -174,19 +176,19 @@ public final class BudgetService {
 
     private static long parseLimit(String text) {
         if (text == null || text.isBlank()) {
-            throw new ValidationException(FIELD, "Enter a limit, e.g. 10000.");
+            throw new ValidationException(FIELD, t("Enter a limit, e.g. 10000."));
         }
         long limit;
         try {
             limit = Money.parseMinorUnits(text);
         } catch (IllegalArgumentException | ArithmeticException e) {
-            throw new ValidationException(FIELD, "Enter a limit like 10000 or 10000.50 (at most two decimals).");
+            throw new ValidationException(FIELD, t("Enter a limit like 10000 or 10000.50 (at most two decimals)."));
         }
         if (limit == 0) {
-            throw new ValidationException(FIELD, "The limit must be more than 0.");
+            throw new ValidationException(FIELD, t("The limit must be more than 0."));
         }
         if (limit > TransactionService.MAX_AMOUNT_MINOR) {
-            throw new ValidationException(FIELD, "That limit is too large.");
+            throw new ValidationException(FIELD, t("That limit is too large."));
         }
         return limit;
     }

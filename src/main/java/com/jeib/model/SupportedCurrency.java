@@ -1,5 +1,7 @@
 package com.jeib.model;
 
+import static com.jeib.i18n.Messages.t;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -34,9 +36,9 @@ public enum SupportedCurrency {
         return symbol;
     }
 
-    /** "Russian ruble" */
+    /** "Russian ruble", in the app's language. */
     public String displayName() {
-        return displayName;
+        return t(displayName);
     }
 
     /**
@@ -44,6 +46,11 @@ public enum SupportedCurrency {
      * currency (comma groups, dot decimals) so a mixed list lines up and reads the same way.
      */
     public String format(long minorUnits) {
+        return com.jeib.i18n.Messages.ltr(formatPlain(minorUnits));
+    }
+
+    /** Like {@link #format} but without the right-to-left protection, for building signed text ("+$3"). */
+    public String formatPlain(long minorUnits) {
         DecimalFormat digits = new DecimalFormat("#,##0.00", DecimalFormatSymbols.getInstance(Locale.US));
         String number = digits.format(BigDecimal.valueOf(Math.abs(minorUnits), 2));
         String sign = minorUnits < 0 ? "-" : "";

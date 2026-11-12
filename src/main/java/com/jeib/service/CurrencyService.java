@@ -1,5 +1,7 @@
 package com.jeib.service;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.ExchangeRates;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.repository.SettingsRepository;
@@ -39,7 +41,7 @@ public final class CurrencyService {
     /** The current rates. Throws a ValidationException if no main currency has been chosen yet. */
     public ExchangeRates rates() throws SQLException {
         SupportedCurrency main = mainCurrency().orElseThrow(
-                () -> new ValidationException("currency", "Choose your main currency first."));
+                () -> new ValidationException("currency", t("Choose your main currency first.")));
         Map<SupportedCurrency, BigDecimal> rates = new EnumMap<>(SupportedCurrency.class);
         settings.findByPrefix(RATE_PREFIX).forEach((key, value) ->
                 rates.put(SupportedCurrency.valueOf(key.substring(RATE_PREFIX.length())), new BigDecimal(value)));
@@ -60,8 +62,9 @@ public final class CurrencyService {
         }
         ExchangeRates currentRates = rates();
         if (newMain != current.get() && !currentRates.canConvert(newMain)) {
-            throw new ValidationException("currency", "Set how much 1 " + newMain + " is in " + current.get()
-                    + " first, so your amounts and limits can be converted.");
+            throw new ValidationException("currency", t(
+                    "Set how much 1 {0} is in {1} first, so your amounts and limits can be converted.",
+                    newMain, current.get()));
         }
         ExchangeRates rebased = currentRates.withMain(newMain);
         Map<String, String> changes = new HashMap<>();
@@ -80,9 +83,9 @@ public final class CurrencyService {
      */
     public BigDecimal setRate(SupportedCurrency currency, String rateText) throws SQLException {
         SupportedCurrency main = mainCurrency().orElseThrow(
-                () -> new ValidationException("currency", "Choose your main currency first."));
+                () -> new ValidationException("currency", t("Choose your main currency first.")));
         if (currency == main) {
-            throw new ValidationException("rate", main + " is your main currency, so its rate is always 1.");
+            throw new ValidationException("rate", t("{0} is your main currency, so its rate is always 1.", main));
         }
         BigDecimal rate = parseRate(rateText);
         settings.save(Map.of(RATE_PREFIX + currency.name(), rate.toPlainString()));
@@ -90,16 +93,16 @@ public final class CurrencyService {
     }
 
     private static BigDecimal parseRate(String text) {
-        String trimmed = text == null ? "" : text.trim();
+        String trimmed = text == null ? "" : com.jeib.model.Digits.normalize(text).trim();
         if (!RATE.matcher(trimmed).matches()) {
-            throw new ValidationException("rate", "Enter a rate like 92.50 (at most 6 decimals).");
+            throw new ValidationException("rate", t("Enter a rate like 92.50 (at most 6 decimals)."));
         }
         BigDecimal rate = new BigDecimal(trimmed.replace(',', '.'));
         if (rate.signum() == 0) {
-            throw new ValidationException("rate", "The rate must be more than 0.");
+            throw new ValidationException("rate", t("The rate must be more than 0."));
         }
         if (rate.compareTo(MAX_RATE) > 0) {
-            throw new ValidationException("rate", "That rate is too large. Check it.");
+            throw new ValidationException("rate", t("That rate is too large. Check it."));
         }
         return rate;
     }

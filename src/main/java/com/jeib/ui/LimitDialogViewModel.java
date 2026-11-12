@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.SupportedCurrency;
 import com.jeib.service.BudgetService;
 import com.jeib.service.BudgetService.LimitLine;
@@ -36,10 +38,10 @@ public final class LimitDialogViewModel {
         this.budgets = budgets;
         this.categoryId = line.isOverall() ? null : line.category().id();
         this.hasLimit = line.limitMinor() != null;
-        this.title = line.isOverall() ? "Monthly limit" : line.category().name() + " limit";
-        this.hint = (line.isOverall() ? "The most you want to spend in a month, across all categories."
-                : "The most you want to spend on " + line.category().name() + " in a month.")
-                + " In " + main + "; applies to every month.";
+        this.title = line.isOverall() ? t("Monthly limit") : t("{0} limit", line.category().name());
+        this.hint = (line.isOverall() ? t("The most you want to spend in a month, across all categories.")
+                : t("The most you want to spend on {0} in a month.", line.category().name()))
+                + " " + t("In {0}; applies to every month.", main);
         if (hasLimit) {
             amount.set(BigDecimal.valueOf(line.limitMinor(), 2).stripTrailingZeros().toPlainString());
         }
@@ -83,7 +85,7 @@ public final class LimitDialogViewModel {
         task.setOnFailed(event -> {
             saving.set(false);
             Throwable e = task.getException();
-            error.set(e instanceof ValidationException ? e.getMessage() : "Something went wrong: " + e.getMessage());
+            error.set(e instanceof ValidationException ? e.getMessage() : t("Something went wrong: {0}", e.getMessage()));
         });
         error.set("");
         saving.set(true);

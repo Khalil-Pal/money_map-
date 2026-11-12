@@ -12,18 +12,22 @@
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.jeib.ui.SetupController" styleClass="dialog" maxWidth="560" maxHeight="-Infinity">
 
-    <ImageView fitWidth="44" fitHeight="44" preserveRatio="true" smooth="true">
-        <Image url="@logo.png"/>
-    </ImageView>
-    <Label text="Welcome to Jeib" styleClass="dialog-title"/>
+    <HBox styleClass="setup-top">
+        <ImageView fitWidth="44" fitHeight="44" preserveRatio="true" smooth="true">
+            <Image url="@logo.png"/>
+        </ImageView>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox fx:id="languageBox" styleClass="segmented" maxHeight="-Infinity"/>
+    </HBox>
+    <Label text="%Welcome to Jeib" styleClass="dialog-title"/>
     <Label styleClass="muted" wrapText="true"
-           text="Choose your main currency. Your totals, limits, and daily budget are shown in it. You can still enter amounts in the other two currencies."/>
+           text="%Choose your main currency. Your totals, limits, and daily budget are shown in it. You can still enter amounts in the other two currencies."/>
 
     <HBox fx:id="choices" spacing="12"/>
     <Label fx:id="error" styleClass="field-error" wrapText="true"/>
 
     <HBox styleClass="dialog-buttons">
         <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="continueButton" text="Continue" defaultButton="true" styleClass="button-primary"/>
+        <Button fx:id="continueButton" text="%Continue" defaultButton="true" styleClass="button-primary"/>
     </HBox>
 </VBox>

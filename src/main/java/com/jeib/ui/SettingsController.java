@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.SupportedCurrency;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -19,7 +21,9 @@ public final class SettingsController {
     private final SettingsViewModel viewModel;
     private final MainViewModel main;
     private final Path dataFile;
+    private final LanguageSwitcher languages;
 
+    @FXML private HBox languageBox;
     @FXML private ToggleButton themeLight;
     @FXML private ToggleButton themeDark;
     @FXML private HBox mainCurrencyBox;
@@ -36,14 +40,18 @@ public final class SettingsController {
     private final ToggleGroup currencyGroup = new ToggleGroup();
     private boolean updating; // true while the view sets toggles itself, so listeners don't react
 
-    public SettingsController(SettingsViewModel viewModel, MainViewModel main, Path dataFile) {
+    public SettingsController(SettingsViewModel viewModel, MainViewModel main, Path dataFile,
+                              LanguageSwitcher languages) {
         this.viewModel = viewModel;
         this.main = main;
         this.dataFile = dataFile;
+        this.languages = languages;
     }
 
     @FXML
     private void initialize() {
+        LanguagePicker.fill(languageBox, languages);
+
         // Appearance
         themeLight.setUserData(Theme.LIGHT);
         themeDark.setUserData(Theme.DARK);
@@ -84,8 +92,8 @@ public final class SettingsController {
             if (pending == null) {
                 selectCurrency(viewModel.mainCurrencyProperty().get());
             } else {
-                switchText.setText("Switch to " + pending + "? Your limits and exchange rates will be converted "
-                        + "to " + pending + ". Past transactions keep their own currency.");
+                switchText.setText(t("Switch to {0}? Your limits and exchange rates will be converted "
+                        + "to {0}. Past transactions keep their own currency.", pending));
             }
         });
         switchBox.visibleProperty().bind(viewModel.pendingMainProperty().isNotNull());
@@ -118,11 +126,11 @@ public final class SettingsController {
         SupportedCurrency mainCurrency = viewModel.mainCurrencyProperty().get();
         ratesBox.getChildren().clear();
         for (SupportedCurrency currency : viewModel.otherCurrencies()) {
-            Label left = new Label("1 " + currency + " =");
+            Label left = new Label(t("1 {0} =", currency));
             left.getStyleClass().add("rate-label");
             TextField field = new TextField();
             field.setId("rate-" + currency.name());
-            field.setPromptText("not set");
+            field.setPromptText(t("not set"));
             field.setPrefWidth(140);
             field.textProperty().bindBidirectional(viewModel.rateText(currency));
             Label right = new Label(mainCurrency.name());

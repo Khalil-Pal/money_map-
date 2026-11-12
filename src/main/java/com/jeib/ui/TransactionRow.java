@@ -30,7 +30,6 @@ public record TransactionRow(
         boolean income,
         Transaction source) {
 
-    static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US);
     static final String UNKNOWN_CATEGORY = "Unknown category";
     /** Slate, the same neutral color as "Other". */
     static final int UNKNOWN_COLOR = 6;
@@ -45,21 +44,22 @@ public record TransactionRow(
         boolean income = t.type() == TransactionType.INCOME;
         return new TransactionRow(
                 t.id(),
-                DATE.format(t.occurredOn()),
+                DateTimeFormatter.ofPattern(com.jeib.i18n.Messages.rightToLeft() ? "EEEE، d MMMM" : "EEE, MMM d",
+                        com.jeib.i18n.Messages.locale()).format(t.occurredOn()), // Arabic: الخميس، 12 نوفمبر
                 t.note(),
-                category == null ? UNKNOWN_CATEGORY : category.name(),
+                category == null ? com.jeib.i18n.Messages.t(UNKNOWN_CATEGORY) : category.name(),
                 category == null ? UNKNOWN_COLOR : category.colorIndex(),
-                (income ? "+" : "") + formatAmount(t.amountMinor(), t.currency()),
+                com.jeib.i18n.Messages.ltr((income ? "+" : "") + formatAmount(t.amountMinor(), t.currency())),
                 income,
                 t);
     }
 
     private static String formatAmount(long minorUnits, String currencyCode) {
         try {
-            return SupportedCurrency.valueOf(currencyCode).format(minorUnits);
+            return SupportedCurrency.valueOf(currencyCode).formatPlain(minorUnits);
         } catch (IllegalArgumentException e) {
             // Not one of ours (shouldn't happen): show the plain number and the code.
-            return SupportedCurrency.USD.format(minorUnits).substring(1) + " " + currencyCode;
+            return SupportedCurrency.USD.formatPlain(minorUnits).substring(1) + " " + currencyCode;
         }
     }
 }

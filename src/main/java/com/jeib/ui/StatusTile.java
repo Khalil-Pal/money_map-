@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.LimitStatus;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -28,10 +30,10 @@ final class StatusTile {
         String text;
         String style;
         switch (status) {
-            case OK -> { path = CHECK; text = "Within limit"; style = "status-ok"; }
-            case WARNING -> { path = TRIANGLE; text = "Near limit"; style = "status-warning"; }
-            case EXCEEDED -> { path = OCTAGON; text = "Limit exceeded"; style = "status-exceeded"; }
-            default -> { path = DASH; text = "No limit"; style = "status-none"; }
+            case OK -> { path = CHECK; text = t("Within limit"); style = "status-ok"; }
+            case WARNING -> { path = TRIANGLE; text = t("Near limit"); style = "status-warning"; }
+            case EXCEEDED -> { path = OCTAGON; text = t("Limit exceeded"); style = "status-exceeded"; }
+            default -> { path = DASH; text = t("No limit"); style = "status-none"; }
         }
         SVGPath icon = new SVGPath();
         icon.setContent(path);

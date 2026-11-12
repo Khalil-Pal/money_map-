@@ -16,10 +16,10 @@
 
     <VBox styleClass="card,tx-card">
         <HBox styleClass="tx-header">
-            <Label text="Category" styleClass="limit-col-category"/>
-            <Label text="Spent this month" styleClass="limit-col-progress" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-            <Label text="Used" styleClass="limit-col-percent"/>
-            <Label text="Status" styleClass="limit-col-status"/>
+            <Label text="%Category" styleClass="limit-col-category"/>
+            <Label text="%Spent this month" styleClass="limit-col-progress" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Label text="%Used" styleClass="limit-col-percent"/>
+            <Label text="%Status" styleClass="limit-col-status"/>
         </HBox>
         <VBox fx:id="rowsBox"/>
     </VBox>

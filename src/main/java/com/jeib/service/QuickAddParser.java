@@ -1,5 +1,7 @@
 package com.jeib.service;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.Money;
 import com.jeib.model.SupportedCurrency;
@@ -54,7 +56,12 @@ public final class QuickAddParser {
             Map.entry("shekels", SupportedCurrency.ILS),
             Map.entry("rub", SupportedCurrency.RUB), Map.entry("₽", SupportedCurrency.RUB),
             Map.entry("ruble", SupportedCurrency.RUB), Map.entry("rubles", SupportedCurrency.RUB),
-            Map.entry("руб", SupportedCurrency.RUB));
+            Map.entry("руб", SupportedCurrency.RUB),
+            // Arabic: dollar, shekel (both spellings, plural), ruble
+            Map.entry("دولار", SupportedCurrency.USD), Map.entry("دولارات", SupportedCurrency.USD),
+            Map.entry("شيكل", SupportedCurrency.ILS), Map.entry("شيقل", SupportedCurrency.ILS),
+            Map.entry("شواكل", SupportedCurrency.ILS), Map.entry("روبل", SupportedCurrency.RUB),
+            Map.entry("روبلات", SupportedCurrency.RUB));
 
     private QuickAddParser() {
     }
@@ -75,9 +82,11 @@ public final class QuickAddParser {
      * @throws ValidationException (field {@link #FIELD}) when the line doesn't start with an amount
      */
     public static Parsed parse(String text, List<Category> categories, SupportedCurrency main, LocalDate today) {
-        List<String> words = new ArrayList<>(Arrays.asList((text == null ? "" : text).strip().split("\\s+")));
+        // Arabic-Indic digits (٢٥٠) become ASCII first, so "٢٥٠ طعام" works like "250 food".
+        String normalized = com.jeib.model.Digits.normalize(text == null ? "" : text);
+        List<String> words = new ArrayList<>(Arrays.asList(normalized.strip().split("\\s+")));
         if (words.getFirst().isEmpty()) {
-            throw new ValidationException(FIELD, "Type an amount first, e.g. 250 food lunch.");
+            throw new ValidationException(FIELD, t("Type an amount first, e.g. 250 food lunch."));
         }
 
         String amount = words.removeFirst();
@@ -99,13 +108,13 @@ public final class QuickAddParser {
             }
         }
         if (!AMOUNT.matcher(amount).matches()) {
-            throw new ValidationException(FIELD, "Start with an amount, e.g. 250 food lunch (at most two decimals).");
+            throw new ValidationException(FIELD, t("Start with an amount, e.g. 250 food lunch (at most two decimals)."));
         }
         long amountMinor;
         try {
             amountMinor = Money.parseMinorUnits(amount);
         } catch (ArithmeticException e) {
-            throw new ValidationException(FIELD, "That amount is too large.");
+            throw new ValidationException(FIELD, t("That amount is too large."));
         }
 
         if (currency == null && !words.isEmpty()) {

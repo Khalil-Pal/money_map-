@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.ExchangeRates;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.service.BudgetService;
@@ -125,7 +127,7 @@ public final class SettingsViewModel {
         run(() -> {
             switchNow(target);
             return Map.of();
-        }, "Your main currency is now " + target + ". Limits and rates were converted.");
+        }, t("Your main currency is now {0}. Limits and rates were converted.", target));
     }
 
     // ---- exchange rates --------------------------------------------------------
@@ -153,7 +155,7 @@ public final class SettingsViewModel {
     public void saveRates() {
         Map<SupportedCurrency, String> texts = new LinkedHashMap<>();
         otherCurrencies().forEach(c -> texts.put(c, rateTexts.get(c).get()));
-        run(() -> saveRatesNow(texts), "Exchange rates saved.");
+        run(() -> saveRatesNow(texts), t("Exchange rates saved."));
     }
 
     @FunctionalInterface
@@ -184,7 +186,7 @@ public final class SettingsViewModel {
         task.setOnFailed(event -> {
             busy.set(false);
             Throwable e = task.getException();
-            error.set(e instanceof ValidationException ? e.getMessage() : "Something went wrong: " + e.getMessage());
+            error.set(e instanceof ValidationException ? e.getMessage() : t("Something went wrong: {0}", e.getMessage()));
         });
         error.set("");
         busy.set(true);

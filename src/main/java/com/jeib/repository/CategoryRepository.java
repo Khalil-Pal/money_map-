@@ -199,7 +199,8 @@ public final class CategoryRepository {
     private static Category map(ResultSet row) throws SQLException {
         return new Category(
                 row.getString("id"),
-                row.getString("name"),
+                // Untouched default categories show in the app's language (Food → طعام).
+                com.jeib.i18n.DefaultCategories.displayName(row.getString("id"), row.getString("name")),
                 TransactionType.valueOf(row.getString("kind")),
                 row.getInt("color_index"),
                 row.getInt("built_in") == 1);

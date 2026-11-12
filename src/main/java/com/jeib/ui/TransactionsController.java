@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
@@ -74,7 +76,7 @@ public final class TransactionsController {
     private Node row(TransactionRow row) {
         Label date = label(row.date(), "tx-col-date", "muted");
 
-        Label note = row.note() == null ? label("No note", "tx-col-note", "muted") : label(row.note(), "tx-col-note");
+        Label note = row.note() == null ? label(t("No note"), "tx-col-note", "muted") : label(row.note(), "tx-col-note");
         note.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(note, Priority.ALWAYS);
 
@@ -94,7 +96,7 @@ public final class TransactionsController {
                 dialogs.openEditTransaction(row.source());
                 event.consume();
             } else if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
-                viewModel.delete(row.id(), () -> toasts.show("Transaction deleted.", "Undo", history::undo));
+                viewModel.delete(row.id(), () -> toasts.show(t("Transaction deleted."), t("Undo"), history::undo));
                 event.consume();
             }
         });

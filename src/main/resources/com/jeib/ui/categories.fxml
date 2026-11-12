@@ -11,23 +11,23 @@
       fx:controller="com.jeib.ui.CategoriesController" styleClass="dashboard-page">
 
     <Label styleClass="muted" wrapText="true"
-           text="Every category has its own color, used in every chart. Deleting one moves its transactions to Other (or Other income)."/>
+           text="%Every category has its own color, used in every chart. Deleting one moves its transactions to Other (or Other income)."/>
     <Label fx:id="message" styleClass="tx-message" wrapText="true" maxWidth="Infinity"/>
 
     <HBox styleClass="dashboard-row">
         <VBox styleClass="card,tx-card" HBox.hgrow="ALWAYS" prefWidth="0" maxWidth="Infinity">
             <HBox styleClass="tx-header">
-                <Label text="Expense categories"/>
+                <Label text="%Expense categories"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="newExpense" text="+ New" styleClass="button-link"/>
+                <Button fx:id="newExpense" text="%+ New" styleClass="button-link"/>
             </HBox>
             <VBox fx:id="expenseRows"/>
         </VBox>
         <VBox styleClass="card,tx-card" HBox.hgrow="ALWAYS" prefWidth="0" maxWidth="Infinity" maxHeight="-Infinity">
             <HBox styleClass="tx-header">
-                <Label text="Income categories"/>
+                <Label text="%Income categories"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="newIncome" text="+ New" styleClass="button-link"/>
+                <Button fx:id="newIncome" text="%+ New" styleClass="button-link"/>
             </HBox>
             <VBox fx:id="incomeRows"/>
         </VBox>

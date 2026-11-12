@@ -183,6 +183,14 @@ shared `Database.inTransaction` would make it atomic if it ever matters. Branch 
 `feature/settings` → `feature/categories-ui` → `feature/limits` → `feature/transactions` → PR #2.
 Left for Dec 1: daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
 
+Nov 12 (late): English + Arabic on `feature/arabic` (stacked on `feature/settings`). Checked with
+screenshots in Arabic (fresh setup, dashboard, list, dialog, budgets, settings) and English
+(unchanged). Not checked live: switching language while the app runs (JeibApp.rebuildIn); Snap
+builds one language per run (`tools/Snap.java <db> <prefix> <date> ar`). Known edges: editing a
+default category while in Arabic saves its Arabic name (it then stays Arabic in English too);
+a user category named "طعام" next to the default Food shows two "طعام" in Arabic. The Arabic
+text was written by Claude; ask an Arabic-speaking tester to read through it.
+
 1. ~~Start of session: short status, step 1 quiz, catch-up plan, branch.~~
 2. ~~**Week 3 step 2: categories.**~~ Original brief, for reference — in `CategoryRepository` (+ a small service if it helps):
    - create: name required and trimmed, unique per kind ignoring case (DB index

@@ -22,7 +22,7 @@ import javax.imageio.ImageIO;
  * through the main flows, and saves a screenshot after each step, so UI changes can be checked
  * without clicking through the app by hand. Build first (mvnw package), then from the repo root:
  *
- *   "%JAVA_HOME%\bin\java" --class-path "target/classes;target/libs/*" tools/Snap.java <temp.db> <out-prefix> [yyyy-mm-dd]
+ *   "%JAVA_HOME%\bin\java" --class-path "target/classes;target/libs/*" tools/Snap.java <temp.db> <out-prefix> [yyyy-mm-dd] [ar]
  *
  * On a fresh database it also captures the first-launch setup (choosing RUB). The optional date
  * fixes "today" (and so the month shown). Use a temp path for the database, never the real one.
@@ -35,7 +35,10 @@ public class Snap {
         String out = args[1];
         Platform.startup(() -> {
             try {
-                JeibApp.MainWindow window = JeibApp.createMainWindow(new Database(Path.of(args[0])), clock);
+                if (args.length > 3 && "ar".equals(args[3])) {
+                    com.jeib.i18n.Messages.setLanguage(com.jeib.i18n.Language.ARABIC);
+                }
+                JeibApp.MainWindow window = JeibApp.createMainWindow(new Database(Path.of(args[0])), clock, language -> { });
                 MainViewModel vm = window.viewModel();
                 Scene scene = new Scene(window.root(), 1280, 800);
                 Stage stage = new Stage();
@@ -194,7 +197,7 @@ public class Snap {
 
     static void open(Scene scene, String page) {
         ((ToggleButton) scene.getRoot().lookupAll(".nav-item").stream()
-                .filter(n -> page.equals(((ToggleButton) n).getText())).findFirst().orElseThrow()).fire();
+                .filter(n -> page.equals(n.getUserData())).findFirst().orElseThrow()).fire();
     }
 
     static void sleep(long ms) {

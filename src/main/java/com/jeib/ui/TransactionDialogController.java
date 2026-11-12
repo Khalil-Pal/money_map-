@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.TransactionType;
@@ -188,7 +190,7 @@ public final class TransactionDialogController {
             chip.setToggleGroup(categoryGroup);
             return chip;
         }).toList());
-        Button add = new Button("+ New category");
+        Button add = new Button(t("+ New category"));
         add.setId("newCategoryChip");
         add.getStyleClass().addAll("category-chip", "new-category-chip");
         add.setOnAction(event -> viewModel.startAddingCategory());

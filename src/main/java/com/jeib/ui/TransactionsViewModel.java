@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.service.CategoryService;
 import com.jeib.service.TransactionCommands;
@@ -29,7 +31,10 @@ import javafx.concurrent.Task;
  */
 public final class TransactionsViewModel {
 
-    private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US);
+    /** "November 2026", in the app's language. */
+    private static DateTimeFormatter month() {
+        return DateTimeFormatter.ofPattern("MMMM yyyy", com.jeib.i18n.Messages.locale());
+    }
 
     private final TransactionService transactions;
     private final TransactionCommands commands;
@@ -98,10 +103,15 @@ public final class TransactionsViewModel {
             }
             rows.setAll(task.getValue());
             int count = rows.size();
-            String in = only == null ? "" : " in " + only.name();
-            summary.set(count == 0 ? "" : (count == 1 ? "1 transaction" : count + " transactions") + in);
-            message.set(count == 0 ? "No " + (only == null ? "" : only.name() + " ") + "transactions in "
-                    + MONTH.format(requested) + "." : "");
+            String monthName = month().format(requested);
+            if (only == null) {
+                summary.set(count == 0 ? "" : count == 1 ? t("1 transaction") : t("{0} transactions", count));
+                message.set(count == 0 ? t("No transactions in {0}.", monthName) : "");
+            } else {
+                summary.set(count == 0 ? "" : count == 1 ? t("1 transaction in {0}", only.name())
+                        : t("{0} transactions in {1}", count, only.name()));
+                message.set(count == 0 ? t("No {0} transactions in {1}.", only.name(), monthName) : "");
+            }
             loading.set(false);
         });
         task.setOnFailed(event -> {
@@ -110,7 +120,7 @@ public final class TransactionsViewModel {
             }
             rows.clear();
             summary.set("");
-            message.set("Couldn't load transactions: " + task.getException().getMessage());
+            message.set(t("Couldn't load transactions: {0}", task.getException().getMessage()));
             loading.set(false);
         });
         loading.set(true);
@@ -131,7 +141,7 @@ public final class TransactionsViewModel {
             onDeleted.run();
         });
         task.setOnFailed(event -> {
-            message.set("Couldn't delete: " + task.getException().getMessage());
+            message.set(t("Couldn't delete: {0}", task.getException().getMessage()));
             load();
         });
         Thread.ofVirtual().name("jeib-delete").start(task);

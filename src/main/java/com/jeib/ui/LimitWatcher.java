@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.LimitStatus;
 import com.jeib.service.BudgetService;
 import com.jeib.service.BudgetService.LimitLine;
@@ -74,13 +76,13 @@ public final class LimitWatcher {
             LimitStatus previous = before.getOrDefault(key, LimitStatus.NO_LIMIT);
             if (line.status() == LimitStatus.EXCEEDED && previous != LimitStatus.EXCEEDED) {
                 exceeded.add(line.isOverall()
-                        ? "You're over your monthly limit (" + line.percent() + "%)."
-                        : line.category().name() + " is over its monthly limit (" + line.percent() + "%).");
+                        ? t("You're over your monthly limit ({0}%).", line.percent())
+                        : t("{0} is over its monthly limit ({1}%).", line.category().name(), line.percent()));
             } else if (line.status() == LimitStatus.WARNING
                     && previous != LimitStatus.WARNING && previous != LimitStatus.EXCEEDED) {
                 warnings.add(line.isOverall()
-                        ? "You've used " + line.percent() + "% of your monthly limit."
-                        : line.category().name() + " is at " + line.percent() + "% of its monthly limit.");
+                        ? t("You've used {0}% of your monthly limit.", line.percent())
+                        : t("{0} is at {1}% of its monthly limit.", line.category().name(), line.percent()));
             }
         }
         exceeded.addAll(warnings);

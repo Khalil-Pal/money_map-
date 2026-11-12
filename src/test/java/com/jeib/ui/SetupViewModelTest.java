@@ -24,7 +24,7 @@ class SetupViewModelTest {
         Database database = new Database(tempDir.resolve("test.db"));
         database.migrate();
         CurrencyService currencies = new CurrencyService(new SettingsRepository(database));
-        SetupViewModel viewModel = new SetupViewModel(currencies);
+        SetupViewModel viewModel = new SetupViewModel(currencies, null);
 
         assertFalse(viewModel.canSave().get());
         viewModel.choiceProperty().set(SupportedCurrency.ILS);

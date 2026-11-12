@@ -31,7 +31,6 @@ import javafx.concurrent.Task;
  */
 public final class MainViewModel {
 
-    private static final DateTimeFormatter MONTH_LABEL = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US);
 
     private final Database database;
     private final CategoryRepository categories;
@@ -55,7 +54,7 @@ public final class MainViewModel {
         this.categories = categories;
         this.currencies = currencies;
         this.month = new SimpleObjectProperty<>(YearMonth.now(clock));
-        this.monthLabel = Bindings.createStringBinding(() -> MONTH_LABEL.format(month.get()), month);
+        this.monthLabel = Bindings.createStringBinding(() -> DateTimeFormatter.ofPattern("MMMM yyyy", com.jeib.i18n.Messages.locale()).format(month.get()), month);
     }
 
     private record Loaded(List<Category> categories, boolean hasMainCurrency, String theme) {

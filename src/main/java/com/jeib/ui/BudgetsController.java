@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.LimitStatus;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.service.BudgetService.LimitLine;
@@ -48,14 +50,14 @@ public final class BudgetsController {
             return;
         }
         SupportedCurrency main = budget.mainCurrency();
-        intro.setText("Limits apply to every month and are in " + main + ". Click one to change it.");
+        intro.setText(t("Limits apply to every month and are in {0}. Click one to change it.", main));
         if (budget.unconverted().isEmpty()) {
             warning.setVisible(false);
             warning.setManaged(false);
         } else {
             String codes = budget.unconverted().stream().map(Enum::name).collect(Collectors.joining(", "));
-            warning.setText("Spending in " + codes + " isn't counted yet: it has no exchange rate. "
-                    + "Open one of those transactions and enter the rate.");
+            warning.setText(t("Spending in {0} isn't counted yet: it has no exchange rate. "
+                    + "Open one of those transactions and enter the rate.", codes));
             warning.setVisible(true);
             warning.setManaged(true);
         }
@@ -64,28 +66,28 @@ public final class BudgetsController {
     }
 
     private void renderOverall(LimitLine overall, SupportedCurrency main) {
-        Label title = new Label("Monthly limit · all spending");
+        Label title = new Label(t("Monthly limit · all spending"));
         title.getStyleClass().add("card-title");
         overallCard.setOnMouseClicked(null);
         overallCard.setOnKeyPressed(null);
         overallCard.setFocusTraversable(false);
         overallCard.getStyleClass().remove("clickable-card");
         if (overall.limitMinor() == null) {
-            Label text = new Label("Spent " + main.format(overall.spentMinor()) + " this month. Set an overall limit "
-                    + "to see how much is left and how much you can spend per day.");
+            Label text = new Label(t("Spent {0} this month. Set an overall limit "
+                    + "to see how much is left and how much you can spend per day.", main.format(overall.spentMinor())));
             text.getStyleClass().add("muted");
             text.setWrapText(true);
-            Button set = new Button("Set monthly limit");
+            Button set = new Button(t("Set monthly limit"));
             set.setId("setOverallLimit");
             set.getStyleClass().add("button-primary");
             set.setOnAction(event -> dialogs.openLimit(overall, main));
             overallCard.getChildren().setAll(title, text, set);
             return;
         }
-        Label amounts = new Label(main.format(overall.spentMinor()) + " of " + main.format(overall.limitMinor()));
+        Label amounts = new Label(t("{0} of {1}", main.format(overall.spentMinor()), main.format(overall.limitMinor())));
         amounts.getStyleClass().add("limit-big");
         long remaining = overall.remainingMinor();
-        Label left = new Label(remaining >= 0 ? main.format(remaining) + " left" : main.format(-remaining) + " over");
+        Label left = new Label(remaining >= 0 ? t("{0} left", main.format(remaining)) : t("{0} over", main.format(-remaining)));
         left.getStyleClass().add("muted");
         HBox top = new HBox(amounts, spacer(), percent(overall), StatusTile.of(overall.status()));
         top.getStyleClass().add("limit-top");
@@ -106,9 +108,9 @@ public final class BudgetsController {
         HBox.setHgrow(middle, Priority.ALWAYS);
         Label amounts;
         if (line.limitMinor() == null) {
-            amounts = new Label(main.format(line.spentMinor()) + " spent");
+            amounts = new Label(t("{0} spent", main.format(line.spentMinor())));
         } else {
-            amounts = new Label(main.format(line.spentMinor()) + " of " + main.format(line.limitMinor()));
+            amounts = new Label(t("{0} of {1}", main.format(line.spentMinor()), main.format(line.limitMinor())));
             middle.getChildren().add(bar(line));
         }
         amounts.getStyleClass().add("muted");

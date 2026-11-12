@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.TransactionType;
@@ -86,7 +88,7 @@ public final class QuickAddViewModel {
     /** Parses the current text; throws a ValidationException for text that can't be added. */
     QuickAddParser.Parsed parseNow() {
         if (mainCurrency == null) {
-            throw new ValidationException(QuickAddParser.FIELD, "Choose your main currency first.");
+            throw new ValidationException(QuickAddParser.FIELD, t("Choose your main currency first."));
         }
         return QuickAddParser.parse(text.get(), knownCategories, mainCurrency, LocalDate.now(clock));
     }
@@ -98,7 +100,7 @@ public final class QuickAddViewModel {
             return;
         }
         try {
-            preview.set(describe(parseNow()) + "   ·   Enter to add, Esc to clear");
+            preview.set(t("{0}   ·   Enter to add, Esc to clear", describe(parseNow())));
             previewIsError.set(false);
         } catch (ValidationException e) {
             preview.set(e.getMessage());
@@ -109,12 +111,13 @@ public final class QuickAddViewModel {
     /** "Expense · 250.00 ₽ · Food · “lunch”" */
     static String describe(QuickAddParser.Parsed parsed) {
         boolean income = parsed.input().type() == TransactionType.INCOME;
-        StringBuilder line = new StringBuilder(income ? "Income" : "Expense")
-                .append(" · ").append(income ? "+" : "")
-                .append(parsed.input().currency().format(parsed.amountMinor()))
+        StringBuilder line = new StringBuilder(income ? t("Income") : t("Expense"))
+                .append(" · ")
+                .append(com.jeib.i18n.Messages.ltr((income ? "+" : "")
+                        + parsed.input().currency().formatPlain(parsed.amountMinor())))
                 .append(" · ").append(parsed.category().name());
         if (!parsed.categoryMatched()) {
-            line.append(" (no category matched)");
+            line.append(" ").append(t("(no category matched)"));
         }
         if (parsed.input().note() != null) {
             line.append(" · “").append(parsed.input().note()).append("”");
@@ -156,16 +159,17 @@ public final class QuickAddViewModel {
             saving.set(false);
             text.set("");
             afterAdd.run();
-            onAdded.accept("Added " + (parsed.input().type() == TransactionType.INCOME ? "+" : "")
-                    + parsed.input().currency().format(parsed.amountMinor()) + " · " + parsed.category().name() + ".");
+            onAdded.accept(t("Added {0} · {1}.", com.jeib.i18n.Messages.ltr(
+                    (parsed.input().type() == TransactionType.INCOME ? "+" : "")
+                    + parsed.input().currency().formatPlain(parsed.amountMinor())), parsed.category().name()));
         });
         task.setOnFailed(event -> {
             saving.set(false);
             Throwable error = task.getException();
             String message = error instanceof ValidationException ? error.getMessage()
-                    : "Something went wrong: " + error.getMessage();
+                    : t("Something went wrong: {0}", error.getMessage());
             if (error instanceof ValidationException v && "currency".equals(v.field())) {
-                message += " Use New transaction to enter the rate.";
+                message += " " + t("Use New transaction to enter the rate.");
             }
             preview.set(message);
             previewIsError.set(true);

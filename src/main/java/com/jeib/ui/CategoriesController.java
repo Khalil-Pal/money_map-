@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import javafx.beans.binding.Bindings;
@@ -57,13 +59,13 @@ public final class CategoriesController {
         Label name = new Label(category.name());
         HBox row = new HBox(10, swatch, name);
         if (category.builtIn()) {
-            Label note = new Label("built-in · can't be deleted");
+            Label note = new Label(t("built-in · can't be deleted"));
             note.getStyleClass().add("chip-note");
             row.getChildren().add(note);
         }
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        Label edit = new Label("Edit");
+        Label edit = new Label(t("Edit"));
         edit.getStyleClass().add("row-action");
         row.getChildren().addAll(gap, edit);
         row.getStyleClass().addAll("tx-row", "tx-row-clickable", "category-row");

@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.LeftPerDay;
 import com.jeib.model.LimitStatus;
 import com.jeib.model.SupportedCurrency;
@@ -30,7 +32,10 @@ import javafx.scene.shape.Circle;
  */
 public final class DashboardController {
 
-    private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.US);
+    /** "November 2026", in the app's language. */
+    private static DateTimeFormatter month() {
+        return DateTimeFormatter.ofPattern("MMMM yyyy", com.jeib.i18n.Messages.locale());
+    }
     private static final double DONUT_RADIUS = 76;
 
     private final DashboardViewModel viewModel;
@@ -67,8 +72,9 @@ public final class DashboardController {
             warning.setVisible(false);
             warning.setManaged(false);
         } else {
-            warning.setText("Spending in " + data.unconverted().stream().map(Enum::name).collect(Collectors.joining(", "))
-                    + " isn't counted yet: it has no exchange rate. Open one of those transactions and enter the rate.");
+            warning.setText(t("Spending in {0} isn't counted yet: it has no exchange rate. "
+                    + "Open one of those transactions and enter the rate.",
+                    data.unconverted().stream().map(Enum::name).collect(Collectors.joining(", "))));
             warning.setVisible(true);
             warning.setManaged(true);
         }
@@ -81,44 +87,44 @@ public final class DashboardController {
 
     private Node spentCard(DashboardData data, SupportedCurrency main) {
         LimitLine overall = data.overall();
-        String sub = overall.limitMinor() == null ? "No monthly limit set"
-                : "of " + main.format(overall.limitMinor()) + " monthly limit";
-        return kpi("Spent this month", main.format(overall.spentMinor()), false, muted(sub),
+        String sub = overall.limitMinor() == null ? t("No monthly limit set")
+                : t("of {0} monthly limit", main.format(overall.limitMinor()));
+        return kpi(t("Spent this month"), main.format(overall.spentMinor()), false, muted(sub),
                 "spentCard", () -> navigation.openTransactions(null));
     }
 
     private Node remainingCard(DashboardData data, SupportedCurrency main) {
         LimitLine overall = data.overall();
         if (overall.limitMinor() == null) {
-            return kpi("Remaining", "—", false, muted("Set a monthly limit to see what's left"),
+            return kpi(t("Remaining"), "—", false, muted(t("Set a monthly limit to see what's left")),
                     "remainingCard", () -> dialogs.openLimit(overall, main));
         }
         long remaining = overall.remainingMinor();
-        String value = remaining >= 0 ? main.format(remaining) : "Over by " + main.format(-remaining);
-        HBox sub = new HBox(10, StatusTile.of(overall.status()), muted(overall.percent() + "% used"));
+        String value = remaining >= 0 ? main.format(remaining) : t("Over by {0}", main.format(-remaining));
+        HBox sub = new HBox(10, StatusTile.of(overall.status()), muted(t("{0}% used", overall.percent())));
         sub.getStyleClass().add("kpi-sub");
-        return kpi("Remaining", value, remaining < 0, sub, "remainingCard", navigation::openBudgets);
+        return kpi(t("Remaining"), value, remaining < 0, sub, "remainingCard", navigation::openBudgets);
     }
 
     private Node perDayCard(DashboardData data, SupportedCurrency main) {
         LimitLine overall = data.overall();
         if (data.monthOver()) {
-            return kpi("Left per day", "—", false, muted(MONTH.format(data.month()) + " is over."),
+            return kpi(t("Left per day"), "—", false, muted(t("{0} is over.", month().format(data.month()))),
                     "perDayCard", navigation::openBudgets);
         }
         if (overall.limitMinor() == null) {
-            Button set = new Button("Set monthly limit");
+            Button set = new Button(t("Set monthly limit"));
             set.getStyleClass().add("button-primary");
             set.setOnAction(event -> dialogs.openLimit(overall, main));
-            VBox sub = new VBox(10, muted("Your daily budget comes from your monthly limit."), set);
-            return kpi("Left per day", "—", false, sub, "perDayCard", () -> dialogs.openLimit(overall, main));
+            VBox sub = new VBox(10, muted(t("Your daily budget comes from your monthly limit.")), set);
+            return kpi(t("Left per day"), "—", false, sub, "perDayCard", () -> dialogs.openLimit(overall, main));
         }
         LeftPerDay perDay = data.leftPerDay();
-        String days = perDay.daysLeft() == 1 ? "1 day left" : perDay.daysLeft() + " days left";
+        String days = perDay.daysLeft() == 1 ? t("1 day left") : t("{0} days left", perDay.daysLeft());
         Label sub = perDay.perDayMinor() == 0
-                ? styled("You've used your whole monthly limit.", "kpi-danger-note")
-                : muted(days + " · based on your monthly limit");
-        return kpi("Left per day", main.format(perDay.perDayMinor()) + " / day", perDay.perDayMinor() == 0, sub,
+                ? styled(t("You've used your whole monthly limit."), "kpi-danger-note")
+                : muted(t("{0} · based on your monthly limit", days));
+        return kpi(t("Left per day"), t("{0} / day", main.format(perDay.perDayMinor())), perDay.perDayMinor() == 0, sub,
                 "perDayCard", navigation::openBudgets);
     }
 
@@ -138,9 +144,9 @@ public final class DashboardController {
     // ---- where the money went ----------------------------------------------
 
     private void renderChart(DashboardData data, SupportedCurrency main) {
-        Label title = styled("Where it went", "card-title");
+        Label title = styled(t("Where it went"), "card-title");
         if (data.slices().isEmpty()) {
-            chartCard.getChildren().setAll(title, muted("No spending in " + MONTH.format(data.month()) + " yet."));
+            chartCard.getChildren().setAll(title, muted(t("No spending in {0} yet.", month().format(data.month()))));
             return;
         }
         VBox legend = new VBox(2);
@@ -154,7 +160,7 @@ public final class DashboardController {
             HBox.setHgrow(gap, Priority.ALWAYS);
             Label amount = new Label(main.format(slice.amountMinor()));
             // A small but real amount shouldn't read as "0%".
-            Label percent = styled(slice.percent() == 0 ? "<1%" : slice.percent() + "%", "legend-percent");
+            Label percent = styled(com.jeib.i18n.Messages.ltr(slice.percent() == 0 ? "<1%" : slice.percent() + "%"), "legend-percent");
             HBox row = new HBox(8, swatch, name, gap, amount, percent);
             row.getStyleClass().add("legend-row");
             clickable(row, () -> navigation.openTransactions(slice.category()));
@@ -183,7 +189,7 @@ public final class DashboardController {
             start -= length;
         }
         Label totalLabel = styled(main.format(total), "donut-total");
-        Label caption = styled("spent", "muted");
+        Label caption = styled(t("spent"), "muted");
         VBox center = new VBox(totalLabel, caption);
         center.getStyleClass().add("donut-center");
         StackPane donut = new StackPane(rings, center);
@@ -194,19 +200,19 @@ public final class DashboardController {
     // ---- limits ------------------------------------------------------------
 
     private void renderLimits(DashboardData data, SupportedCurrency main) {
-        Button all = new Button("All limits");
+        Button all = new Button(t("All limits"));
         all.getStyleClass().add("button-link");
         all.setOnAction(event -> navigation.openBudgets());
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        HBox header = new HBox(styled("Limits", "card-title"), gap, all);
+        HBox header = new HBox(styled(t("Limits"), "card-title"), gap, all);
         header.getStyleClass().add("card-header");
         if (data.limits().isEmpty()) {
-            Button set = new Button("Set limits");
+            Button set = new Button(t("Set limits"));
             set.getStyleClass().add("button-secondary");
             set.setOnAction(event -> navigation.openBudgets());
             limitsCard.getChildren().setAll(header,
-                    muted("No category limits yet. Give a category a monthly limit to see how you're doing."), set);
+                    muted(t("No category limits yet. Give a category a monthly limit to see how you're doing.")), set);
             return;
         }
         VBox rows = new VBox(4);
@@ -216,7 +222,7 @@ public final class DashboardController {
             Region gapTop = new Region();
             HBox.setHgrow(gapTop, Priority.ALWAYS);
             HBox top = new HBox(8, swatch, new Label(line.category().name()), gapTop,
-                    muted(main.format(line.spentMinor()) + " of " + main.format(line.limitMinor())));
+                    muted(t("{0} of {1}", main.format(line.spentMinor()), main.format(line.limitMinor()))));
             top.getStyleClass().add("limit-mini-top");
 
             ProgressBar bar = new ProgressBar(Math.min(1.0, line.percent() / 100.0));

@@ -1,5 +1,7 @@
 package com.jeib.service;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.CategoryRepository;
@@ -73,7 +75,7 @@ public final class CategoryService {
     public List<String> delete(String id) throws SQLException {
         Category category = requireActive(id);
         if (category.builtIn()) {
-            throw new ValidationException("\"" + category.name() + "\" is built in and can't be deleted.");
+            throw new ValidationException(t("\"{0}\" is built in and can't be deleted.", category.name()));
         }
         Category fallback = categories.findBuiltIn(category.kind());
         return categories.softDelete(id, fallback.id());
@@ -92,12 +94,12 @@ public final class CategoryService {
 
     private static int requireUsableColor(int colorIndex, int[] usage) {
         if (colorIndex < 0 || colorIndex >= Category.PALETTE_SIZE) {
-            throw new ValidationException("color", "Pick one of the " + Category.PALETTE_SIZE + " colors.");
+            throw new ValidationException("color", t("Pick one of the {0} colors.", Category.PALETTE_SIZE));
         }
         boolean taken = usage[colorIndex] > 0;
         boolean anyFree = Arrays.stream(usage).anyMatch(uses -> uses == 0);
         if (taken && anyFree) {
-            throw new ValidationException("color", "That color is already used by another category. Pick a free one.");
+            throw new ValidationException("color", t("That color is already used by another category. Pick a free one."));
         }
         return colorIndex;
     }
@@ -105,23 +107,24 @@ public final class CategoryService {
     private static String cleanName(String name) {
         String clean = name == null ? "" : name.strip().replaceAll("\\s+", " ");
         if (clean.isEmpty()) {
-            throw new ValidationException("name", "Give the category a name.");
+            throw new ValidationException("name", t("Give the category a name."));
         }
         if (clean.codePointCount(0, clean.length()) > MAX_NAME_LENGTH) {
-            throw new ValidationException("name", "Keep the name to " + MAX_NAME_LENGTH + " characters or fewer.");
+            throw new ValidationException("name", t("Keep the name to {0} characters or fewer.", MAX_NAME_LENGTH));
         }
         return clean;
     }
 
     private void requireNameFree(TransactionType kind, String name, String exceptId) throws SQLException {
         if (categories.nameTaken(kind, name, exceptId)) {
-            throw new ValidationException("name", "You already have an " + kind.name().toLowerCase(Locale.ROOT)
-                    + " category called \"" + name + "\".");
+            throw new ValidationException("name", kind == TransactionType.EXPENSE
+                    ? t("You already have an expense category called \"{0}\".", name)
+                    : t("You already have an income category called \"{0}\".", name));
         }
     }
 
     private Category requireActive(String id) throws SQLException {
         return categories.findActiveById(id)
-                .orElseThrow(() -> new ValidationException("This category no longer exists."));
+                .orElseThrow(() -> new ValidationException(t("This category no longer exists.")));
     }
 }

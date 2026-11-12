@@ -127,6 +127,27 @@ status indicator · (30) server-generated reports (RabbitMQ) · (39) shared hous
 
 **Not planned:** bank API integrations, AI chat, investment tracking, receipt OCR, web/mobile.
 
+### Languages (decided Nov 12, 2026): English + Arabic
+
+- **Every user-facing string goes through `Messages.t("English text", args…)`** (gettext-style: the
+  English sentence is the key; placeholders `{0}`, `{1}` are replaced literally, no MessageFormat).
+  In FXML write `text="%English text"` (loaders use `Messages.bundle()`). Add the Arabic in
+  `i18n/Arabic.java`; `ArabicCoverageTest` fails if a sentence or a placeholder is missing.
+  Keys reached through a variable (page names, color names…) are listed in that test's `INDIRECT`.
+- Arabic is right-to-left: the window root gets `NodeOrientation.RIGHT_TO_LEFT`, which mirrors
+  every layout. Amounts and other left-to-right snippets go through `Messages.ltr` (built into
+  `SupportedCurrency.format`; use `formatPlain` + `ltr` when adding a sign: "+$300.00").
+  Arabic counts are phrased "عدد المعاملات: 12" to avoid plural agreement.
+- Digits: Arabic-Indic input (٢٥٠٫٥) is accepted everywhere amounts are parsed (`model/Digits`);
+  displayed numbers stay Western (250.50). Dates and month names follow the language.
+- The 11 default categories show in the app's language while their names are unchanged
+  (`i18n/DefaultCategories`, applied in `CategoryRepository.map`). Quick add knows Arabic
+  currency words (دولار، شيكل، روبل).
+- The language is saved in settings (`PreferencesService`, key `language`), read in
+  `JeibApp.init()` before the window is built (default: Arabic on an Arabic Windows, else
+  English). Switching (setup or Settings) saves it and rebuilds the window (`LanguageSwitcher`,
+  `JeibApp.rebuildIn`). Sidebar items use `userData` as their fixed page id, never their text.
+
 ## Non-negotiable engineering rules
 
 These come straight from the roadmap; follow them in any code you write.
@@ -282,7 +303,9 @@ powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1   # dist\Je
   every limit by dividing by the typed rate, so 92,500 RUB at 92.5 is exactly $1,000.00), the
   exchange rates for the other two currencies (each saved separately; one bad rate doesn't block
   the others), and the data file path. `CurrencyService.setMainCurrency` now refuses a switch to
-  a currency without a rate. 254 tests passing.
+  a currency without a rate.
+  Then English + Arabic, branch `feature/arabic` (see "Languages" above for the rules). Language
+  picker in first-launch setup and in Settings. 263 tests passing.
   Next (before Dec 1): automatic daily backup (keep 7) + crash log, then the zipped `Jeib.exe`.
 - Not done yet: Inter font isn't bundled (falls back to Segoe UI); the app image is ~177 MB (trim
   with jlink / `--add-modules` in Week 7); real installers need the WiX Toolset (Week 7).

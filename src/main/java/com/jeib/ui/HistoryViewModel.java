@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.service.UndoManager;
 import com.jeib.service.ValidationException;
 import java.sql.SQLException;
@@ -25,11 +27,11 @@ public final class HistoryViewModel {
     }
 
     public void undo() {
-        run(history::undo, "Undone: ", "Nothing to undo.", "Can't undo: ");
+        run(history::undo, "Undone: {0}", "Nothing to undo.", "Can't undo: {0}");
     }
 
     public void redo() {
-        run(history::redo, "Redone: ", "Nothing to redo.", "Can't redo: ");
+        run(history::redo, "Redone: {0}", "Nothing to redo.", "Can't redo: {0}");
     }
 
     @FunctionalInterface
@@ -48,16 +50,16 @@ public final class HistoryViewModel {
             Optional<String> description = task.getValue();
             if (description.isPresent()) {
                 afterChange.run();
-                report.accept(done + description.get());
+                report.accept(t(done, description.get()));
             } else {
-                report.accept(nothing);
+                report.accept(t(nothing));
             }
         });
         task.setOnFailed(event -> {
             Throwable error = task.getException();
             report.accept(error instanceof ValidationException
-                    ? failed + error.getMessage()
-                    : "Something went wrong: " + error.getMessage());
+                    ? t(failed, error.getMessage())
+                    : t("Something went wrong: {0}", error.getMessage()));
             afterChange.run(); // the list may be out of date; show what's really stored
         });
         Thread.ofVirtual().name("jeib-history").start(task);

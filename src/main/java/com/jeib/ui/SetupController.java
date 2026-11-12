@@ -18,6 +18,7 @@ public final class SetupController {
     private final Runnable onDone;
 
     @FXML private HBox choices;
+    @FXML private HBox languageBox;
     @FXML private Label error;
     @FXML private Button continueButton;
 
@@ -28,6 +29,7 @@ public final class SetupController {
 
     @FXML
     private void initialize() {
+        LanguagePicker.fill(languageBox, viewModel.languages());
         ToggleGroup group = new ToggleGroup();
         for (SupportedCurrency currency : SupportedCurrency.values()) {
             Label symbol = new Label(currency.symbol());

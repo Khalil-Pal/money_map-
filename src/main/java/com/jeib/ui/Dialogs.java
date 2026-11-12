@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
@@ -84,7 +86,7 @@ public final class Dialogs {
         }, () -> {
             host.close();
             afterChange.run();
-            toasts.show("Transaction deleted.", "Undo", history::undo);
+            toasts.show(t("Transaction deleted."), t("Undo"), history::undo);
         })));
         viewModel.load();
     }
@@ -118,6 +120,7 @@ public final class Dialogs {
 
     private static Parent load(String fxml, Object controller) {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(Dialogs.class.getResource(fxml), fxml));
+        loader.setResources(com.jeib.i18n.Messages.bundle());
         loader.setControllerFactory(type -> controller);
         try {
             return loader.load();

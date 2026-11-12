@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import java.util.Map;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
@@ -120,7 +122,7 @@ public final class MainController {
         });
         showPage(navGroup.getSelectedToggle());
         navigation.attach(page -> navGroup.getToggles().stream()
-                .filter(toggle -> page.equals(((ToggleButton) toggle).getText()))
+                .filter(toggle -> page.equals(toggle.getUserData()))
                 .findFirst()
                 .ifPresent(navGroup::selectToggle));
 
@@ -170,7 +172,7 @@ public final class MainController {
             }
         });
         quickAdd.setOnAction(event -> quickAddViewModel.submit(
-                message -> toasts.show(message, "Undo", history::undo)));
+                message -> toasts.show(message, t("Undo"), history::undo)));
         quickAdd.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 quickAddViewModel.clear();
@@ -182,13 +184,14 @@ public final class MainController {
     private void applyTheme(Scene scene) {
         Theme theme = viewModel.themeProperty().get();
         theme.applyTo(scene);
-        themeToggle.setText(theme == Theme.LIGHT ? "Dark mode" : "Light mode");
+        themeToggle.setText(theme == Theme.LIGHT ? t("Dark mode") : t("Light mode"));
         themeIcon.setContent(theme == Theme.LIGHT ? MOON : SUN);
     }
 
     private void showPage(Toggle toggle) {
-        String page = ((ToggleButton) toggle).getText();
-        pageTitle.setText(page);
+        // userData is the page's fixed id ("Budgets"); the button text is translated.
+        String page = (String) toggle.getUserData();
+        pageTitle.setText(t(page));
         boolean dashboard = "Dashboard".equals(page);
         boolean transactions = "Transactions".equals(page);
         boolean budgets = "Budgets".equals(page);
@@ -196,7 +199,7 @@ public final class MainController {
         boolean settings = "Settings".equals(page);
         dashboardPage.setVisible(dashboard);
         dashboardPage.setManaged(dashboard);
-        comingSoon.setText(COMING.getOrDefault(page, ""));
+        comingSoon.setText(t(COMING.getOrDefault(page, "")));
         boolean built = dashboard || transactions || budgets || categories || settings;
         comingSoon.setVisible(!built);
         comingSoon.setManaged(!built);

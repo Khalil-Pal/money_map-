@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.SupportedCurrency;
 import com.jeib.service.CurrencyService;
 import java.sql.SQLException;
@@ -17,14 +19,16 @@ import javafx.concurrent.Task;
 public final class SetupViewModel {
 
     private final CurrencyService currencies;
+    private final LanguageSwitcher languages;
 
     private final ObjectProperty<SupportedCurrency> choice = new SimpleObjectProperty<>();
     private final StringProperty error = new SimpleStringProperty("");
     private final BooleanProperty saving = new SimpleBooleanProperty(false);
     private final BooleanBinding canSave = choice.isNotNull().and(saving.not());
 
-    public SetupViewModel(CurrencyService currencies) {
+    public SetupViewModel(CurrencyService currencies, LanguageSwitcher languages) {
         this.currencies = currencies;
+        this.languages = languages;
     }
 
     /** The database work, run off the JavaFX thread by {@link #save}; tests call it directly. */
@@ -51,11 +55,16 @@ public final class SetupViewModel {
         });
         task.setOnFailed(event -> {
             saving.set(false);
-            error.set("Couldn't save: " + task.getException().getMessage());
+            error.set(t("Couldn't save: {0}", task.getException().getMessage()));
         });
         error.set("");
         saving.set(true);
         Thread.ofVirtual().name("jeib-setup").start(task);
+    }
+
+    /** The language picker: switching rebuilds the window, and setup opens again in that language. */
+    public LanguageSwitcher languages() {
+        return languages;
     }
 
     public ObjectProperty<SupportedCurrency> choiceProperty() {

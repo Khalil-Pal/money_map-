@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import com.jeib.service.CategoryService;
@@ -80,7 +82,7 @@ public final class CategoryDialogViewModel {
             }
         };
         task.setOnSucceeded(event -> apply(task.getValue()));
-        task.setOnFailed(event -> errors.get("form").set("Couldn't load colors: " + task.getException().getMessage()));
+        task.setOnFailed(event -> errors.get("form").set(t("Couldn't load colors: {0}", task.getException().getMessage())));
         Thread.ofVirtual().name("jeib-category-colors").start(task);
     }
 
@@ -112,19 +114,22 @@ public final class CategoryDialogViewModel {
     String saveNow(String nameText, TransactionType type, Integer colorIndex) throws SQLException {
         if (editing == null) {
             Category created = categories.create(nameText, type, colorIndex);
-            return "Category “" + created.name() + "” added.";
+            return t("Category “{0}” added.", created.name());
         }
         Category updated = categories.update(editing.id(), nameText, colorIndex == null ? editing.colorIndex() : colorIndex);
-        return "Category “" + updated.name() + "” saved.";
+        return t("Category “{0}” saved.", updated.name());
     }
 
     /** Database work for {@link #delete}. Returns the toast message. */
     String deleteNow() throws SQLException {
         List<String> moved = categories.delete(editing.id());
-        String fallback = editing.kind() == TransactionType.EXPENSE ? "Other" : "Other income";
-        return "Category “" + editing.name() + "” deleted."
-                + (moved.isEmpty() ? "" : " " + moved.size() + (moved.size() == 1 ? " transaction" : " transactions")
-                + " moved to " + fallback + ".");
+        String fallback = editing.kind() == TransactionType.EXPENSE ? t("Other") : t("Other income");
+        String deleted = t("Category “{0}” deleted.", editing.name());
+        if (moved.isEmpty()) {
+            return deleted;
+        }
+        return deleted + " " + (moved.size() == 1 ? t("1 transaction moved to {0}.", fallback)
+                : t("{0} transactions moved to {1}.", moved.size(), fallback));
     }
 
     public void save(Consumer<String> onDone) {
@@ -168,7 +173,7 @@ public final class CategoryDialogViewModel {
             if (e instanceof ValidationException v) {
                 errors.getOrDefault(v.field() == null ? "form" : v.field(), errors.get("form")).set(v.getMessage());
             } else {
-                errors.get("form").set("Something went wrong: " + e.getMessage());
+                errors.get("form").set(t("Something went wrong: {0}", e.getMessage()));
             }
         });
         errors.values().forEach(error -> error.set(""));
@@ -180,9 +185,9 @@ public final class CategoryDialogViewModel {
 
     public String title() {
         if (editing != null) {
-            return "Edit category";
+            return t("Edit category");
         }
-        return kind.get() == TransactionType.EXPENSE ? "New expense category" : "New income category";
+        return kind.get() == TransactionType.EXPENSE ? t("New expense category") : t("New income category");
     }
 
     public boolean isEditing() {
@@ -195,9 +200,9 @@ public final class CategoryDialogViewModel {
     }
 
     public String deleteQuestion() {
-        String fallback = kind.get() == TransactionType.EXPENSE ? "Other" : "Other income";
-        return editing == null ? "" : "Delete “" + editing.name() + "”? Its transactions move to " + fallback
-                + ". This can't be undone.";
+        String fallback = kind.get() == TransactionType.EXPENSE ? t("Other") : t("Other income");
+        return editing == null ? "" : t("Delete “{0}”? Its transactions move to {1}. This can't be undone.",
+                editing.name(), fallback);
     }
 
     public StringProperty nameProperty() {

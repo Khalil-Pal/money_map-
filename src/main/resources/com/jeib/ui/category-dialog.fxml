@@ -15,13 +15,13 @@
     <Label fx:id="title" styleClass="dialog-title"/>
 
     <VBox styleClass="field">
-        <Label text="Name" styleClass="field-label"/>
-        <TextField fx:id="nameField" promptText="e.g. Coffee"/>
+        <Label text="%Name" styleClass="field-label"/>
+        <TextField fx:id="nameField" promptText="%e.g. Coffee"/>
         <Label fx:id="nameError" styleClass="field-error" wrapText="true"/>
     </VBox>
 
     <VBox styleClass="field">
-        <Label text="Color" styleClass="field-label"/>
+        <Label text="%Color" styleClass="field-label"/>
         <FlowPane fx:id="colors" hgap="6" vgap="6"/>
         <Label fx:id="colorHint" styleClass="hint" wrapText="true"/>
         <Label fx:id="colorError" styleClass="field-error" wrapText="true"/>
@@ -31,13 +31,13 @@
 
     <HBox fx:id="confirmBox" styleClass="confirm-box">
         <Label fx:id="confirmText" wrapText="true" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-        <Button fx:id="keepButton" text="Keep it" styleClass="button-secondary" minWidth="-Infinity"/>
+        <Button fx:id="keepButton" text="%Keep it" styleClass="button-secondary" minWidth="-Infinity"/>
     </HBox>
 
     <HBox styleClass="dialog-buttons">
-        <Button fx:id="deleteButton" text="Delete" styleClass="button-danger"/>
+        <Button fx:id="deleteButton" text="%Delete" styleClass="button-danger"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="cancelButton" text="Cancel" cancelButton="true" styleClass="button-secondary"/>
-        <Button fx:id="categorySave" text="Save" defaultButton="true" styleClass="button-primary"/>
+        <Button fx:id="cancelButton" text="%Cancel" cancelButton="true" styleClass="button-secondary"/>
+        <Button fx:id="categorySave" text="%Save" defaultButton="true" styleClass="button-primary"/>
     </HBox>
 </VBox>

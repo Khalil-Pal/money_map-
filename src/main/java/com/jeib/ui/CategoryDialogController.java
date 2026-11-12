@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -61,8 +63,8 @@ public final class CategoryDialogController {
             option.getStyleClass().add("color-option");
             option.setId("color-" + i);
             option.setUserData(i);
-            option.setAccessibleText(COLOR_NAMES[i]);
-            option.setTooltip(new Tooltip(COLOR_NAMES[i]));
+            option.setAccessibleText(t(COLOR_NAMES[i]));
+            option.setTooltip(new Tooltip(t(COLOR_NAMES[i])));
             option.setToggleGroup(colorGroup);
             colors.getChildren().add(option);
         }
@@ -89,7 +91,7 @@ public final class CategoryDialogController {
         confirmBox.visibleProperty().bind(viewModel.confirmingDeleteProperty());
         confirmBox.managedProperty().bind(viewModel.confirmingDeleteProperty());
         deleteButton.textProperty().bind(Bindings.when(viewModel.confirmingDeleteProperty())
-                .then("Yes, delete").otherwise("Delete"));
+                .then(t("Yes, delete")).otherwise(t("Delete")));
         deleteButton.disableProperty().bind(viewModel.savingProperty());
         deleteButton.setOnAction(event -> viewModel.delete(onDone));
         keepButton.setOnAction(event -> viewModel.cancelDelete());
@@ -117,8 +119,8 @@ public final class CategoryDialogController {
             ((ToggleButton) toggle).setDisable(viewModel.isTaken(index));
         });
         colorHint.setText(viewModel.allColorsUsed()
-                ? "All 14 colors are in use, so colors can repeat now."
-                : "Greyed-out colors belong to other categories.");
+                ? t("All 14 colors are in use, so colors can repeat now.")
+                : t("Greyed-out colors belong to other categories."));
     }
 
     private void showError(Label label, String key) {

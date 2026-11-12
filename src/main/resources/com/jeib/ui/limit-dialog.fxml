@@ -15,18 +15,18 @@
     <Label fx:id="hint" styleClass="muted" wrapText="true"/>
 
     <VBox styleClass="field">
-        <Label text="Limit per month" styleClass="field-label"/>
+        <Label text="%Limit per month" styleClass="field-label"/>
         <HBox spacing="10" alignment="CENTER_LEFT">
-            <TextField fx:id="limitField" promptText="e.g. 10000" styleClass="amount-input" HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="limitField" promptText="%e.g. 10000" styleClass="amount-input" HBox.hgrow="ALWAYS"/>
             <Label fx:id="unit" styleClass="muted"/>
         </HBox>
         <Label fx:id="error" styleClass="field-error" wrapText="true"/>
     </VBox>
 
     <HBox styleClass="dialog-buttons">
-        <Button fx:id="removeButton" text="Remove limit" styleClass="button-danger"/>
+        <Button fx:id="removeButton" text="%Remove limit" styleClass="button-danger"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="cancelButton" text="Cancel" cancelButton="true" styleClass="button-secondary"/>
-        <Button fx:id="limitSave" text="Save" defaultButton="true" styleClass="button-primary"/>
+        <Button fx:id="cancelButton" text="%Cancel" cancelButton="true" styleClass="button-secondary"/>
+        <Button fx:id="limitSave" text="%Save" defaultButton="true" styleClass="button-primary"/>
     </HBox>
 </VBox>

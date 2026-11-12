@@ -1,5 +1,7 @@
 package com.jeib.service;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Transaction;
 import java.sql.SQLException;
 
@@ -64,7 +66,7 @@ public final class TransactionCommands {
 
         @Override
         public String description() {
-            return "Add transaction";
+            return t("Add transaction");
         }
     }
 
@@ -84,7 +86,7 @@ public final class TransactionCommands {
         public void execute() throws SQLException {
             if (before == null) {
                 Transaction current = transactions.find(id)
-                        .orElseThrow(() -> new ValidationException("This transaction no longer exists."));
+                        .orElseThrow(() -> new ValidationException(t("This transaction no longer exists.")));
                 before = TransactionService.inputOf(current);
                 after = transactions.edit(id, input);
             } else {
@@ -99,7 +101,7 @@ public final class TransactionCommands {
 
         @Override
         public String description() {
-            return "Edit transaction";
+            return t("Edit transaction");
         }
     }
 
@@ -122,7 +124,7 @@ public final class TransactionCommands {
 
         @Override
         public String description() {
-            return "Delete transaction";
+            return t("Delete transaction");
         }
     }
 }

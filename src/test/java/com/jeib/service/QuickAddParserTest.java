@@ -132,6 +132,28 @@ class QuickAddParserTest {
     }
 
     @Test
+    void arabicDigitsCurrencyWordsAndCategoryNamesWork() {
+        List<Category> arabic = List.of(
+                new Category("food", "طعام", EXPENSE, 0, false),
+                new Category("other", "أخرى", EXPENSE, 6, true),
+                new Category("salary", "راتب", INCOME, 8, false),
+                new Category("other-income", "دخل آخر", INCOME, 13, true));
+
+        QuickAddParser.Parsed lunch = QuickAddParser.parse("٢٥٠ طعام غداء", arabic, RUB, TODAY);
+        assertEquals(25_000, lunch.amountMinor());
+        assertEquals("طعام", lunch.category().name());
+        assertEquals("غداء", lunch.input().note());
+
+        QuickAddParser.Parsed pay = QuickAddParser.parse("+٣٠٠ دولار راتب", arabic, RUB, TODAY);
+        assertEquals(INCOME, pay.input().type());
+        assertEquals(USD, pay.input().currency());
+        assertEquals("راتب", pay.category().name());
+
+        assertEquals(ILS, QuickAddParser.parse("45 شيكل هدية", arabic, RUB, TODAY).input().currency());
+        assertEquals("طعام", QuickAddParser.parse("12 طع", arabic, RUB, TODAY).category().name()); // a unique start
+    }
+
+    @Test
     void aCommaWorksAsTheDecimalSeparator() {
         assertEquals(1_250, parse("12,5 food").amountMinor());
     }

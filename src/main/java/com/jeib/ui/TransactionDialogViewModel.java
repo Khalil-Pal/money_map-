@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.ExchangeRates;
 import com.jeib.model.SupportedCurrency;
@@ -56,7 +58,7 @@ public final class TransactionDialogViewModel {
     private final Clock clock;
 
     private String editingId; // null while adding
-    private final StringProperty title = new SimpleStringProperty("New transaction");
+    private final StringProperty title = new SimpleStringProperty(t("New transaction"));
     private final BooleanProperty editing = new SimpleBooleanProperty(false);
     private final ObjectProperty<TransactionType> type = new SimpleObjectProperty<>(TransactionType.EXPENSE);
     private final StringProperty amount = new SimpleStringProperty("");
@@ -73,7 +75,7 @@ public final class TransactionDialogViewModel {
     private final BooleanBinding rateNeeded = currency.isNotNull().and(mainCurrency.isNotNull())
             .and(Bindings.notEqual(currency, mainCurrency));
     private final StringBinding rateLabel = Bindings.createStringBinding(
-            () -> currency.get() == null ? "" : "1 " + currency.get() + " =", currency);
+            () -> currency.get() == null ? "" : t("1 {0} =", currency.get()), currency);
     private final Map<String, StringProperty> errors = new LinkedHashMap<>();
     private final BooleanProperty saving = new SimpleBooleanProperty(false);
     private final BooleanProperty addingCategory = new SimpleBooleanProperty(false);
@@ -120,7 +122,7 @@ public final class TransactionDialogViewModel {
     public void startNew() {
         editingId = null;
         editing.set(false);
-        title.set("New transaction");
+        title.set(t("New transaction"));
         type.set(TransactionType.EXPENSE);
         amount.set("");
         currency.set(mainCurrency.get()); // null until loaded; apply() fills it in
@@ -132,7 +134,7 @@ public final class TransactionDialogViewModel {
     public void startEdit(Transaction transaction) {
         editingId = transaction.id();
         editing.set(true);
-        title.set("Edit transaction");
+        title.set(t("Edit transaction"));
         type.set(transaction.type());
         amount.set(BigDecimal.valueOf(transaction.amountMinor(), 2).toPlainString());
         currency.set(SupportedCurrency.valueOf(transaction.currency()));
@@ -333,7 +335,7 @@ public final class TransactionDialogViewModel {
     }
 
     private static String message(Throwable error) {
-        return "Something went wrong: " + error.getMessage();
+        return t("Something went wrong: {0}", error.getMessage());
     }
 
     // ---- properties for the controller -------------------------------------

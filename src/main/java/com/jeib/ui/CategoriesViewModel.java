@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import com.jeib.service.CategoryService;
@@ -42,7 +44,7 @@ public final class CategoriesViewModel {
             income.setAll(task.getValue().stream().filter(c -> c.kind() == TransactionType.INCOME).toList());
             message.set("");
         });
-        task.setOnFailed(event -> message.set("Couldn't load categories: " + task.getException().getMessage()));
+        task.setOnFailed(event -> message.set(t("Couldn't load categories: {0}", task.getException().getMessage())));
         Thread.ofVirtual().name("jeib-categories").start(task);
     }
 
