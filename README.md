@@ -2,151 +2,41 @@
   <img src="jeib-logo-rounded.png" alt="Jeib logo" width="120">
 </p>
 
-<h1 align="center">Jeib</h1>
+<h1 align="center">Jeib · جيب</h1>
 
-<p align="center">A local-first desktop app to plan, track, and review your spending.</p>
+<p align="center">A simple desktop app to track your spending, set monthly limits, and see how much you can
+still spend each day. In English and Arabic.</p>
 
-Set monthly limits, log payments, and see where you stand. At month end, Jeib generates a report
-and an Excel file. Your data stays on your computer by default; optionally, sync it across devices
-through your own backend.
+## What it does
 
-**Status:** planning / early development. See [the roadmap](developer-roadmap.docx).
+- **Add spending in seconds:** type `250 food lunch` and press Enter, or use the New transaction form.
+- **Monthly limits** for each category and overall, with a warning at 80% and an alert at 100%.
+- **Left per day:** how much you can still spend each day until the month ends.
+- **Dashboard:** where your money went, as a chart, plus your limits at a glance.
+- **Your own categories,** each with its own color.
+- **Three currencies:** US dollar, Israeli shekel, and Russian ruble, with your own exchange rates.
+- **Undo anything** with Ctrl+Z.
+- **English and Arabic**, with light, dark, or automatic (by time of day) theme.
+- **Private:** your data stays on your computer, with an automatic backup every day.
 
-## Features
+## Download (Windows)
 
-### v1.0: everything that works offline
+1. Open the [Releases page](https://github.com/Khalil-Pal/money_map-/releases).
+2. Download **Jeib-0.1.0-windows.zip**.
+3. Right-click the zip and choose **Extract All**, then **Extract**.
+4. Open the **Jeib** folder and double-click **Jeib.exe**. You don't need to install Java.
+5. If Windows says **"Windows protected your PC"**, click **More info**, then **Run anyway**. This only
+   happens the first time, because the test build isn't signed yet.
+6. Choose your language and main currency, and start adding.
 
-**Track**
-- Add, edit, and delete income and expenses (amount, date, category, note)
-- Editable categories, multiple accounts (cash, card, savings), multi-currency
-- Recurring payments with reminders for upcoming bills
-- Search, filters, and tags
-- **CSV import** from bank statements with automatic categorization
+Found a problem or have an idea? In Jeib, open **Settings → Help**.
 
-**Plan**
-- Monthly limit per category and an overall monthly limit
-- Limit status with in-app notifications: **OK**, **Warning** (≥ 80%), **Exceeded** (≥ 100%)
-- Savings goals with progress tracking
+## Build from source
 
-**Understand**
-- Dashboard: spent so far, remaining, chart
-- **Spending forecast**: "At this pace you'll exceed Food around day 22"
-- Month-over-month comparison
-- Subscription finder: spots repeated monthly payments
-- Monthly report, with Excel and PDF export
-
-**Work fast**
-- **Undo/redo** for every add, edit, and delete (Ctrl+Z / Ctrl+Y)
-- **Quick-add bar** and keyboard shortcuts: type `250 food lunch`, press Enter
-
-**Stay safe**
-- **Password lock** with an encrypted database
-- **Automatic backups**: a daily local snapshot, last 7 kept, one-click restore
-- Crash log with "Report a problem"
-
-**Feel at home**
-- Dark mode, first-run setup, remembers your window layout
-- Auto-update check and a "Send feedback" button
-
-### v2.0: optional cloud sync
-
-- Account: register, log in, log out
-- Sync across devices — the app still works fully offline
-- Sync status indicator
-- Reports generated on the server
-- Shared household budget (stretch goal)
-
-## Architecture
-
-```
-┌────────────────────┐   sync (HTTPS, JWT)   ┌──────────────────┐      ┌────────────┐
-│ JavaFX desktop app │ ◄───────────────────► │ Spring Boot API  │ ◄──► │ PostgreSQL │
-│  SQLite (local)    │                       └────────┬─────────┘      └────────────┘
-│  works offline     │                                │
-└────────────────────┘                  ┌─────────────┴─────────────┐
-                                        │                           │
-                              Redis (cache, rate limit)   RabbitMQ (reports, Excel jobs)
-```
-
-The app writes to SQLite first, so the UI never waits for the network. Sync runs in the
-background when you're logged in and online. Conflicts resolve with last-write-wins; pushes are
-idempotent (client-generated UUIDs).
-
-## Tech stack
-
-| Area | Tools |
-|---|---|
-| Desktop | Java 21, JavaFX 21 (FXML + CSS), SQLite, Flyway, Apache POI |
-| Backend | Spring Boot 3, Spring Security (JWT), Spring Data JPA, PostgreSQL |
-| Infrastructure | Redis, RabbitMQ, Docker, docker-compose, GitHub Actions |
-| Quality | JUnit 5, Mockito, Testcontainers, Actuator, Prometheus, Grafana |
-| Packaging | jpackage installers via GitHub Releases |
-
-## Getting started
-
-### Try it on Windows (test build)
-
-1. Download `Jeib-0.1.0-windows.zip` and unzip it anywhere (for example, your Desktop).
-2. Open the `Jeib` folder and double-click **Jeib.exe**. You don't need Java.
-3. Windows may say **"Windows protected your PC"**, because the test build isn't signed yet.
-   Click **More info → Run anyway**. This only happens the first time.
-4. Pick your language (English or العربية) and your main currency, and start adding.
-
-Your data stays on your computer in `%APPDATA%\Jeib`. Jeib makes a backup there every day
-(Settings → Backups). Found a problem? Settings → Help → **Report a problem**.
-
-Proper installers will be on the GitHub Releases page from v1.0 (planned for December 20, 2026).
-
-### Build from source
-
-You need **JDK 21** with `JAVA_HOME` pointing to it. Maven comes with the repo (`mvnw`).
+You need JDK 21. Maven comes with the project.
 
 ```bash
-./mvnw javafx:run          # run the app
-./mvnw test                # run the tests
-./mvnw package             # build target/jeib-*.jar and target/libs/
+mvnw.cmd javafx:run                                                   # run the app
+mvnw.cmd test                                                         # run the tests
+powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1  # build the zip
 ```
-
-On Windows, use `mvnw.cmd` instead of `./mvnw`. To build `dist\Jeib\Jeib.exe` (bundles its own Java
-runtime):
-
-```bash
-powershell -ExecutionPolicy Bypass -File scripts/package-windows.ps1
-```
-
-Jeib keeps its database in your app-data folder (`%APPDATA%\Jeib\jeib.db` on Windows,
-`~/Library/Application Support/Jeib` on macOS, `~/.local/share/jeib` on Linux).
-
-### Project layout
-
-```
-src/main/java/com/jeib/
-  model/        records and rules (Category, Money, LimitRules)
-  db/           SQLite connection and Flyway migrations
-  repository/   SQL for each table
-  ui/           JavaFX views (FXML), view-models, theme switching
-src/main/resources/
-  db/migration/          V1__initial_schema.sql, V2__default_categories.sql
-  com/jeib/ui/styles/    theme-light.css, theme-dark.css (color tokens), app.css (components)
-```
-
-## Documentation
-
-Architecture and analysis docs (SRS, UML, ERD, BPMN, C4 diagrams, ADRs, performance report) will
-live in [`/docs`](docs/).
-
-## Roadmap
-
-| Milestone | Target |
-|---|---|
-| JavaFX + SQLite skeleton, schema migrated | Oct 25, 2026 |
-| Core features, limits, dashboard, undo/redo, quick-add | Nov 22, 2026 |
-| Private build in daily use (self-test starts) | Nov 29, 2026 |
-| **v1.0** released on GitHub with every offline feature | Dec 20, 2026 |
-| **v2.0**: sync on two devices, Redis, RabbitMQ, CI/CD | Jan 17, 2027 |
-| Documentation package complete | Feb 7, 2027 |
-| Performance report | Feb 28, 2027 |
-
-## Feedback
-
-Found a bug or have an idea? Open a GitHub Issue (bug, idea, and question templates).
