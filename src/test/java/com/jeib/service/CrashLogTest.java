@@ -60,17 +60,18 @@ class CrashLogTest {
     }
 
     @Test
-    void problemReportsStayShortEnoughForABrowser() {
+    void problemReportsOpenADraftForTheSupportAddress() {
         List<String> hugeLog = new ArrayList<>(Collections.nCopies(2_000, "\tat com.jeib.Something.method(Something.java:42)"));
         hugeLog.add("the newest line");
 
         String url = ProblemReport.problemUrl(hugeLog);
 
-        assertTrue(url.startsWith(AppInfo.ISSUES + "?title="));
+        assertTrue(url.startsWith("mailto:h.hoshieh@yandex.ru?subject="));
         assertTrue(url.length() <= ProblemReport.MAX_URL, "url is " + url.length());
         String body = URLDecoder.decode(url.substring(url.indexOf("&body=") + 6), StandardCharsets.UTF_8);
         assertTrue(body.contains("the newest line")); // the oldest lines go first
         assertTrue(body.contains("Jeib " + AppInfo.VERSION));
-        assertTrue(ProblemReport.feedbackUrl().contains("title=Idea"));
+        assertEquals("https://mail.google.com/mail/u/0/?fs=1&to=Khalilayed777@gmail.com&tf=cm",
+                ProblemReport.supportUrl());
     }
 }

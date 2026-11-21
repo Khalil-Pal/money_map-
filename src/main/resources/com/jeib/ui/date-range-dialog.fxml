@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.DateRangeDialogController" styleClass="dialog" maxWidth="480" maxHeight="-Infinity">
+    <Label text="%Date range" styleClass="dialog-title"/>
+    <VBox styleClass="field">
+        <Label text="%Start date" styleClass="field-label"/>
+        <DatePicker fx:id="startDate" accessibleText="%Start date" editable="false" maxWidth="Infinity"/>
+    </VBox>
+    <VBox styleClass="field">
+        <Label text="%End date" styleClass="field-label"/>
+        <DatePicker fx:id="endDate" accessibleText="%End date" editable="false" maxWidth="Infinity"/>
+    </VBox>
+    <Label fx:id="error" styleClass="field-error" wrapText="true"/>
+    <HBox styleClass="dialog-buttons">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="%Cancel" onAction="#cancel" cancelButton="true" styleClass="button-secondary"/>
+        <Button fx:id="applyDateRange" text="%Apply" onAction="#apply" defaultButton="true" styleClass="button-primary"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.RecurringController" styleClass="dashboard-page">
+    <VBox styleClass="card,settings-card">
+        <Label text="%Recurring payments" styleClass="card-title"/>
+        <Label text="%Track monthly bills and see their next due dates." styleClass="muted" wrapText="true"/>
+        <FlowPane hgap="8" vgap="8">
+            <TextField fx:id="paymentName" promptText="%Name" accessibleText="%Name" prefColumnCount="12"/>
+            <TextField fx:id="paymentAmount" promptText="%Amount" accessibleText="%Amount" prefColumnCount="8"/>
+            <ComboBox fx:id="paymentCurrency" accessibleText="%Currency"/>
+            <TextField fx:id="paymentDay" promptText="%Day of month" accessibleText="%Day of month" prefColumnCount="10"/>
+            <ComboBox fx:id="paymentCategory" promptText="%Category" accessibleText="%Category"/>
+            <Button fx:id="addPayment" text="%Add recurring payment" styleClass="button-primary"/>
+        </FlowPane>
+        <Label fx:id="paymentError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+    <VBox fx:id="paymentRows" spacing="10"/>
+</VBox>

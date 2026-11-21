@@ -1,51 +1,50 @@
 package com.jeib.service;
 
+import static com.jeib.i18n.Messages.t;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-/**
- * Links that open a new GitHub issue, already filled in ("Report a problem" and "Send feedback",
- * features 37 and 17). Nothing is sent by Jeib itself: the browser shows the issue, and the user
- * reads, edits, and submits it (or not).
- */
+/** Draft links for feedback and crash reports. */
 public final class ProblemReport {
 
-    /** Browsers and GitHub reject very long URLs; the log part is trimmed to stay well under. */
-    static final int MAX_URL = 7_000;
+    /** Keep the mailto link short for mail handlers with limited command-line lengths. */
+    static final int MAX_URL = 1_800;
 
     private ProblemReport() {
     }
 
-    /** A bug report with the system details and the last lines of the crash log. */
+    /** An email draft with the system details and as many recent crash log lines as fit. */
     public static String problemUrl(List<String> logTail) {
         StringBuilder body = new StringBuilder()
-                .append("**What happened?**\n\n\n**What did you expect?**\n\n\n")
-                .append("**System:** Jeib ").append(AppInfo.VERSION)
+                .append(t("What happened?")).append("\r\n\r\n\r\n")
+                .append(t("What did you expect?")).append("\r\n\r\n\r\n")
+                .append(t("System details")).append(": Jeib ").append(AppInfo.VERSION)
                 .append(" · Java ").append(System.getProperty("java.version"))
                 .append(" · ").append(System.getProperty("os.name")).append(' ').append(System.getProperty("os.version"))
-                .append("\n");
-        String base = AppInfo.ISSUES + "?title=" + encode("Problem: ") + "&body=";
-        if (!logTail.isEmpty()) {
-            String head = "\n**Crash log (last lines):**\n```\n";
-            String tail = "\n```\n";
-            StringBuilder log = new StringBuilder(String.join("\n", logTail));
-            // Drop the oldest lines until the whole link fits.
-            while (log.length() > 0 && (base + encode(body + head + log + tail)).length() > MAX_URL) {
-                int cut = log.indexOf("\n");
-                log.delete(0, cut < 0 ? log.length() : cut + 1);
+                .append("\r\n");
+        String base = "mailto:" + AppInfo.SUPPORT_EMAIL + "?subject=" + encode(t("Jeib problem report")) + "&body=";
+        String heading = "\r\n" + t("Recent crash log lines") + ":\r\n";
+        int length = base.length() + encode(body + heading).length();
+        int first = logTail.size();
+        while (first > 0) {
+            int nextLength = length + encode(logTail.get(first - 1) + "\r\n").length();
+            if (nextLength > MAX_URL) {
+                break;
             }
-            if (log.length() > 0) {
-                body.append(head).append(log).append(tail);
-            }
+            length = nextLength;
+            first--;
+        }
+        if (first < logTail.size()) {
+            body.append(heading).append(String.join("\r\n", logTail.subList(first, logTail.size()))).append("\r\n");
         }
         return base + encode(body.toString());
     }
 
-    /** An idea or other feedback. */
-    public static String feedbackUrl() {
-        return AppInfo.ISSUES + "?title=" + encode("Idea: ")
-                + "&body=" + encode("**Your idea or feedback:**\n\n\n(Jeib " + AppInfo.VERSION + ")\n");
+    /** Opens a Gmail compose window with the feedback address filled in. */
+    public static String supportUrl() {
+        return "https://mail.google.com/mail/u/0/?fs=1&to=" + AppInfo.FEEDBACK_EMAIL + "&tf=cm";
     }
 
     private static String encode(String text) {

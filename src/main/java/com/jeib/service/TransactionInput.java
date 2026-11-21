@@ -17,5 +17,11 @@ public record TransactionInput(
         SupportedCurrency currency,
         LocalDate occurredOn,
         String categoryId,
-        String note) {
+        String note,
+        String budgetPlanId) {
+
+    public TransactionInput(TransactionType type, String amountText, SupportedCurrency currency,
+                            LocalDate occurredOn, String categoryId, String note) {
+        this(type, amountText, currency, occurredOn, categoryId, note, null);
+    }
 }

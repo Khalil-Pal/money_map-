@@ -53,6 +53,7 @@ public class Snap {
                         step(() -> fire(scene, "#setup-RUB"));
                         step(() -> save(scene, out + "-02-setup-chosen.png"));
                         step(() -> fire(scene, "#continueButton"));
+                        step(() -> fire(scene, "#cancelPlan"));
                     }
                     step(() -> open(scene, "Transactions"));
                     step(() -> save(scene, out + "-03-light-transactions.png"));
@@ -103,13 +104,13 @@ public class Snap {
                     step(() -> save(scene, out + "-03n-delete-confirm.png"));
                     step(() -> fire(scene, "#keepButton"));
                     step(() -> fire(scene, "#cancelButton"));
+                    step(() -> open(scene, "Transactions"));
                     step(() -> fire(scene, "#newTransaction"));
                     step(() -> fire(scene, "#newCategoryChip"));
                     step(() -> type(scene, "#newCategoryField", "Gym"));
                     step(() -> fire(scene, "#addCategoryButton"));
                     step(() -> save(scene, out + "-03o-inline-category.png"));
                     step(() -> fire(scene, "#cancelButton"));
-                    step(() -> open(scene, "Transactions"));
                     step(() -> fire(scene, "#newTransaction"));
                     step(() -> save(scene, out + "-04-light-new.png"));
                     step(() -> fire(scene, "#saveButton"));

@@ -1,5 +1,7 @@
 package com.jeib.i18n;
 
+import com.jeib.model.DateRange;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -20,7 +22,8 @@ import java.util.ResourceBundle;
  */
 public final class Messages {
 
-    private static final Map<Language, Map<String, String>> TRANSLATIONS = Map.of(Language.ARABIC, Arabic.TEXTS);
+    private static final Map<Language, Map<String, String>> TRANSLATIONS = Map.of(
+            Language.ARABIC, Arabic.TEXTS, Language.RUSSIAN, Russian.TEXTS);
 
     private static volatile Language language = Language.ENGLISH;
 
@@ -63,6 +66,11 @@ public final class Messages {
     public static String ltr(String text) {
         // LRE ... PDF (left-to-right embedding): supported by java.text.Bidi, which JavaFX uses.
         return rightToLeft() ? "‪" + text + "‬" : text;
+    }
+
+    public static String dateRange(DateRange range) {
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("d MMM yyyy", locale());
+        return t("{0} to {1}", format.format(range.start()), format.format(range.end()));
     }
 
     /** For FXML: {@code text="%Show all"} looks up "Show all" through {@link #t}. */

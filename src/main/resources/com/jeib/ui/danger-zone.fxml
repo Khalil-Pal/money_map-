@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.DangerZoneController" styleClass="dialog" maxWidth="510" maxHeight="-Infinity">
+    <Label text="%Delete all transactions?" styleClass="dialog-title" wrapText="true"/>
+    <Label text="%This clears transactions from Jeib and resets undo history. Budget plans, categories, settings, and existing backups are kept."
+           styleClass="muted" wrapText="true"/>
+    <Button fx:id="deleteWithPdf" onAction="#exportAndDelete" text="%Export PDF and delete" styleClass="button-danger"/>
+    <Button fx:id="deleteWithoutPdf" onAction="#deleteOnly" text="%Delete without exporting" styleClass="button-danger"/>
+    <Label fx:id="resetMessage" styleClass="muted" wrapText="true"/>
+    <Button fx:id="cancelReset" text="%Cancel" onAction="#cancel" cancelButton="true" styleClass="button-secondary"/>
+</VBox>

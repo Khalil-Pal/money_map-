@@ -2,6 +2,7 @@ package com.jeib.repository;
 
 import com.jeib.db.Database;
 import com.jeib.db.Timestamps;
+import com.jeib.model.DateRange;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import java.sql.Connection;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public final class TransactionRepository {
 
     private static final String COLUMNS = """
-            id, account_id, category_id, type, amount, currency, occurred_on, note, created_at, updated_at, version""";
+            id, account_id, category_id, type, amount, currency, occurred_on, note, created_at, updated_at, version, budget_plan_id""";
 
     private final Database database;
     private final Clock clock;
@@ -29,7 +30,7 @@ public final class TransactionRepository {
     }
 
     public void insert(Transaction t) throws SQLException {
-        String sql = "INSERT INTO transactions (" + COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO transactions (" + COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, t.id());
@@ -43,6 +44,7 @@ public final class TransactionRepository {
             statement.setString(9, Timestamps.format(t.createdAt()));
             statement.setString(10, Timestamps.format(t.updatedAt()));
             statement.setInt(11, t.version());
+            statement.setString(12, t.budgetPlanId());
             statement.executeUpdate();
         }
     }
@@ -61,7 +63,7 @@ public final class TransactionRepository {
         String sql = """
                 UPDATE transactions
                 SET account_id = ?, category_id = ?, type = ?, amount = ?, currency = ?, occurred_on = ?, note = ?,
-                    updated_at = ?, version = ?, sync_state = 'PENDING'
+                    updated_at = ?, version = ?, budget_plan_id = ?, sync_state = 'PENDING'
                 WHERE id = ? AND deleted = 0 AND version = ?""";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -74,8 +76,9 @@ public final class TransactionRepository {
             statement.setString(7, t.note());
             statement.setString(8, Timestamps.format(t.updatedAt()));
             statement.setInt(9, t.version());
-            statement.setString(10, t.id());
-            statement.setInt(11, t.version() - 1);
+            statement.setString(10, t.budgetPlanId());
+            statement.setString(11, t.id());
+            statement.setInt(12, t.version() - 1);
             return statement.executeUpdate() == 1;
         }
     }
@@ -94,16 +97,28 @@ public final class TransactionRepository {
 
     /** Live transactions in the month, newest first. */
     public List<Transaction> findByMonth(YearMonth month) throws SQLException {
-        // Dates are stored as YYYY-MM-DD text, which sorts like a date, so a half-open range
-        // [first day, first day of next month) selects the month and can use idx_tx_date.
+        return findByRange(DateRange.ofMonth(month));
+    }
+
+    /** Live transactions, including both dates, newest first. */
+    public List<Transaction> findByRange(DateRange range) throws SQLException {
+        return findByRange(range, null);
+    }
+
+    public List<Transaction> findByRange(DateRange range, String budgetPlanId) throws SQLException {
+        // YYYY-MM-DD sorts by date, so SQLite can use idx_tx_date for both bounds.
         String sql = "SELECT " + COLUMNS + """
                  FROM transactions
-                WHERE deleted = 0 AND occurred_on >= ? AND occurred_on < ?
-                ORDER BY occurred_on DESC, created_at DESC""";
+                WHERE deleted = 0 AND occurred_on >= ? AND occurred_on <= ?
+                """ + (budgetPlanId == null ? "" : " AND budget_plan_id = ?")
+                + " ORDER BY occurred_on DESC, created_at DESC";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, month.atDay(1).toString());
-            statement.setString(2, month.plusMonths(1).atDay(1).toString());
+            statement.setString(1, range.start().toString());
+            statement.setString(2, range.end().toString());
+            if (budgetPlanId != null) {
+                statement.setString(3, budgetPlanId);
+            }
             try (ResultSet rows = statement.executeQuery()) {
                 List<Transaction> result = new ArrayList<>();
                 while (rows.next()) {
@@ -111,6 +126,15 @@ public final class TransactionRepository {
                 }
                 return result;
             }
+        }
+    }
+
+    public Optional<YearMonth> firstRecordedMonth() throws SQLException {
+        try (var connection = database.connect();
+             var statement = connection.prepareStatement("SELECT MIN(occurred_on) FROM transactions");
+             var rows = statement.executeQuery()) {
+            String date = rows.next() ? rows.getString(1) : null;
+            return Optional.ofNullable(date).map(LocalDate::parse).map(YearMonth::from);
         }
     }
 
@@ -138,20 +162,20 @@ public final class TransactionRepository {
     }
 
     /**
-     * Live EXPENSE totals in the month, per category and currency. Summed in SQL so the database
+     * Live EXPENSE totals in the date range, per category and currency. Summed in SQL so the database
      * does the work (idx_tx_date covers the range); converting to the main currency is the
      * service's job, once per currency rather than once per row.
      */
-    public List<Spend> sumExpensesByCategory(YearMonth month) throws SQLException {
+    public List<Spend> sumExpensesByCategory(DateRange range) throws SQLException {
         String sql = """
                 SELECT category_id, currency, SUM(amount) AS total
                 FROM transactions
-                WHERE deleted = 0 AND type = 'EXPENSE' AND occurred_on >= ? AND occurred_on < ?
+                WHERE deleted = 0 AND type = 'EXPENSE' AND occurred_on >= ? AND occurred_on <= ?
                 GROUP BY category_id, currency""";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, month.atDay(1).toString());
-            statement.setString(2, month.plusMonths(1).atDay(1).toString());
+            statement.setString(1, range.start().toString());
+            statement.setString(2, range.end().toString());
             try (ResultSet rows = statement.executeQuery()) {
                 List<Spend> result = new ArrayList<>();
                 while (rows.next()) {
@@ -194,6 +218,7 @@ public final class TransactionRepository {
                 row.getString("note"),
                 Timestamps.parse(row.getString("created_at")),
                 Timestamps.parse(row.getString("updated_at")),
-                row.getInt("version"));
+                row.getInt("version"),
+                row.getString("budget_plan_id"));
     }
 }

@@ -1,5 +1,7 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.service.BudgetService;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -13,12 +15,13 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.concurrent.Task;
 
-/** State for the Dashboard. Reloads with the month, when the database is ready, and after any change. */
+/** State for the Dashboard. Reloads with the period, when the database is ready, and after any change. */
 public final class DashboardViewModel {
 
     private final BudgetService budgets;
     private final ReadOnlyObjectProperty<YearMonth> month;
     private final Clock clock;
+    private Task<DashboardData> loadTask;
 
     private final ObjectProperty<DashboardData> data = new SimpleObjectProperty<>();
     private final StringProperty message = new SimpleStringProperty("");
@@ -30,7 +33,7 @@ public final class DashboardViewModel {
         this.clock = clock;
         month.addListener((obs, old, now) -> {
             if (ready.get()) {
-                load();
+                periodChanged();
             }
         });
         ready.addListener((obs, was, isReady) -> {
@@ -40,26 +43,33 @@ public final class DashboardViewModel {
         });
     }
 
+    private void periodChanged() {
+        data.set(null);
+        message.set("");
+        load();
+    }
+
     public void load() {
-        YearMonth requested = month.get();
+        YearMonth requestedMonth = month.get();
         LocalDate today = LocalDate.now(clock);
         Task<DashboardData> task = new Task<>() {
             @Override
             protected DashboardData call() throws Exception {
-                return DashboardData.from(budgets.forMonth(requested), today);
+                return DashboardData.from(budgets.forMonth(requestedMonth), today);
             }
         };
         task.setOnSucceeded(event -> {
-            if (requested.equals(month.get())) {
+            if (task == loadTask) {
                 data.set(task.getValue());
                 message.set("");
             }
         });
         task.setOnFailed(event -> {
-            if (requested.equals(month.get())) {
-                message.set(task.getException().getMessage());
+            if (task == loadTask) {
+                message.set(t("Couldn't load spending: {0}", task.getException().getMessage()));
             }
         });
+        loadTask = task;
         Thread.ofVirtual().name("jeib-dashboard").start(task);
     }
 

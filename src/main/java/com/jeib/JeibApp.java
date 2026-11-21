@@ -4,20 +4,29 @@ import com.jeib.db.Database;
 import com.jeib.i18n.Language;
 import com.jeib.i18n.Messages;
 import com.jeib.repository.BudgetRepository;
+import com.jeib.repository.BudgetPlanRepository;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.SettingsRepository;
+import com.jeib.repository.RecurringRepository;
+import com.jeib.repository.SavingsGoalRepository;
 import com.jeib.repository.TransactionRepository;
 import com.jeib.service.BackupService;
 import com.jeib.service.BudgetService;
+import com.jeib.service.BudgetPlanService;
 import com.jeib.service.CrashLog;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.PreferencesService;
+import com.jeib.service.PlanningService;
 import com.jeib.service.TransactionCommands;
+import com.jeib.service.TransactionHistoryReset;
 import com.jeib.service.TransactionService;
 import com.jeib.service.UndoManager;
 import com.jeib.ui.BackupsViewModel;
 import com.jeib.ui.BudgetsController;
+import com.jeib.ui.BudgetPlansViewModel;
+import com.jeib.ui.CalendarController;
+import com.jeib.ui.CalendarViewModel;
 import com.jeib.ui.CategoriesController;
 import com.jeib.ui.CategoriesViewModel;
 import com.jeib.ui.CategoryDialogViewModel;
@@ -28,6 +37,9 @@ import com.jeib.ui.DataChanged;
 import com.jeib.ui.DialogHost;
 import com.jeib.ui.Dialogs;
 import com.jeib.ui.HistoryViewModel;
+import com.jeib.ui.GoalsController;
+import com.jeib.ui.PlanningViewModel;
+import com.jeib.ui.RecurringController;
 import com.jeib.ui.LanguageSwitcher;
 import com.jeib.ui.LimitDialogViewModel;
 import com.jeib.ui.LimitWatcher;
@@ -45,6 +57,7 @@ import com.jeib.ui.TransactionsViewModel;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.Objects;
@@ -73,28 +86,39 @@ public class JeibApp extends Application {
      */
     public static MainWindow createMainWindow(Database database, Clock clock, Consumer<Language> rebuildIn,
                                               CrashLog crashLog) throws IOException {
+        // JavaFX's calendar popup gets its month and weekday names from the format locale.
+        Locale.setDefault(Locale.Category.FORMAT, Messages.locale());
         PreferencesService preferences = new PreferencesService(new SettingsRepository(database));
         LanguageSwitcher languages = new LanguageSwitcher(preferences, rebuildIn);
         CategoryRepository categoryRepository = new CategoryRepository(database, clock);
         CategoryService categoryService = new CategoryService(categoryRepository);
         CurrencyService currencyService = new CurrencyService(new SettingsRepository(database));
         TransactionRepository transactionRepository = new TransactionRepository(database, clock);
+        BudgetPlanRepository planRepository = new BudgetPlanRepository(database, clock);
         TransactionService transactionService = new TransactionService(
-                transactionRepository, categoryRepository, currencyService, clock);
+                transactionRepository, categoryRepository, currencyService, clock, planRepository);
         BudgetService budgetService = new BudgetService(new BudgetRepository(database, clock), transactionRepository,
                 categoryRepository, currencyService);
+        BudgetPlanService planService = new BudgetPlanService(planRepository, transactionRepository,
+                categoryService, currencyService);
+        BudgetPlansViewModel plans = new BudgetPlansViewModel(planService, clock);
+        CalendarViewModel calendar = new CalendarViewModel(new SettingsRepository(database), transactionRepository,
+                budgetService, categoryService, clock);
         // One undo history for the session; every UI change goes through these commands.
         TransactionCommands transactionCommands = new TransactionCommands(transactionService, new UndoManager());
+        var historyReset = new TransactionHistoryReset(database, transactionCommands.history(), clock);
+        var planning = new PlanningViewModel(new PlanningService(new RecurringRepository(database, clock),
+                new SavingsGoalRepository(database, clock), categoryService, currencyService, clock));
 
         MainViewModel main = new MainViewModel(database, categoryRepository, currencyService, preferences, clock);
         // Any save, delete, undo, or limit change fires this; every page that shows data listens.
         DataChanged dataChanged = new DataChanged();
         TransactionsViewModel transactions = new TransactionsViewModel(transactionService, transactionCommands,
-                categoryService, main.monthProperty(), main.readyProperty(), dataChanged);
+                categoryService, main.monthProperty(), main.customRangeProperty(), main.readyProperty(), dataChanged);
         BudgetsViewModel budgets = new BudgetsViewModel(budgetService, main.monthProperty(), main.readyProperty());
         DashboardViewModel dashboard = new DashboardViewModel(budgetService, main.monthProperty(),
                 main.readyProperty(), clock);
-        Navigation navigation = new Navigation(transactions);
+        Navigation navigation = new Navigation(transactions, main);
         CategoriesViewModel categoriesPage = new CategoriesViewModel(categoryService, main.readyProperty());
         Toasts toasts = new Toasts();
         LimitWatcher limitWatcher = new LimitWatcher(budgetService, clock, toasts::show);
@@ -102,11 +126,19 @@ public class JeibApp extends Application {
         dataChanged.listen(budgets::load);
         dataChanged.listen(dashboard::load);
         dataChanged.listen(categoriesPage::load);
+        dataChanged.listen(planning::reload);
+        dataChanged.listen(plans::reload);
+        dataChanged.listen(calendar::reload);
         dataChanged.listen(limitWatcher::check);
         // First snapshot for the alerts (silent), and a refresh once setup has chosen the currency.
         main.readyProperty().addListener((obs, was, ready) -> {
             if (ready) {
                 limitWatcher.check();
+                plans.reload();
+                calendar.initialize();
+                if (!main.setupNeededProperty().get()) {
+                    planning.reload();
+                }
             }
         });
         main.setupNeededProperty().addListener((obs, was, needed) -> {
@@ -127,7 +159,7 @@ public class JeibApp extends Application {
         });
         crashLog.onCrash(error -> javafx.application.Platform.runLater(() -> toasts.show(
                 Messages.t("Something went wrong. Details were saved to the crash log."), Messages.t("Report"),
-                () -> com.jeib.ui.Dialogs.browse(com.jeib.service.ProblemReport.problemUrl(crashLog.lastLines(40))))));
+                () -> Dialogs.reportProblem(crashLog, toasts))));
         main.readyProperty().addListener((obs, was, ready) -> {
             if (ready) {
                 settings.load();
@@ -138,29 +170,42 @@ public class JeibApp extends Application {
         DialogHost dialogHost = new DialogHost();
         Dialogs dialogs = new Dialogs(dialogHost,
                 () -> new SetupViewModel(currencyService, languages),
-                () -> new TransactionDialogViewModel(transactionCommands, categoryService, currencyService, clock),
+                () -> new TransactionDialogViewModel(transactionCommands, categoryService, currencyService, clock, planService),
                 (line, mainCurrency) -> new LimitDialogViewModel(budgetService, line, mainCurrency),
                 (category, kind) -> new CategoryDialogViewModel(categoryService, category, kind),
                 dataChanged, toasts, history);
+        Consumer<Boolean> openPlan = firstPlan -> dialogs.openBudgetPlan(planService, categoryService,
+                currencyService, LocalDate.now(clock), firstPlan, plans::selectCreatedPlan);
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
         loader.setResources(Messages.bundle()); // text="%Show all" in FXML is translated
         // fx:include uses the same factory, so it must know every controller type.
         loader.setControllerFactory(type -> {
             if (type == MainController.class) {
-                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd, navigation, languages);
+                return new MainController(main, dialogHost, dialogs, toasts, history, quickAdd, navigation, languages,
+                        () -> openPlan.accept(true));
             }
             if (type == DashboardController.class) {
-                return new DashboardController(dashboard, navigation, dialogs);
+                return new DashboardController(dashboard, navigation, dialogs, plans);
             }
             if (type == SettingsController.class) {
-                return new SettingsController(settings, main, database.file(), languages, backups, crashLog);
+                return new SettingsController(settings, main, database.file(), languages, backups, toasts,
+                        () -> dialogs.openTransactionReset(historyReset));
+            }
+            if (type == RecurringController.class) {
+                return new RecurringController(planning);
+            }
+            if (type == GoalsController.class) {
+                return new GoalsController(planning);
             }
             if (type == CategoriesController.class) {
                 return new CategoriesController(categoriesPage, dialogs);
             }
             if (type == BudgetsController.class) {
-                return new BudgetsController(budgets, dialogs);
+                return new BudgetsController(budgets, dialogs, plans, () -> openPlan.accept(false));
+            }
+            if (type == CalendarController.class) {
+                return new CalendarController(calendar, dialogs);
             }
             if (type == TransactionsController.class) {
                 return new TransactionsController(transactions, dialogs, toasts, history);
@@ -189,7 +234,7 @@ public class JeibApp extends Application {
         Messages.setLanguage(savedLanguage(database));
     }
 
-    /** The language saved in the database, else Arabic on an Arabic Windows, else English. */
+    /** An explicit choice takes priority over the system's display language. */
     static Language savedLanguage(Database database) {
         if (Files.exists(database.file())) {
             try {
@@ -201,7 +246,7 @@ public class JeibApp extends Application {
                 // An old or damaged file: fall back to the system language.
             }
         }
-        return "ar".equals(Locale.getDefault().getLanguage()) ? Language.ARABIC : Language.ENGLISH;
+        return Language.forLocale(Locale.getDefault(Locale.Category.DISPLAY));
     }
 
     @Override

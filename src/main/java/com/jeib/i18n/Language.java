@@ -2,10 +2,11 @@ package com.jeib.i18n;
 
 import java.util.Locale;
 
-/** The languages Jeib speaks (decided Nov 12, 2026: English + Arabic). */
+/** Languages supported by the Jeib interface. */
 public enum Language {
     ENGLISH(Locale.ENGLISH, false, "English"),
-    ARABIC(Locale.forLanguageTag("ar"), true, "العربية");
+    ARABIC(Locale.forLanguageTag("ar"), true, "العربية"),
+    RUSSIAN(Locale.forLanguageTag("ru"), false, "Русский");
 
     private final Locale locale;
     private final boolean rightToLeft;
@@ -19,6 +20,15 @@ public enum Language {
 
     public Locale locale() {
         return locale;
+    }
+
+    public static Language forLocale(Locale locale) {
+        for (Language language : values()) {
+            if (language.locale.getLanguage().equals(locale.getLanguage())) {
+                return language;
+            }
+        }
+        return ENGLISH;
     }
 
     public boolean rightToLeft() {

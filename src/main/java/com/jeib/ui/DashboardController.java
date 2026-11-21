@@ -2,18 +2,19 @@ package com.jeib.ui;
 
 import static com.jeib.i18n.Messages.t;
 
+import com.jeib.model.BudgetPlan;
 import com.jeib.model.LeftPerDay;
 import com.jeib.model.LimitStatus;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.service.BudgetService.LimitLine;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.KeyCode;
@@ -41,21 +42,39 @@ public final class DashboardController {
     private final DashboardViewModel viewModel;
     private final Navigation navigation;
     private final Dialogs dialogs;
+    private final BudgetPlansViewModel plans;
 
     @FXML private Label warning;
     @FXML private Label message;
     @FXML private HBox cards;
     @FXML private VBox chartCard;
     @FXML private VBox limitsCard;
+    @FXML private VBox monthlyOverview;
+    @FXML private VBox planOverview;
+    @FXML private HBox planControls;
+    @FXML private ComboBox<BudgetPlan> dashboardPlan;
+    @FXML private Button showMonthlyOverview;
 
-    public DashboardController(DashboardViewModel viewModel, Navigation navigation, Dialogs dialogs) {
+    public DashboardController(DashboardViewModel viewModel, Navigation navigation, Dialogs dialogs,
+                               BudgetPlansViewModel plans) {
         this.viewModel = viewModel;
         this.navigation = navigation;
         this.dialogs = dialogs;
+        this.plans = plans;
     }
 
     @FXML
     private void initialize() {
+        dashboardPlan.setConverter(BudgetPlanLabels.converter());
+        dashboardPlan.setItems(plans.plans);
+        dashboardPlan.valueProperty().bindBidirectional(plans.selected);
+        planControls.visibleProperty().bind(Bindings.isNotEmpty(plans.plans));
+        planControls.managedProperty().bind(planControls.visibleProperty());
+        showMonthlyOverview.disableProperty().bind(plans.selected.isNull());
+        showMonthlyOverview.setOnAction(event -> dashboardPlan.setValue(null));
+        monthlyOverview.visibleProperty().bind(plans.selected.isNull());
+        monthlyOverview.managedProperty().bind(monthlyOverview.visibleProperty());
+        BudgetPlanDetails.bind(planOverview, plans);
         message.textProperty().bind(viewModel.messageProperty());
         message.visibleProperty().bind(Bindings.isNotEmpty(viewModel.messageProperty()));
         message.managedProperty().bind(message.visibleProperty());
@@ -64,7 +83,15 @@ public final class DashboardController {
     }
 
     private void render(DashboardData data) {
+        cards.setVisible(data != null);
+        cards.setManaged(data != null);
+        chartCard.setVisible(data != null);
+        chartCard.setManaged(data != null);
+        limitsCard.setVisible(data != null);
+        limitsCard.setManaged(data != null);
         if (data == null) {
+            warning.setVisible(false);
+            warning.setManaged(false);
             return;
         }
         SupportedCurrency main = data.mainCurrency();
@@ -79,8 +106,8 @@ public final class DashboardController {
             warning.setManaged(true);
         }
         cards.getChildren().setAll(spentCard(data, main), remainingCard(data, main), perDayCard(data, main));
-        renderChart(data, main);
         renderLimits(data, main);
+        renderChart(data, main);
     }
 
     // ---- the three number cards --------------------------------------------
@@ -146,7 +173,8 @@ public final class DashboardController {
     private void renderChart(DashboardData data, SupportedCurrency main) {
         Label title = styled(t("Where it went"), "card-title");
         if (data.slices().isEmpty()) {
-            chartCard.getChildren().setAll(title, muted(t("No spending in {0} yet.", month().format(data.month()))));
+            String empty = t("No spending in {0} yet.", month().format(data.month()));
+            chartCard.getChildren().setAll(title, muted(empty));
             return;
         }
         VBox legend = new VBox(2);

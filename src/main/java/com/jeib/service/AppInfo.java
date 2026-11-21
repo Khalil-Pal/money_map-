@@ -6,8 +6,8 @@ public final class AppInfo {
     /** Kept in step with the version in pom.xml. */
     public static final String VERSION = "0.1.0";
 
-    /** Where problems and ideas are reported (GitHub Issues). */
-    public static final String ISSUES = "https://github.com/Khalil-Pal/money_map-/issues/new";
+    public static final String SUPPORT_EMAIL = "h.hoshieh@yandex.ru";
+    public static final String FEEDBACK_EMAIL = "Khalilayed777@gmail.com";
 
     private AppInfo() {
     }

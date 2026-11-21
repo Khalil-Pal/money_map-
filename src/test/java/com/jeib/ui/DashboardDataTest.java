@@ -102,4 +102,5 @@ class DashboardDataTest {
 
         assertTrue(data.slices().isEmpty());
     }
+
 }

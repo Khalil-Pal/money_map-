@@ -3,6 +3,7 @@ package com.jeib.ui;
 import static com.jeib.i18n.Messages.t;
 
 import com.jeib.model.Category;
+import com.jeib.model.BudgetPlan;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.TransactionType;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -53,6 +55,10 @@ public final class TransactionDialogController {
     @FXML private Label rateError;
     @FXML private Label dateError;
     @FXML private Label categoryError;
+    @FXML private Label budgetPlanError;
+    @FXML private VBox planBox;
+    @FXML private ComboBox<BudgetPlan> transactionPlan;
+    @FXML private Button clearTransactionPlan;
     @FXML private Label noteError;
     @FXML private Label formError;
     @FXML private Button cancelButton;
@@ -62,6 +68,7 @@ public final class TransactionDialogController {
     private final ToggleGroup typeGroup = new ToggleGroup();
     private final ToggleGroup currencyGroup = new ToggleGroup();
     private final ToggleGroup categoryGroup = new ToggleGroup();
+    private boolean updatingPlanChoices;
 
     public TransactionDialogController(TransactionDialogViewModel viewModel, Runnable onCancel, Runnable onSaved,
                                        Runnable onDeleted) {
@@ -95,6 +102,8 @@ public final class TransactionDialogController {
         rateField.textProperty().bindBidirectional(viewModel.rateProperty());
         noteField.textProperty().bindBidirectional(viewModel.noteProperty());
         datePicker.valueProperty().bindBidirectional(viewModel.dateProperty());
+        DateRangeDialogController.localize(datePicker);
+        wirePlans();
 
         rateLabel.textProperty().bind(viewModel.rateLabel());
         rateUnit.textProperty().bind(Bindings.createStringBinding(
@@ -117,6 +126,7 @@ public final class TransactionDialogController {
         showError(rateError, "rate");
         showError(dateError, "date");
         showError(categoryError, "category");
+        showError(budgetPlanError, "budgetPlan");
         showError(noteError, "note");
         showError(formError, TransactionDialogViewModel.FORM);
 
@@ -150,6 +160,38 @@ public final class TransactionDialogController {
         deleteButton.setOnAction(event -> viewModel.delete(onDeleted));
 
         Platform.runLater(amountField::requestFocus);
+    }
+
+    private void wirePlans() {
+        transactionPlan.setConverter(BudgetPlanLabels.converter());
+        transactionPlan.setOnAction(event -> {
+            BudgetPlan picked = transactionPlan.getValue();
+            if (!updatingPlanChoices && picked != null) {
+                viewModel.budgetPlanIdProperty().set(picked.id());
+            }
+        });
+        clearTransactionPlan.setOnAction(event -> viewModel.budgetPlanIdProperty().set(null));
+        planBox.managedProperty().bind(planBox.visibleProperty());
+        viewModel.availablePlans().addListener((ListChangeListener<BudgetPlan>) change -> refreshPlans());
+        for (var property : java.util.List.<javafx.beans.value.ObservableValue<?>>of(viewModel.typeProperty(), viewModel.dateProperty(),
+                viewModel.categoryIdProperty(), viewModel.budgetPlanIdProperty())) {
+            property.addListener((obs, before, after) -> refreshPlans());
+        }
+        refreshPlans();
+    }
+
+    private void refreshPlans() {
+        String selectedId = viewModel.budgetPlanIdProperty().get();
+        var choices = viewModel.selectablePlans();
+        updatingPlanChoices = true;
+        try {
+            transactionPlan.getItems().setAll(choices);
+            transactionPlan.setValue(choices.stream().filter(plan -> plan.id().equals(selectedId)).findFirst().orElse(null));
+        } finally {
+            updatingPlanChoices = false;
+        }
+        clearTransactionPlan.setDisable(selectedId == null);
+        planBox.setVisible(!choices.isEmpty());
     }
 
     /**

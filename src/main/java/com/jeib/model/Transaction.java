@@ -28,7 +28,15 @@ public record Transaction(
         String note,
         Instant createdAt,
         Instant updatedAt,
-        int version) {
+        int version,
+        String budgetPlanId) {
+
+    public Transaction(String id, String accountId, String categoryId, TransactionType type, long amountMinor,
+                       String currency, LocalDate occurredOn, String note, Instant createdAt, Instant updatedAt,
+                       int version) {
+        this(id, accountId, categoryId, type, amountMinor, currency, occurredOn, note, createdAt, updatedAt,
+                version, null);
+    }
 
     public Transaction {
         Objects.requireNonNull(id, "id");
@@ -49,9 +57,14 @@ public record Transaction(
     /** A brand-new transaction: fresh UUID, version 1, created and updated now. */
     public static Transaction create(String categoryId, TransactionType type, long amountMinor, String currency,
                                      LocalDate occurredOn, String note, Clock clock) {
+        return create(categoryId, type, amountMinor, currency, occurredOn, note, clock, null);
+    }
+
+    public static Transaction create(String categoryId, TransactionType type, long amountMinor, String currency,
+                                     LocalDate occurredOn, String note, Clock clock, String budgetPlanId) {
         // Millisecond precision, the same as the database stores, so a saved row reads back equal.
         Instant now = clock.instant().truncatedTo(ChronoUnit.MILLIS);
         return new Transaction(UUID.randomUUID().toString(), null, categoryId, type, amountMinor, currency,
-                occurredOn, note, now, now, 1);
+                occurredOn, note, now, now, 1, budgetPlanId);
     }
 }

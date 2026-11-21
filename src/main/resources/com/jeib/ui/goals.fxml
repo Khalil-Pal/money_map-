@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.GoalsController" styleClass="dashboard-page">
+    <VBox styleClass="card,settings-card">
+        <Label text="%Savings goals" styleClass="card-title"/>
+        <FlowPane hgap="8" vgap="8">
+            <TextField fx:id="goalName" promptText="%Name" accessibleText="%Name" prefColumnCount="12"/>
+            <TextField fx:id="goalTarget" promptText="%Target amount" accessibleText="%Target amount" prefColumnCount="9"/>
+            <ComboBox fx:id="goalCurrency" accessibleText="%Currency"/>
+            <Button fx:id="addGoal" text="%Add savings goal" styleClass="button-primary"/>
+        </FlowPane>
+        <Label fx:id="goalError" styleClass="field-error" wrapText="true"/>
+    </VBox>
+    <VBox fx:id="goalRows" spacing="10"/>
+</VBox>

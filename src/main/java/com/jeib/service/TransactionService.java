@@ -3,12 +3,14 @@ package com.jeib.service;
 import static com.jeib.i18n.Messages.t;
 
 import com.jeib.model.Category;
+import com.jeib.model.DateRange;
 import com.jeib.model.ExchangeRates;
 import com.jeib.model.Money;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.CategoryRepository;
+import com.jeib.repository.BudgetPlanRepository;
 import com.jeib.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -45,6 +47,7 @@ public final class TransactionService {
     private final CategoryRepository categories;
     private final CurrencyService currencies;
     private final Clock clock;
+    private final BudgetPlanRepository plans;
 
     /**
      * @param currencies the main currency and exchange rates
@@ -52,20 +55,31 @@ public final class TransactionService {
      */
     public TransactionService(TransactionRepository transactions, CategoryRepository categories,
                               CurrencyService currencies, Clock clock) {
+        this(transactions, categories, currencies, clock, null);
+    }
+
+    public TransactionService(TransactionRepository transactions, CategoryRepository categories,
+                              CurrencyService currencies, Clock clock, BudgetPlanRepository plans) {
         this.transactions = transactions;
         this.categories = categories;
         this.currencies = currencies;
         this.clock = clock;
+        this.plans = plans;
     }
 
     public List<Transaction> listMonth(YearMonth month) throws SQLException {
         return transactions.findByMonth(month);
     }
 
+    public List<Transaction> listRange(DateRange range) throws SQLException {
+        return transactions.findByRange(range);
+    }
+
     public Transaction add(TransactionInput input) throws SQLException {
         Valid valid = validate(input);
+        checkPlan(input, null);
         Transaction transaction = Transaction.create(valid.categoryId(), valid.type(), valid.amountMinor(),
-                valid.currency().name(), valid.occurredOn(), valid.note(), clock);
+                valid.currency().name(), valid.occurredOn(), valid.note(), clock, input.budgetPlanId());
         transactions.insert(transaction);
         return transaction;
     }
@@ -74,10 +88,11 @@ public final class TransactionService {
     public Transaction edit(String id, TransactionInput input) throws SQLException {
         Transaction current = transactions.findById(id).orElseThrow(TransactionService::gone);
         Valid valid = validate(input);
+        checkPlan(input, current);
         Instant now = clock.instant().truncatedTo(ChronoUnit.MILLIS);
         Transaction edited = new Transaction(current.id(), current.accountId(), valid.categoryId(), valid.type(),
                 valid.amountMinor(), valid.currency().name(), valid.occurredOn(), valid.note(),
-                current.createdAt(), now, current.version() + 1);
+                current.createdAt(), now, current.version() + 1, input.budgetPlanId());
         if (!transactions.update(edited)) {
             // Deleted, or changed since we read it: never overwrite silently.
             throw gone();
@@ -106,7 +121,22 @@ public final class TransactionService {
     /** The input that would recreate {@code t}'s editable values (used to undo or redo an edit). */
     public static TransactionInput inputOf(Transaction t) {
         return new TransactionInput(t.type(), BigDecimal.valueOf(t.amountMinor(), 2).toPlainString(),
-                SupportedCurrency.valueOf(t.currency()), t.occurredOn(), t.categoryId(), t.note());
+                SupportedCurrency.valueOf(t.currency()), t.occurredOn(), t.categoryId(), t.note(), t.budgetPlanId());
+    }
+
+    private void checkPlan(TransactionInput input, Transaction current) throws SQLException {
+        if (input.budgetPlanId() == null) {
+            return;
+        }
+        if (current != null && input.budgetPlanId().equals(current.budgetPlanId())
+                && input.type() == current.type() && input.occurredOn().equals(current.occurredOn())
+                && input.categoryId().equals(current.categoryId())) {
+            return; // A category deletion can have moved an already-assigned expense to Other.
+        }
+        if (plans == null || plans.find(input.budgetPlanId()).filter(
+                plan -> plan.accepts(input.type(), input.occurredOn(), input.categoryId())).isEmpty()) {
+            throw new ValidationException("budgetPlan", t("Choose a plan that covers this expense's date and category."));
+        }
     }
 
     // ---- validation ------------------------------------------------------

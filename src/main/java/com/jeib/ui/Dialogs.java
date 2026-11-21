@@ -2,13 +2,24 @@ package com.jeib.ui;
 
 import static com.jeib.i18n.Messages.t;
 
+import com.jeib.i18n.Messages;
+import com.jeib.model.BudgetPlan;
 import com.jeib.model.Category;
+import com.jeib.model.DateRange;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
+import com.jeib.service.AppInfo;
 import com.jeib.service.BudgetService.LimitLine;
+import com.jeib.service.BudgetPlanService;
+import com.jeib.service.CategoryService;
+import com.jeib.service.CrashLog;
+import com.jeib.service.CurrencyService;
+import com.jeib.service.ProblemReport;
+import com.jeib.service.TransactionHistoryReset;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -67,6 +78,36 @@ public final class Dialogs {
         openTransaction(TransactionDialogViewModel::startNew);
     }
 
+    public void openTransactionReset(TransactionHistoryReset reset) {
+        if (!host.isOpen()) {
+            host.show(load("danger-zone.fxml",
+                    new DangerZoneController(new DangerZoneViewModel(reset), host::close, afterChange, toasts)));
+        }
+    }
+
+    public void openDateRange(DateRange initial, Consumer<DateRange> onApply) {
+        if (host.isOpen()) {
+            return;
+        }
+        host.show(load("date-range-dialog.fxml", new DateRangeDialogController(initial, host::close, range -> {
+            host.close();
+            onApply.accept(range);
+        })));
+    }
+
+    public void openBudgetPlan(BudgetPlanService plans, CategoryService categories, CurrencyService currencies,
+                               LocalDate today, boolean firstPlan, Consumer<BudgetPlan> onSaved) {
+        if (!host.isOpen()) {
+            var viewModel = new BudgetPlanDialogViewModel(plans, categories, currencies);
+            host.show(load("budget-plan-dialog.fxml", new BudgetPlanDialogController(
+                    viewModel, today, firstPlan, host::close, afterChange, plan -> {
+                        host.close();
+                        onSaved.accept(plan);
+                        afterChange.run();
+                    })));
+        }
+    }
+
     public void openEditTransaction(Transaction transaction) {
         openTransaction(viewModel -> viewModel.startEdit(transaction));
     }
@@ -118,9 +159,19 @@ public final class Dialogs {
         viewModel.load();
     }
 
-    /** Opens a web page in the browser (used by the crash toast's "Report"). */
-    public static void browse(String url) {
-        Links.browse(url);
+    /** Opens a reviewable email draft from Settings or the crash toast. */
+    public static void reportProblem(CrashLog crashLog, Toasts toasts) {
+        openSupport(() -> ProblemReport.problemUrl(crashLog.lastLines(40)), toasts);
+    }
+
+    static void feedbackAndSupport(Toasts toasts) {
+        Links.browse(ProblemReport.supportUrl(), () -> toasts.show(
+                t("Couldn't open Gmail. Send your feedback to {0}.", Messages.ltr(AppInfo.FEEDBACK_EMAIL))));
+    }
+
+    private static void openSupport(Supplier<String> draft, Toasts toasts) {
+        Links.mail(draft, () -> toasts.show(
+                t("Couldn't open your email app. Send your report to {0}.", Messages.ltr(AppInfo.SUPPORT_EMAIL))));
     }
 
     private static Parent load(String fxml, Object controller) {
