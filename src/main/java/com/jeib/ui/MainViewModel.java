@@ -2,6 +2,7 @@ package com.jeib.ui;
 
 import com.jeib.db.Database;
 import com.jeib.model.Category;
+import com.jeib.model.DateRange;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.PreferencesService;
@@ -47,6 +48,7 @@ public final class MainViewModel {
     /** The theme actually shown: the mode, resolved by the clock when it's Automatic. */
     private final ObjectProperty<Theme> theme = new SimpleObjectProperty<>(Theme.LIGHT);
     private final ObjectProperty<YearMonth> month;
+    private final ObjectProperty<DateRange> customRange = new SimpleObjectProperty<>();
     private final StringBinding monthLabel;
 
     /** @param clock decides which month the app opens on */
@@ -105,6 +107,20 @@ public final class MainViewModel {
 
     public void nextMonth() {
         month.set(month.get().plusMonths(1));
+    }
+
+    public DateRange selectedDates() {
+        DateRange range = customRange.get();
+        return range == null ? DateRange.ofMonth(month.get()) : range;
+    }
+
+    /** Null returns Dashboard and Transactions to the selected calendar month. */
+    public void setCustomRange(DateRange range) {
+        customRange.set(range);
+    }
+
+    public ReadOnlyObjectProperty<DateRange> customRangeProperty() {
+        return customRange;
     }
 
     /** The theme button: Light → Dark → Automatic → Light. */

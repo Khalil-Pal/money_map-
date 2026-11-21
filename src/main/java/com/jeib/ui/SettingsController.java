@@ -23,7 +23,8 @@ public final class SettingsController {
     private final Path dataFile;
     private final LanguageSwitcher languages;
     private final BackupsViewModel backups;
-    private final com.jeib.service.CrashLog crashLog;
+    private final Toasts toasts;
+    private final Runnable openTransactionReset;
 
     @FXML private HBox languageBox;
     @FXML private ToggleButton themeLight;
@@ -47,21 +48,23 @@ public final class SettingsController {
     @FXML private Label backupError;
     @FXML private Button backupNow;
     @FXML private Button openBackups;
-    @FXML private Button reportProblem;
-    @FXML private Button sendFeedback;
+    @FXML private Button feedbackSupport;
+    @FXML private Button deleteAllTransactions;
 
     private final ToggleGroup themeGroup = new ToggleGroup();
     private final ToggleGroup currencyGroup = new ToggleGroup();
     private boolean updating; // true while the view sets toggles itself, so listeners don't react
 
     public SettingsController(SettingsViewModel viewModel, MainViewModel main, Path dataFile,
-                              LanguageSwitcher languages, BackupsViewModel backups, com.jeib.service.CrashLog crashLog) {
+                              LanguageSwitcher languages, BackupsViewModel backups, Toasts toasts,
+                              Runnable openTransactionReset) {
         this.viewModel = viewModel;
         this.main = main;
         this.dataFile = dataFile;
         this.languages = languages;
         this.backups = backups;
-        this.crashLog = crashLog;
+        this.toasts = toasts;
+        this.openTransactionReset = openTransactionReset;
     }
 
     @FXML
@@ -133,9 +136,9 @@ public final class SettingsController {
         dataPath.setText(dataFile.toString());
         openDataFolder.setOnAction(event -> Links.openFolder(dataFile.getParent()));
         wireBackups();
-        reportProblem.setOnAction(event -> Links.browse(
-                com.jeib.service.ProblemReport.problemUrl(crashLog.lastLines(40))));
-        sendFeedback.setOnAction(event -> Links.browse(com.jeib.service.ProblemReport.feedbackUrl()));
+        feedbackSupport.setOnAction(event -> Dialogs.feedbackAndSupport(toasts));
+        deleteAllTransactions.disableProperty().bind(main.readyProperty().not().or(backups.busyProperty()));
+        deleteAllTransactions.setOnAction(event -> openTransactionReset.run());
     }
 
     private void wireBackups() {

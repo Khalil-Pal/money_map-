@@ -15,7 +15,7 @@
 
     <VBox styleClass="card,settings-card">
         <Label text="%Language" styleClass="card-title"/>
-        <Label text="%Jeib speaks English and Arabic. The window reloads in the language you choose." styleClass="muted" wrapText="true"/>
+        <Label text="%Jeib uses your system language until you choose one here." styleClass="muted" wrapText="true"/>
         <HBox fx:id="languageBox" styleClass="segmented" maxWidth="-Infinity"/>
     </VBox>
 
@@ -80,11 +80,10 @@
 
     <VBox styleClass="card,settings-card">
         <Label text="%Help" styleClass="card-title"/>
-        <Label text="%Found a problem or have an idea? Both buttons open a GitHub issue in your browser, filled in for you to read, change, and send."
-               styleClass="muted" wrapText="true"/>
-        <HBox spacing="8" alignment="CENTER_LEFT">
-            <Button fx:id="reportProblem" text="%Report a problem" styleClass="button-secondary"/>
-            <Button fx:id="sendFeedback" text="%Send feedback" styleClass="button-secondary"/>
-        </HBox>
+        <Button fx:id="feedbackSupport" text="%Feedback &amp; Support" styleClass="button-secondary"/>
+    </VBox>
+    <VBox styleClass="card,settings-card">
+        <Label text="%Danger zone" styleClass="card-title"/>
+        <Button fx:id="deleteAllTransactions" text="%Delete all transactions" styleClass="button-danger"/>
     </VBox>
 </VBox>

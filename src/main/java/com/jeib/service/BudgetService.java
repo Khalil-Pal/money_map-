@@ -4,6 +4,7 @@ import static com.jeib.i18n.Messages.t;
 
 import com.jeib.model.Budget;
 import com.jeib.model.Category;
+import com.jeib.model.DateRange;
 import com.jeib.model.ExchangeRates;
 import com.jeib.model.LimitRules;
 import com.jeib.model.LimitStatus;
@@ -76,19 +77,15 @@ public final class BudgetService {
                               List<LimitLine> categories, Set<SupportedCurrency> unconverted) {
     }
 
-    public MonthBudget forMonth(YearMonth month) throws SQLException {
-        ExchangeRates rates = currencies.rates();
-        Map<String, Long> spentByCategory = new HashMap<>();
-        Set<SupportedCurrency> unconverted = EnumSet.noneOf(SupportedCurrency.class);
-        for (TransactionRepository.Spend spend : transactions.sumExpensesByCategory(month)) {
-            SupportedCurrency currency = SupportedCurrency.valueOf(spend.currency());
-            if (!rates.canConvert(currency)) {
-                unconverted.add(currency);
-                continue;
-            }
-            spentByCategory.merge(spend.categoryId(), rates.toMain(spend.amountMinor(), currency), Long::sum);
-        }
+    public record CategorySpending(Category category, long spentMinor) {
+    }
 
+    public record PeriodSpending(SupportedCurrency mainCurrency, long totalMinor,
+                                 List<CategorySpending> categories, Set<SupportedCurrency> unconverted) {
+    }
+
+    public MonthBudget forMonth(YearMonth month) throws SQLException {
+        PeriodSpending spending = spendingBetween(DateRange.ofMonth(month));
         Map<String, Long> limits = new HashMap<>();
         Long overallLimit = null;
         for (Budget budget : budgets.findDefaults()) {
@@ -99,14 +96,35 @@ public final class BudgetService {
             }
         }
 
-        List<LimitLine> lines = categories.findActive().stream()
+        List<LimitLine> lines = spending.categories().stream()
+                .map(entry -> line(entry.category(), entry.spentMinor(), limits.get(entry.category().id())))
+                .toList();
+        return new MonthBudget(month, spending.mainCurrency(), line(null, spending.totalMinor(), overallLimit),
+                lines, spending.unconverted());
+    }
+
+    /** Totals for any period. Each category/currency subtotal is converted once. */
+    public PeriodSpending spendingBetween(DateRange range) throws SQLException {
+        ExchangeRates rates = currencies.rates();
+        Map<String, Long> spentByCategory = new HashMap<>();
+        Set<SupportedCurrency> unconverted = EnumSet.noneOf(SupportedCurrency.class);
+        for (TransactionRepository.Spend spend : transactions.sumExpensesByCategory(range)) {
+            SupportedCurrency currency = SupportedCurrency.valueOf(spend.currency());
+            if (!rates.canConvert(currency)) {
+                unconverted.add(currency);
+                continue;
+            }
+            spentByCategory.merge(spend.categoryId(), rates.toMain(spend.amountMinor(), currency), Long::sum);
+        }
+
+        List<CategorySpending> lines = categories.findActive().stream()
                 .filter(c -> c.kind() == TransactionType.EXPENSE)
-                .map(c -> line(c, spentByCategory.getOrDefault(c.id(), 0L), limits.get(c.id())))
+                .map(c -> new CategorySpending(c, spentByCategory.getOrDefault(c.id(), 0L)))
                 .toList();
         // Overall = every expense, including any in categories deleted since (their rows moved to
         // "Other", but be safe and count whatever is there).
         long totalSpent = spentByCategory.values().stream().mapToLong(Long::longValue).sum();
-        return new MonthBudget(month, rates.main(), line(null, totalSpent, overallLimit), lines, unconverted);
+        return new PeriodSpending(rates.main(), totalSpent, lines, unconverted);
     }
 
     private static LimitLine line(Category category, long spent, Long limit) {

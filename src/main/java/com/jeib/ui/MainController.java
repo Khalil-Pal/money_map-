@@ -37,10 +37,7 @@ public final class MainController {
 
     /** Placeholder text for screens that aren't built yet, by roadmap week. */
     private static final Map<String, String> COMING = Map.of(
-            "Reports", "Built in Week 6: monthly report and Excel export.",
-            "Accounts", "Built in Week 8: multiple accounts and currencies.",
-            "Recurring", "Built in Week 8: recurring payments and bill reminders.",
-            "Goals", "Built in Week 8: savings goals.");
+            "Reports", "Built in Week 6: monthly report and Excel export.");
 
     private static final String MOON = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z";
     /** Lucide "sun-moon": the Automatic mode. */
@@ -57,6 +54,7 @@ public final class MainController {
     private final QuickAddViewModel quickAddViewModel;
     private final Navigation navigation;
     private final LanguageSwitcher languages;
+    private final Runnable openFirstPlan;
 
     @FXML private StackPane root;
     @FXML private BorderPane appContent;
@@ -68,14 +66,19 @@ public final class MainController {
     @FXML private Label quickAddPreview;
     @FXML private ToggleGroup navGroup;
     @FXML private Label pageTitle;
-    @FXML private Label monthLabel;
-    @FXML private Button previousMonth;
-    @FXML private Button nextMonth;
+    @FXML private HBox transactionActions;
+    @FXML private HBox dateRangeControls;
+    @FXML private Button chooseDateRange;
+    @FXML private Label selectedDateRange;
+    @FXML private Button clearDateRange;
     @FXML private VBox transactionsPage;
     @FXML private VBox budgetsPage;
     @FXML private VBox categoriesPage;
     @FXML private VBox settingsPage;
     @FXML private VBox dashboardPage;
+    @FXML private VBox calendarPage;
+    @FXML private VBox recurringPage;
+    @FXML private VBox goalsPage;
     @FXML private Label comingSoon;
     @FXML private Button settingsButton;
     @FXML private Button themeButton;
@@ -90,7 +93,7 @@ public final class MainController {
 
     public MainController(MainViewModel viewModel, DialogHost dialogHost, Dialogs dialogs, Toasts toasts,
                           HistoryViewModel history, QuickAddViewModel quickAddViewModel, Navigation navigation,
-                          LanguageSwitcher languages) {
+                          LanguageSwitcher languages, Runnable openFirstPlan) {
         this.viewModel = viewModel;
         this.dialogHost = dialogHost;
         this.dialogs = dialogs;
@@ -99,6 +102,7 @@ public final class MainController {
         this.quickAddViewModel = quickAddViewModel;
         this.navigation = navigation;
         this.languages = languages;
+        this.openFirstPlan = openFirstPlan;
     }
 
     @FXML
@@ -123,13 +127,23 @@ public final class MainController {
         newTransaction.setOnAction(event -> dialogs.openNewTransaction());
         viewModel.setupNeededProperty().addListener((obs, wasNeeded, needed) -> {
             if (needed) {
-                dialogs.openSetup(viewModel::setupDone);
+                dialogs.openSetup(() -> {
+                    viewModel.setupDone();
+                    openFirstPlan.run();
+                });
             }
         });
 
-        monthLabel.textProperty().bind(viewModel.monthLabel());
-        previousMonth.setOnAction(event -> viewModel.previousMonth());
-        nextMonth.setOnAction(event -> viewModel.nextMonth());
+        chooseDateRange.setOnAction(event -> dialogs.openDateRange(viewModel.selectedDates(), viewModel::setCustomRange));
+        clearDateRange.setOnAction(event -> viewModel.setCustomRange(null));
+        selectedDateRange.textProperty().bind(Bindings.createStringBinding(() -> {
+            var range = viewModel.customRangeProperty().get();
+            return range == null ? "" : Messages.dateRange(range);
+        }, viewModel.customRangeProperty()));
+        selectedDateRange.visibleProperty().bind(viewModel.customRangeProperty().isNotNull());
+        selectedDateRange.managedProperty().bind(selectedDateRange.visibleProperty());
+        clearDateRange.visibleProperty().bind(selectedDateRange.visibleProperty());
+        clearDateRange.managedProperty().bind(clearDateRange.visibleProperty());
 
         // Keep one nav item selected at all times, and swap the page when it changes.
         navGroup.selectedToggleProperty().addListener((obs, previous, current) -> {
@@ -149,9 +163,13 @@ public final class MainController {
         root.sceneProperty().addListener((obs, oldScene, scene) -> {
             if (scene != null) {
                 viewModel.themeProperty().get().applyTo(scene); // first time: no animation
-                // Ctrl+N (Cmd+N on macOS): new transaction, from anywhere in the window.
+                // The transaction shortcut is available on the Transactions page.
                 scene.getAccelerators().put(new KeyCodeCombination(KeyCode.N, KeyCombination.SHORTCUT_DOWN),
-                        dialogs::openNewTransaction);
+                        () -> {
+                            if (transactionsPage.isVisible()) {
+                                dialogs.openNewTransaction();
+                            }
+                        });
             }
         });
         viewModel.themeProperty().addListener((obs, oldTheme, theme) -> {
@@ -165,7 +183,8 @@ public final class MainController {
     private void wireQuickAdd() {
         quickAdd.textProperty().bindBidirectional(quickAddViewModel.textProperty());
         quickAddPreview.textProperty().bind(quickAddViewModel.previewProperty());
-        quickAddPreviewBar.visibleProperty().bind(Bindings.isNotEmpty(quickAddViewModel.previewProperty()));
+        quickAddPreviewBar.visibleProperty().bind(transactionActions.visibleProperty()
+                .and(Bindings.isNotEmpty(quickAddViewModel.previewProperty())));
         quickAddPreviewBar.managedProperty().bind(quickAddPreviewBar.visibleProperty());
         quickAddViewModel.previewIsErrorProperty().addListener((obs, was, isError) -> {
             if (isError) {
@@ -253,10 +272,23 @@ public final class MainController {
         boolean budgets = "Budgets".equals(page);
         boolean categories = "Categories".equals(page);
         boolean settings = "Settings".equals(page);
+        boolean calendar = "Calendar".equals(page);
+        boolean recurring = "Recurring".equals(page);
+        boolean goals = "Goals".equals(page);
+        recurringPage.setVisible(recurring);
+        recurringPage.setManaged(recurring);
+        goalsPage.setVisible(goals);
+        goalsPage.setManaged(goals);
+        dateRangeControls.setVisible(transactions);
+        dateRangeControls.setManaged(transactions);
+        transactionActions.setVisible(transactions);
+        transactionActions.setManaged(transactions);
+        calendarPage.setVisible(calendar);
+        calendarPage.setManaged(calendar);
         dashboardPage.setVisible(dashboard);
         dashboardPage.setManaged(dashboard);
         comingSoon.setText(t(COMING.getOrDefault(page, "")));
-        boolean built = dashboard || transactions || budgets || categories || settings;
+        boolean built = dashboard || transactions || budgets || categories || settings || calendar || recurring || goals;
         comingSoon.setVisible(!built);
         comingSoon.setManaged(!built);
         transactionsPage.setVisible(transactions);

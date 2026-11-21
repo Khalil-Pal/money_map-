@@ -5,18 +5,20 @@
 <h1 align="center">Jeib · جيب</h1>
 
 <p align="center">A simple desktop app to track your spending, set monthly limits, and see how much you can
-still spend each day. In English and Arabic.</p>
+still spend each day. In English, Arabic, and Russian.</p>
 
 ## What it does
 
 - **Add spending in seconds:** type `250 food lunch` and press Enter, or use the New transaction form.
 - **Monthly limits** for each category and overall, with a warning at 80% and an alert at 100%.
+- **Budget plans** with their own dates, expense categories, and spending totals.
+- **Calendar** for monthly history and spending over a custom date range.
 - **Left per day:** how much you can still spend each day until the month ends.
 - **Dashboard:** where your money went, as a chart, plus your limits at a glance.
 - **Your own categories,** each with its own color.
 - **Three currencies:** US dollar, Israeli shekel, and Russian ruble, with your own exchange rates.
 - **Undo anything** with Ctrl+Z.
-- **English and Arabic**, with light, dark, or automatic (by time of day) theme.
+- **English, Arabic, and Russian**, with light, dark, or automatic (by time of day) theme.
 - **Private:** your data stays on your computer, with an automatic backup every day.
 
 ## Download (Windows)
@@ -29,7 +31,7 @@ still spend each day. In English and Arabic.</p>
    happens the first time, because the test build isn't signed yet.
 6. Choose your language and main currency, and start adding.
 
-Found a problem or have an idea? In Jeib, open **Settings → Help**.
+For feedback or help, open **Settings → Help → Feedback & Support**.
 
 ## Build from source
 

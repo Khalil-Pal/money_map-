@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.BudgetPlanDialogController" styleClass="dialog" maxWidth="540" maxHeight="-Infinity">
+    <Label fx:id="planTitle" text="%New budget plan" styleClass="dialog-title"/>
+    <VBox styleClass="field">
+        <Label text="%Plan name (required)" styleClass="field-label"/>
+        <TextField fx:id="planName" accessibleText="%Plan name (required)"/>
+    </VBox>
+    <HBox spacing="12">
+        <VBox styleClass="field" HBox.hgrow="ALWAYS">
+            <Label text="%Start date" styleClass="field-label"/>
+            <DatePicker fx:id="startDate" editable="false" accessibleText="%Start date" maxWidth="Infinity"/>
+        </VBox>
+        <VBox styleClass="field" HBox.hgrow="ALWAYS">
+            <Label text="%End date" styleClass="field-label"/>
+            <DatePicker fx:id="endDate" editable="false" accessibleText="%End date" maxWidth="Infinity"/>
+        </VBox>
+    </HBox>
+    <HBox spacing="12">
+        <VBox styleClass="field" HBox.hgrow="ALWAYS">
+            <Label text="%Budget amount" styleClass="field-label"/>
+            <TextField fx:id="amount" accessibleText="%Budget amount"/>
+        </VBox>
+        <VBox styleClass="field">
+            <Label text="%Budget currency" styleClass="field-label"/>
+            <ComboBox fx:id="planCurrency" accessibleText="%Budget currency" maxWidth="Infinity"/>
+        </VBox>
+    </HBox>
+    <VBox styleClass="field">
+        <Label text="%Expense categories" styleClass="field-label"/>
+        <ScrollPane fitToWidth="true" maxHeight="130" styleClass="page-scroll">
+            <FlowPane fx:id="categoryChoices" hgap="12" vgap="8"/>
+        </ScrollPane>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="planCategoryName" promptText="%New category name, e.g. Coffee"
+                       accessibleText="%New expense category" onAction="#addCategory" HBox.hgrow="ALWAYS"/>
+            <Button fx:id="addPlanCategory" text="%Add category" onAction="#addCategory" styleClass="button-secondary"/>
+        </HBox>
+    </VBox>
+    <Label fx:id="error" styleClass="field-error" wrapText="true"/>
+    <HBox styleClass="dialog-buttons">
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="cancelPlan" text="%Cancel" onAction="#cancel" cancelButton="true" styleClass="button-secondary"/>
+        <Button fx:id="savePlan" text="%Save" onAction="#save" defaultButton="true" styleClass="button-primary"/>
+    </HBox>
+</VBox>

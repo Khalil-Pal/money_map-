@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.jeib.db.Database;
 import com.jeib.model.Budget;
+import com.jeib.model.DateRange;
 import com.jeib.model.LimitStatus;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
@@ -24,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -105,6 +107,31 @@ class BudgetServiceTest {
         transactions.delete(deleted.id());
 
         assertEquals(50_000, food().spentMinor());
+    }
+
+    @Test
+    void aTwoWeekRangeIncludesBothEndsAcrossMonths() throws SQLException {
+        spend("1000", null, "2026-10-24", FOOD);
+        spend("100", null, "2026-10-25", FOOD);
+        spend("2", SupportedCurrency.USD, "2026-11-07", RENT); // 185 RUB
+        spend("2000", null, "2026-11-08", FOOD);
+        Transaction income = transactions.add(new TransactionInput(TransactionType.INCOME, "5000", null,
+                LocalDate.parse("2026-11-01"), SALARY, null));
+        Transaction removed = transactions.add(new TransactionInput(TransactionType.EXPENSE, "999", null,
+                LocalDate.parse("2026-11-02"), FOOD, null));
+        transactions.delete(removed.id());
+
+        DateRange range = new DateRange(LocalDate.parse("2026-10-25"), LocalDate.parse("2026-11-07"));
+        var rows = transactions.listRange(range);
+        assertEquals(List.of(range.end(), income.occurredOn(), range.start()),
+                rows.stream().map(Transaction::occurredOn).toList());
+
+        var spending = budgets.spendingBetween(range);
+        assertEquals(28_500, spending.totalMinor());
+        assertEquals(10_000, spending.categories().stream().filter(row -> row.category().id().equals(FOOD))
+                .findFirst().orElseThrow().spentMinor());
+        assertEquals(List.of(range.end()), transactions.listRange(new DateRange(range.end(), range.end()))
+                .stream().map(Transaction::occurredOn).toList());
     }
 
     @Test

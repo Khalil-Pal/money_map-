@@ -65,4 +65,9 @@ public final class UndoManager {
     public synchronized boolean canRedo() {
         return !redoStack.isEmpty();
     }
+
+    synchronized void clear() {
+        undoStack.clear();
+        redoStack.clear();
+    }
 }

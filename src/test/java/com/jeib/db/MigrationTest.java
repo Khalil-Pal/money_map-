@@ -7,11 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.CategoryRepository;
+import com.jeib.repository.TransactionRepository;
+import com.jeib.model.Transaction;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Clock;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -55,6 +58,24 @@ class MigrationTest {
     void migratingTwiceIsANoOp() throws SQLException {
         database.migrate();
         assertEquals(11, new CategoryRepository(database, Clock.systemUTC()).findActive().size());
+    }
+
+    @Test
+    void upgradingVersionThreeKeepsExistingTransactions() throws SQLException {
+        var previous = new Database(tempDir.resolve("previous.db"));
+        org.flywaydb.core.Flyway.configure()
+                .dataSource("jdbc:sqlite:" + previous.file(), null, null)
+                .locations("classpath:db/migration").target("3").load().migrate();
+        try (var connection = previous.connect(); var statement = connection.createStatement()) {
+            statement.executeUpdate("""
+                    INSERT INTO transactions (id, category_id, type, amount, currency, occurred_on, created_at, updated_at)
+                    VALUES ('expense', 'a87a6066-c95c-48d4-b8c7-849a88bcab1f', 'EXPENSE', 500, 'USD',
+                            '2026-10-25', '2026-10-25T00:00:00Z', '2026-10-25T00:00:00Z')""");
+        }
+        previous.migrate();
+        var rows = new TransactionRepository(previous, Clock.systemUTC()).findByMonth(YearMonth.of(2026, 10));
+        assertEquals(List.of("expense"), rows.stream().map(Transaction::id).toList());
+        org.junit.jupiter.api.Assertions.assertNull(rows.getFirst().budgetPlanId());
     }
 
     @Test

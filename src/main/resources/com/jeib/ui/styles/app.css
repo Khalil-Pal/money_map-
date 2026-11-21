@@ -206,6 +206,63 @@
     -fx-background-radius: 9, 7;
 }
 
+.check-box {
+    -fx-text-fill: -text-primary;
+}
+
+.check-box > .box {
+    -fx-background-color: -border-strong, -bg-surface-alt;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 4, 3;
+}
+
+.check-box:focus-visible > .box {
+    -fx-background-color: -focus-ring, -bg-surface-alt;
+}
+
+.check-box:selected > .box {
+    -fx-background-color: -primary;
+}
+
+.check-box:selected:focus-visible > .box {
+    -fx-background-color: -focus-ring, -primary;
+}
+
+.check-box:selected > .box > .mark {
+    -fx-background-color: -on-primary;
+}
+
+.combo-box {
+    -fx-background-color: -border, -bg-surface-alt;
+    -fx-background-insets: 0, 1;
+    -fx-background-radius: 8, 7;
+    -fx-pref-height: 36;
+}
+
+.combo-box:focus-visible {
+    -fx-background-color: -focus-ring, -bg-surface-alt;
+}
+
+.combo-box > .arrow-button > .arrow {
+    -fx-background-color: -text-primary;
+}
+
+.combo-box > .list-cell,
+.combo-box-popup .list-cell {
+    -fx-text-fill: -text-primary;
+    -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: -border, -bg-surface;
+    -fx-background-insets: 0, 1;
+}
+
+.combo-box-popup .list-cell:filled:hover,
+.combo-box-popup .list-cell:filled:selected {
+    -fx-background-color: -primary-tint;
+}
+
 /* ---- Page ------------------------------------------------------------- */
 
 .page-scroll,

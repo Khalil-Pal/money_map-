@@ -29,11 +29,11 @@ class ArabicCoverageTest {
     /** Keys that reach t() through a variable or constant rather than a literal. */
     private static final Set<String> INDIRECT = Set.of(
             "Undone: {0}", "Redone: {0}", "Nothing to undo.", "Nothing to redo.", "Can't undo: {0}", "Can't redo: {0}",
-            "Built in Week 6: monthly report and Excel export.", "Built in Week 8: multiple accounts and currencies.",
+            "Built in Week 6: monthly report and Excel export.",
             "Built in Week 8: recurring payments and bill reminders.", "Built in Week 8: savings goals.",
             "Orange", "Blue", "Purple", "Teal", "Pink", "Ochre", "Slate", "Lime", "Cyan", "Fuchsia", "Maroon",
             "Brown", "Plum", "Taupe", "US dollar", "Israeli shekel", "Russian ruble", "Unknown category",
-            "Dashboard", "Transactions", "Budgets", "Categories", "Reports", "Accounts", "Recurring", "Goals",
+            "Dashboard", "Transactions", "Budgets", "Categories", "Reports", "Calendar", "Recurring", "Goals",
             "Settings", "Food", "Rent", "Shopping", "Transport", "Entertainment", "Subscriptions", "Other", "Health",
             "Salary", "Freelance", "Other income");
 
@@ -56,7 +56,7 @@ class ArabicCoverageTest {
             for (Path file : files.filter(p -> p.toString().endsWith(".fxml")).toList()) {
                 Matcher key = FXML_KEY.matcher(Files.readString(file));
                 while (key.find()) {
-                    keys.add(key.group(1));
+                    keys.add(key.group(1).replace("&amp;", "&"));
                 }
             }
         }
@@ -73,6 +73,17 @@ class ArabicCoverageTest {
             }
         }
         assertEquals(List.of(), missing, "Add these to Arabic.java");
+    }
+
+    @Test
+    void everySentenceHasARussianTranslation() throws IOException {
+        for (String key : usedKeys()) {
+            assertTrue(Russian.TEXTS.containsKey(key), () -> "Add to Russian.java: " + key);
+            for (int i = 0; i < 4; i++) {
+                String placeholder = "{" + i + "}";
+                assertEquals(key.contains(placeholder), Russian.TEXTS.get(key).contains(placeholder), key);
+            }
+        }
     }
 
     @Test

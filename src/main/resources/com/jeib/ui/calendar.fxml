@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.CalendarController" styleClass="dashboard-page">
+    <VBox styleClass="card,settings-card">
+        <HBox spacing="12" alignment="CENTER_LEFT">
+            <Button fx:id="previousYear" text="%Previous year" styleClass="button-secondary"/>
+            <Label fx:id="calendarYear" styleClass="card-title"/>
+            <Button fx:id="nextYear" text="%Next year" styleClass="button-secondary"/>
+        </HBox>
+        <TilePane fx:id="months" prefColumns="4" hgap="8" vgap="8"/>
+    </VBox>
+    <HBox spacing="12" alignment="CENTER_LEFT">
+        <Label fx:id="period" styleClass="card-title" wrapText="true"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="historyDateRange" text="%Date range" styleClass="button-secondary"/>
+        <Button fx:id="returnToMonth" text="%Back to month" styleClass="button-link"/>
+    </HBox>
+    <Label fx:id="message" styleClass="tx-message" wrapText="true"/>
+    <VBox styleClass="card,settings-card">
+        <Label text="%Spent in this period" styleClass="card-title"/>
+        <VBox fx:id="spending" spacing="5"/>
+    </VBox>
+    <VBox styleClass="card,settings-card">
+        <Label text="%Transactions" styleClass="card-title"/>
+        <VBox fx:id="rows"/>
+    </VBox>
+</VBox>

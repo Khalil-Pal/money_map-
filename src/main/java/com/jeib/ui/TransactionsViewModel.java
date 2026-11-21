@@ -3,13 +3,13 @@ package com.jeib.ui;
 import static com.jeib.i18n.Messages.t;
 
 import com.jeib.model.Category;
+import com.jeib.model.DateRange;
 import com.jeib.service.CategoryService;
 import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionService;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
@@ -25,8 +25,8 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 
 /**
- * State for the Transactions page: the selected month's transactions, newest first. Reloads by
- * itself when the month changes (top bar ◀ ▶) or when the database becomes ready. Can be narrowed
+ * State for the Transactions page: the selected period's transactions, newest first. Reloads by
+ * itself when the period changes or when the database becomes ready. Can be narrowed
  * to one category (the Dashboard's drill-downs).
  */
 public final class TransactionsViewModel {
@@ -41,6 +41,8 @@ public final class TransactionsViewModel {
     private final Runnable afterChange;
     private final CategoryService categories;
     private final ReadOnlyObjectProperty<YearMonth> month;
+    private final ReadOnlyObjectProperty<DateRange> customRange;
+    private Task<List<TransactionRow>> loadTask;
 
     private final ObservableList<TransactionRow> rows = FXCollections.observableArrayList();
     private final BooleanProperty loading = new SimpleBooleanProperty(false);
@@ -50,20 +52,28 @@ public final class TransactionsViewModel {
 
     /**
      * @param month the month chosen in the top bar (shared with the other pages)
+     * @param customRange the optional start and end date shared with the Dashboard
      * @param ready true once the database is migrated; nothing loads before that
      */
     public TransactionsViewModel(TransactionService transactions, TransactionCommands commands,
                                  CategoryService categories,
-                                 ReadOnlyObjectProperty<YearMonth> month, ReadOnlyBooleanProperty ready,
+                                 ReadOnlyObjectProperty<YearMonth> month, ReadOnlyObjectProperty<DateRange> customRange,
+                                 ReadOnlyBooleanProperty ready,
                                  Runnable afterChange) {
         this.transactions = transactions;
         this.commands = commands;
         this.afterChange = afterChange;
         this.categories = categories;
         this.month = month;
+        this.customRange = customRange;
         month.addListener((obs, oldMonth, newMonth) -> {
+            if (ready.get() && customRange.get() == null) {
+                periodChanged();
+            }
+        });
+        customRange.addListener((obs, old, range) -> {
             if (ready.get()) {
-                load();
+                periodChanged();
             }
         });
         ready.addListener((obs, wasReady, isReady) -> {
@@ -82,14 +92,23 @@ public final class TransactionsViewModel {
         load();
     }
 
-    /** Loads the current month in the background. */
+    private void periodChanged() {
+        rows.clear();
+        summary.set("");
+        message.set("");
+        load();
+    }
+
+    /** Loads the selected period in the background. */
     public void load() {
-        YearMonth requested = month.get();
+        YearMonth requestedMonth = month.get();
+        DateRange requestedRange = customRange.get();
         Category only = filter.get();
         Task<List<TransactionRow>> task = new Task<>() {
             @Override
             protected List<TransactionRow> call() throws Exception {
-                var list = transactions.listMonth(requested);
+                var list = requestedRange == null ? transactions.listMonth(requestedMonth)
+                        : transactions.listRange(requestedRange);
                 if (only != null) {
                     list = list.stream().filter(t -> t.categoryId().equals(only.id())).toList();
                 }
@@ -97,25 +116,26 @@ public final class TransactionsViewModel {
             }
         };
         task.setOnSucceeded(event -> {
-            // Clicking ◀ ▶ quickly starts several loads; only the one for the month on screen counts.
-            if (!requested.equals(month.get()) || !Objects.equals(only, filter.get())) {
+            // Only the latest load can update the page, even if the user switches away and back.
+            if (task != loadTask) {
                 return;
             }
             rows.setAll(task.getValue());
             int count = rows.size();
-            String monthName = month().format(requested);
+            String period = requestedRange == null ? month().format(requestedMonth)
+                    : com.jeib.i18n.Messages.dateRange(requestedRange);
             if (only == null) {
                 summary.set(count == 0 ? "" : count == 1 ? t("1 transaction") : t("{0} transactions", count));
-                message.set(count == 0 ? t("No transactions in {0}.", monthName) : "");
+                message.set(count == 0 ? t("No transactions in {0}.", period) : "");
             } else {
                 summary.set(count == 0 ? "" : count == 1 ? t("1 transaction in {0}", only.name())
                         : t("{0} transactions in {1}", count, only.name()));
-                message.set(count == 0 ? t("No {0} transactions in {1}.", only.name(), monthName) : "");
+                message.set(count == 0 ? t("No {0} transactions in {1}.", only.name(), period) : "");
             }
             loading.set(false);
         });
         task.setOnFailed(event -> {
-            if (!requested.equals(month.get())) {
+            if (task != loadTask) {
                 return;
             }
             rows.clear();
@@ -123,6 +143,7 @@ public final class TransactionsViewModel {
             message.set(t("Couldn't load transactions: {0}", task.getException().getMessage()));
             loading.set(false);
         });
+        loadTask = task;
         loading.set(true);
         Thread.ofVirtual().name("jeib-transactions").start(task);
     }

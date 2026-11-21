@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.jeib.model.Digits;
 import com.jeib.model.Money;
 import com.jeib.model.SupportedCurrency;
+import java.util.Locale;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +35,17 @@ class MessagesTest {
         assertEquals("Not translated yet", Messages.t("Not translated yet"));
         assertTrue(Messages.rightToLeft());
         assertEquals("ar", Messages.locale().getLanguage());
+    }
+
+    @Test
+    void supportedSystemLanguagesAreUsedAndRussianIsLeftToRight() {
+        assertEquals(Language.RUSSIAN, Language.forLocale(Locale.forLanguageTag("ru-RU")));
+        assertEquals(Language.ARABIC, Language.forLocale(Locale.forLanguageTag("ar-PS")));
+        assertEquals(Language.ENGLISH, Language.forLocale(Locale.forLanguageTag("en-GB")));
+        assertEquals(Language.ENGLISH, Language.forLocale(Locale.FRENCH));
+        Messages.setLanguage(Language.RUSSIAN);
+        assertEquals("Календарь", Messages.t("Calendar"));
+        assertFalse(Messages.rightToLeft());
     }
 
     @Test

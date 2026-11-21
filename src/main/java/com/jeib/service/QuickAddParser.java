@@ -57,6 +57,9 @@ public final class QuickAddParser {
             Map.entry("rub", SupportedCurrency.RUB), Map.entry("₽", SupportedCurrency.RUB),
             Map.entry("ruble", SupportedCurrency.RUB), Map.entry("rubles", SupportedCurrency.RUB),
             Map.entry("руб", SupportedCurrency.RUB),
+            Map.entry("рубль", SupportedCurrency.RUB), Map.entry("рублей", SupportedCurrency.RUB),
+            Map.entry("доллар", SupportedCurrency.USD), Map.entry("долларов", SupportedCurrency.USD),
+            Map.entry("шекель", SupportedCurrency.ILS), Map.entry("шекелей", SupportedCurrency.ILS),
             // Arabic: dollar, shekel (both spellings, plural), ruble
             Map.entry("دولار", SupportedCurrency.USD), Map.entry("دولارات", SupportedCurrency.USD),
             Map.entry("شيكل", SupportedCurrency.ILS), Map.entry("شيقل", SupportedCurrency.ILS),

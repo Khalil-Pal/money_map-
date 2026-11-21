@@ -2,6 +2,7 @@ package com.jeib.ui;
 
 import static com.jeib.i18n.Messages.t;
 
+import com.jeib.model.BudgetPlan;
 import com.jeib.model.LimitStatus;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.service.BudgetService.LimitLine;
@@ -11,6 +12,7 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.input.KeyCode;
@@ -24,20 +26,44 @@ public final class BudgetsController {
 
     private final BudgetsViewModel viewModel;
     private final Dialogs dialogs;
+    private final BudgetPlansViewModel plans;
+    private final Runnable createPlan;
 
     @FXML private Label intro;
     @FXML private Label warning;
     @FXML private VBox overallCard;
     @FXML private VBox rowsBox;
     @FXML private Label message;
+    @FXML private Button newBudgetPlan;
+    @FXML private ComboBox<BudgetPlan> budgetPlanPicker;
+    @FXML private Button showMonthlyLimits;
+    @FXML private Label emptyBudgetPlans;
+    @FXML private VBox selectedBudgetPlan;
+    @FXML private VBox monthlyLimits;
 
-    public BudgetsController(BudgetsViewModel viewModel, Dialogs dialogs) {
+    public BudgetsController(BudgetsViewModel viewModel, Dialogs dialogs, BudgetPlansViewModel plans, Runnable createPlan) {
         this.viewModel = viewModel;
         this.dialogs = dialogs;
+        this.plans = plans;
+        this.createPlan = createPlan;
     }
 
     @FXML
     private void initialize() {
+        newBudgetPlan.setOnAction(event -> createPlan.run());
+        budgetPlanPicker.setConverter(BudgetPlanLabels.converter());
+        budgetPlanPicker.setItems(plans.plans);
+        budgetPlanPicker.valueProperty().bindBidirectional(plans.selected);
+        budgetPlanPicker.visibleProperty().bind(Bindings.isNotEmpty(plans.plans));
+        budgetPlanPicker.managedProperty().bind(budgetPlanPicker.visibleProperty());
+        emptyBudgetPlans.visibleProperty().bind(budgetPlanPicker.visibleProperty().not());
+        emptyBudgetPlans.managedProperty().bind(emptyBudgetPlans.visibleProperty());
+        showMonthlyLimits.setOnAction(event -> plans.selected.set(null));
+        showMonthlyLimits.visibleProperty().bind(plans.selected.isNotNull());
+        showMonthlyLimits.managedProperty().bind(showMonthlyLimits.visibleProperty());
+        monthlyLimits.visibleProperty().bind(plans.selected.isNull());
+        monthlyLimits.managedProperty().bind(monthlyLimits.visibleProperty());
+        BudgetPlanDetails.bind(selectedBudgetPlan, plans);
         message.textProperty().bind(viewModel.messageProperty());
         message.visibleProperty().bind(Bindings.isNotEmpty(viewModel.messageProperty()));
         message.managedProperty().bind(message.visibleProperty());

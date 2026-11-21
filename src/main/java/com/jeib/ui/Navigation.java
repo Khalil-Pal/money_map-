@@ -10,10 +10,12 @@ import java.util.function.Consumer;
 public final class Navigation {
 
     private final TransactionsViewModel transactions;
+    private final MainViewModel main;
     private Consumer<String> pageOpener = page -> { };
 
-    public Navigation(TransactionsViewModel transactions) {
+    public Navigation(TransactionsViewModel transactions, MainViewModel main) {
         this.transactions = transactions;
+        this.main = main;
     }
 
     /** Called once by MainController: selects the sidebar item with that name. */
@@ -30,6 +32,7 @@ public final class Navigation {
 
     /** Opens Transactions, showing only {@code category} (or everything for null). */
     public void openTransactions(Category category) {
+        main.setCustomRange(null);
         pageOpener.accept("Transactions"); // resets the filter (pageShown) …
         transactions.filterBy(category);   // … then applies this one
     }

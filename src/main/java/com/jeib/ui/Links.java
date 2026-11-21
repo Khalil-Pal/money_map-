@@ -5,27 +5,15 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.Supplier;
+import javafx.concurrent.Task;
 
 /**
- * Opens a web page in the user's browser or a folder in Explorer, off the JavaFX thread (the
- * system call can take a moment). Failures are ignored: there's nothing useful to show if Windows
- * can't open a browser.
+ * Opens a folder, a web page, or an email draft through the OS, off the JavaFX thread.
  */
 final class Links {
 
     private Links() {
-    }
-
-    static void browse(String url) {
-        Thread.ofVirtual().name("jeib-browse").start(() -> {
-            try {
-                if (Desktop.isDesktopSupported()) {
-                    Desktop.getDesktop().browse(URI.create(url));
-                }
-            } catch (Exception ignored) {
-                // No browser available.
-            }
-        });
     }
 
     static void openFolder(Path folder) {
@@ -39,5 +27,35 @@ final class Links {
                 // Explorer not available.
             }
         });
+    }
+
+    static void mail(Supplier<String> draftUrl, Runnable onUnavailable) {
+        Task<Void> openDraft = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.MAIL)) {
+                    throw new UnsupportedOperationException();
+                }
+                Desktop.getDesktop().mail(URI.create(draftUrl.get()));
+                return null;
+            }
+        };
+        openDraft.setOnFailed(event -> onUnavailable.run());
+        Thread.ofVirtual().name("jeib-mail").start(openDraft);
+    }
+
+    static void browse(String url, Runnable onUnavailable) {
+        Task<Void> openPage = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                    throw new UnsupportedOperationException();
+                }
+                Desktop.getDesktop().browse(URI.create(url));
+                return null;
+            }
+        };
+        openPage.setOnFailed(event -> onUnavailable.run());
+        Thread.ofVirtual().name("jeib-browse").start(openPage);
     }
 }

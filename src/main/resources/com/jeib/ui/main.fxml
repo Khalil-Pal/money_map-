@@ -54,9 +54,9 @@
                 <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
                     content="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></Group></graphic>
             </ToggleButton>
-            <ToggleButton text="%Accounts" userData="Accounts" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
+            <ToggleButton text="%Calendar" userData="Calendar" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
                 <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
-                    content="M21 12V7H5a2 2 0 0 1 0-4h14v4M3 5v14a2 2 0 0 0 2 2h16v-5M18 12a2 2 0 0 0 0 4h4v-4z"/></Group></graphic>
+                    content="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/></Group></graphic>
             </ToggleButton>
             <ToggleButton text="%Recurring" userData="Recurring" toggleGroup="$navGroup" styleClass="nav-item" maxWidth="Infinity">
                 <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75"
@@ -81,19 +81,7 @@
             <top>
               <VBox>
                 <HBox styleClass="topbar">
-                    <Button fx:id="previousMonth" styleClass="icon-button" accessibleText="%Previous month">
-                        <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M15 18l-6-6 6-6"/></Group></graphic>
-                    </Button>
-                    <Label fx:id="monthLabel" styleClass="month-label"/>
-                    <Button fx:id="nextMonth" styleClass="icon-button" accessibleText="%Next month">
-                        <graphic><Group><SVGPath styleClass="icon" scaleX="0.75" scaleY="0.75" content="M9 18l6-6-6-6"/></Group></graphic>
-                    </Button>
-                    <TextField fx:id="quickAdd" promptText="%Quick add — type 250 food lunch and press Enter"
-                               accessibleText="%Quick add" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
-                    <Button fx:id="newTransaction" text="%New transaction" styleClass="button-primary">
-                        <graphic><Group><SVGPath styleClass="icon" scaleX="0.67" scaleY="0.67" content="M5 12h14M12 5v14"/></Group></graphic>
-                    </Button>
-
+                    <Region HBox.hgrow="ALWAYS"/>
                     <!-- Top-right group: settings, theme (Light / Dark / Automatic), language. -->
                     <HBox styleClass="topbar-tools">
                         <Button fx:id="settingsButton" styleClass="icon-button" accessibleText="%Settings">
@@ -109,22 +97,37 @@
                         </Button>
                     </HBox>
                 </HBox>
-                <!-- What Enter will save; only shown while typing in quick add. -->
-                <HBox fx:id="quickAddPreviewBar" styleClass="quick-add-preview">
-                    <Label fx:id="quickAddPreview"/>
-                </HBox>
+
               </VBox>
             </top>
             <center>
                 <ScrollPane fitToWidth="true" styleClass="page-scroll">
                     <VBox styleClass="page">
                         <Label fx:id="pageTitle" styleClass="page-title"/>
+                        <HBox fx:id="transactionActions" spacing="8" alignment="CENTER_LEFT">
+                            <TextField fx:id="quickAdd" promptText="%Quick add — type 250 food lunch and press Enter"
+                                       accessibleText="%Quick add" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                            <Button fx:id="newTransaction" text="%New transaction" styleClass="button-primary">
+                                <graphic><Group><SVGPath styleClass="icon" scaleX="0.67" scaleY="0.67" content="M5 12h14M12 5v14"/></Group></graphic>
+                            </Button>
+                        </HBox>
+                        <HBox fx:id="quickAddPreviewBar" styleClass="quick-add-preview">
+                            <Label fx:id="quickAddPreview"/>
+                        </HBox>
+                        <HBox fx:id="dateRangeControls" spacing="12" alignment="CENTER_LEFT">
+                            <Button fx:id="chooseDateRange" text="%Date range" styleClass="button-secondary"/>
+                            <Label fx:id="selectedDateRange" styleClass="muted" wrapText="true"/>
+                            <Button fx:id="clearDateRange" text="%Back to month" styleClass="button-link"/>
+                        </HBox>
                         <Label fx:id="comingSoon" styleClass="coming-soon" wrapText="true" maxWidth="Infinity"/>
                         <fx:include fx:id="transactionsPage" source="transactions.fxml"/>
                         <fx:include fx:id="budgetsPage" source="budgets.fxml"/>
                         <fx:include fx:id="categoriesPage" source="categories.fxml"/>
                         <fx:include fx:id="settingsPage" source="settings.fxml"/>
                         <fx:include fx:id="dashboardPage" source="dashboard.fxml"/>
+                        <fx:include fx:id="calendarPage" source="calendar.fxml"/>
+                        <fx:include fx:id="recurringPage" source="recurring.fxml"/>
+                        <fx:include fx:id="goalsPage" source="goals.fxml"/>
                     </VBox>
                 </ScrollPane>
             </center>

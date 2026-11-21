@@ -3,11 +3,13 @@ package com.jeib.ui;
 import static com.jeib.i18n.Messages.t;
 
 import com.jeib.model.Category;
+import com.jeib.model.BudgetPlan;
 import com.jeib.model.ExchangeRates;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import com.jeib.service.CategoryService;
+import com.jeib.service.BudgetPlanService;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.TransactionCommands;
 import com.jeib.service.TransactionInput;
@@ -50,12 +52,15 @@ public final class TransactionDialogViewModel {
     public static final String FORM = "form";
     /** Every error key: the {@link ValidationException#field()} names plus {@link #FORM}. */
     public static final List<String> ERROR_KEYS =
-            List.of("type", "amount", "currency", "rate", "date", "category", "note", FORM);
+            List.of("type", "amount", "currency", "rate", "date", "category", "budgetPlan", "note", FORM);
 
     private final TransactionCommands transactions;
     private final CategoryService categories;
     private final CurrencyService currencies;
     private final Clock clock;
+    private final BudgetPlanService plans;
+    private final ObservableList<BudgetPlan> availablePlans = FXCollections.observableArrayList();
+    private final StringProperty budgetPlanId = new SimpleStringProperty();
 
     private String editingId; // null while adding
     private final StringProperty title = new SimpleStringProperty(t("New transaction"));
@@ -84,10 +89,16 @@ public final class TransactionDialogViewModel {
     /** @param transactions every save goes through these commands, so it can be undone */
     public TransactionDialogViewModel(TransactionCommands transactions, CategoryService categories,
                                       CurrencyService currencies, Clock clock) {
+        this(transactions, categories, currencies, clock, null);
+    }
+
+    public TransactionDialogViewModel(TransactionCommands transactions, CategoryService categories,
+                                      CurrencyService currencies, Clock clock, BudgetPlanService plans) {
         this.transactions = transactions;
         this.categories = categories;
         this.currencies = currencies;
         this.clock = clock;
+        this.plans = plans;
         ERROR_KEYS.forEach(key -> errors.put(key, new SimpleStringProperty("")));
 
         type.addListener((obs, oldType, newType) -> {
@@ -128,6 +139,7 @@ public final class TransactionDialogViewModel {
         currency.set(mainCurrency.get()); // null until loaded; apply() fills it in
         date.set(LocalDate.now(clock));
         categoryId.set(null);
+        budgetPlanId.set(null);
         note.set("");
     }
 
@@ -140,16 +152,17 @@ public final class TransactionDialogViewModel {
         currency.set(SupportedCurrency.valueOf(transaction.currency()));
         date.set(transaction.occurredOn());
         categoryId.set(transaction.categoryId());
+        budgetPlanId.set(transaction.budgetPlanId());
         note.set(transaction.note() == null ? "" : transaction.note());
     }
 
     /** What the dialog needs from the database. */
-    record Data(List<Category> categories, ExchangeRates rates) {
+    record Data(List<Category> categories, ExchangeRates rates, List<BudgetPlan> plans) {
     }
 
     /** Database work for {@link #load}, off the JavaFX thread; tests call it directly. */
     Data loadData() throws SQLException {
-        return new Data(categories.list(), currencies.rates());
+        return new Data(categories.list(), currencies.rates(), plans == null ? List.of() : plans.list());
     }
 
     /** Puts loaded data into the dialog (JavaFX thread). */
@@ -163,6 +176,7 @@ public final class TransactionDialogViewModel {
             currency.set(data.rates().main());
         }
         rate.set(savedRateText(currency.get()));
+        availablePlans.setAll(data.plans());
     }
 
     /** Loads categories and rates in the background. Call after startNew / startEdit. */
@@ -196,7 +210,7 @@ public final class TransactionDialogViewModel {
 
     SaveRequest request() {
         TransactionInput input = new TransactionInput(type.get(), amount.get(), currency.get(), date.get(),
-                categoryId.get(), note.get());
+                categoryId.get(), note.get(), budgetPlanId.get());
         // Save the rate when it's new (nothing saved yet, even if the field is empty: the service then
         // says what's missing) or when the user changed it.
         String saved = savedRateText(currency.get());
@@ -384,6 +398,19 @@ public final class TransactionDialogViewModel {
 
     public StringProperty noteProperty() {
         return note;
+    }
+
+    StringProperty budgetPlanIdProperty() {
+        return budgetPlanId;
+    }
+
+    ObservableList<BudgetPlan> availablePlans() {
+        return availablePlans;
+    }
+
+    List<BudgetPlan> selectablePlans() {
+        return availablePlans.stream().filter(plan -> plan.id().equals(budgetPlanId.get())
+                || plan.accepts(type.get(), date.get(), categoryId.get())).toList();
     }
 
     public ReadOnlyObjectProperty<SupportedCurrency> mainCurrencyProperty() {
