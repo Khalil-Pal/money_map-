@@ -62,6 +62,25 @@ class TransactionRowTest {
     }
 
     @Test
+    void calendarGroupsByCategoryAndPutsBothFallbacksLastRegardlessOfTheirNames() {
+        var fallbackExpense = new Category("other", "Miscellaneous", TransactionType.EXPENSE, 6, true);
+        var fallbackIncome = new Category("other-income", "Extra income", TransactionType.INCOME, 13, true);
+        var renamedRegular = new Category("regular", "Other", TransactionType.EXPENSE, 10, false);
+        var rows = TransactionRow.from(List.of(
+                transaction("other", TransactionType.EXPENSE, 100, "USD", "2026-11-12", null),
+                transaction("regular", TransactionType.EXPENSE, 100, "USD", "2026-11-12", null),
+                transaction("food", TransactionType.EXPENSE, 100, "USD", "2026-11-12", "Newer note"),
+                transaction("other-income", TransactionType.INCOME, 100, "USD", "2026-11-12", null),
+                transaction("food", TransactionType.EXPENSE, 100, "USD", "2026-11-12", "Older note")),
+                List.of(fallbackExpense, fallbackIncome, renamedRegular, FOOD));
+
+        var groups = CalendarDayDialog.groupByCategory(rows);
+        assertEquals(List.of("regular", "food", "other", "other-income"),
+                groups.stream().map(group -> group.getFirst().source().categoryId()).toList());
+        assertEquals(List.of("Newer note", "Older note"), groups.get(1).stream().map(TransactionRow::note).toList());
+    }
+
+    @Test
     void aMissingCategoryStillShowsARow() {
         TransactionRow row = TransactionRow.from(
                 List.of(transaction("gone", TransactionType.EXPENSE, 100, "USD", "2026-11-12", null)),

@@ -4,11 +4,11 @@ import static com.jeib.i18n.Messages.t;
 
 import com.jeib.i18n.Language;
 import com.jeib.i18n.Messages;
-import java.util.Map;
 import javafx.animation.KeyFrame;
+import javafx.animation.Interpolator;
+import javafx.animation.RotateTransition;
 import javafx.animation.Timeline;
 import javafx.geometry.Side;
-import javafx.scene.Group;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Tooltip;
@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
@@ -35,10 +36,6 @@ import javafx.scene.shape.SVGPath;
 /** Wires main.fxml to {@link MainViewModel}. Holds no state of its own. */
 public final class MainController {
 
-    /** Placeholder text for screens that aren't built yet, by roadmap week. */
-    private static final Map<String, String> COMING = Map.of(
-            "Reports", "Built in Week 6: monthly report and Excel export.");
-
     private static final String MOON = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z";
     /** Lucide "sun-moon": the Automatic mode. */
     private static final String SUN_MOON = "M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4M12 2v2M12 20v2M4.9 4.9l1.4 1.4"
@@ -55,6 +52,7 @@ public final class MainController {
     private final Navigation navigation;
     private final LanguageSwitcher languages;
     private final Runnable openFirstPlan;
+    private final ThemeTransition themeTransition = new ThemeTransition();
 
     @FXML private StackPane root;
     @FXML private BorderPane appContent;
@@ -77,12 +75,14 @@ public final class MainController {
     @FXML private VBox settingsPage;
     @FXML private VBox dashboardPage;
     @FXML private VBox calendarPage;
+    @FXML private CalendarController calendarPageController;
+    @FXML private ScrollPane pageScroll;
     @FXML private VBox recurringPage;
     @FXML private VBox goalsPage;
-    @FXML private Label comingSoon;
+    @FXML private VBox reportsPage;
+    @FXML private ReportsController reportsPageController;
     @FXML private Button settingsButton;
     @FXML private Button themeButton;
-    @FXML private Group themeIconGroup;
     @FXML private SVGPath themeIcon;
     @FXML private Button languageButton;
 
@@ -127,10 +127,11 @@ public final class MainController {
         newTransaction.setOnAction(event -> dialogs.openNewTransaction());
         viewModel.setupNeededProperty().addListener((obs, wasNeeded, needed) -> {
             if (needed) {
-                dialogs.openSetup(() -> {
-                    viewModel.setupDone();
+                if (viewModel.currencySetupNeeded()) {
+                    dialogs.openSetup(openFirstPlan);
+                } else {
                     openFirstPlan.run();
-                });
+                }
             }
         });
 
@@ -174,8 +175,11 @@ public final class MainController {
         });
         viewModel.themeProperty().addListener((obs, oldTheme, theme) -> {
             if (root.getScene() != null) {
-                // The new theme spreads out as a circle from the theme button.
-                ThemeTransition.reveal(root, themeButton, () -> theme.applyTo(root.getScene()));
+                if (viewModel.readyProperty().get()) {
+                    themeTransition.crossFade(root, () -> theme.applyTo(root.getScene()));
+                } else {
+                    theme.applyTo(root.getScene());
+                }
             }
         });
     }
@@ -223,18 +227,39 @@ public final class MainController {
     /** Settings shortcut, the theme button (Light / Dark / Automatic), and the language pill. */
     private void wireTopRight() {
         settingsButton.setTooltip(new Tooltip(t("Settings")));
-        settingsButton.setOnAction(event -> navigation.openPage("Settings"));
+        var gear = settingsButton.getGraphic();
+        var spin = new RotateTransition(Duration.millis(300), gear);
+        spin.setInterpolator(Interpolator.SPLINE(0.15, 0.6, 0.3, 1.0));
+        settingsButton.setOnAction(event -> {
+            double angle = gear.getRotate() % 360;
+            spin.stop();
+            spin.setFromAngle(angle);
+            spin.setToAngle(angle + 60);
+            spin.playFromStart();
+            navigation.openPage("Settings");
+        });
 
         themeButton.setOnAction(event -> viewModel.toggleTheme());
         showThemeMode(viewModel.themeModeProperty().get());
-        viewModel.themeModeProperty().addListener((obs, old, mode) -> {
-            showThemeMode(mode);
-            ThemeTransition.spin(themeIconGroup);
-        });
+        viewModel.themeModeProperty().addListener((obs, old, mode) -> showThemeMode(mode));
         // Automatic mode follows the clock while the app is open (dark at 7 PM, light at 7 AM).
-        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(30), event -> viewModel.refreshTheme()));
+        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(30), event -> {
+            viewModel.refreshTheme();
+            if (reportsPage.isVisible()) {
+                reportsPageController.refresh();
+            }
+            if (calendarPage.isVisible()) {
+                calendarPageController.refreshToday();
+            }
+        }));
         clock.setCycleCount(Timeline.INDEFINITE);
-        clock.play();
+        root.sceneProperty().addListener((obs, before, after) -> {
+            if (after == null) {
+                clock.stop();
+            } else {
+                clock.play();
+            }
+        });
 
         languageButton.setText(Messages.language().nativeName());
         languageButton.setTooltip(new Tooltip(t("Language")));
@@ -275,6 +300,7 @@ public final class MainController {
         boolean calendar = "Calendar".equals(page);
         boolean recurring = "Recurring".equals(page);
         boolean goals = "Goals".equals(page);
+        boolean reports = "Reports".equals(page);
         recurringPage.setVisible(recurring);
         recurringPage.setManaged(recurring);
         goalsPage.setVisible(goals);
@@ -285,12 +311,16 @@ public final class MainController {
         transactionActions.setManaged(transactions);
         calendarPage.setVisible(calendar);
         calendarPage.setManaged(calendar);
+        if (calendar) {
+            calendarPageController.refreshToday();
+        }
         dashboardPage.setVisible(dashboard);
         dashboardPage.setManaged(dashboard);
-        comingSoon.setText(t(COMING.getOrDefault(page, "")));
-        boolean built = dashboard || transactions || budgets || categories || settings || calendar || recurring || goals;
-        comingSoon.setVisible(!built);
-        comingSoon.setManaged(!built);
+        reportsPage.setVisible(reports);
+        reportsPage.setManaged(reports);
+        if (reports) {
+            reportsPageController.refresh();
+        }
         transactionsPage.setVisible(transactions);
         transactionsPage.setManaged(transactions);
         budgetsPage.setVisible(budgets);
@@ -299,6 +329,9 @@ public final class MainController {
         categoriesPage.setManaged(categories);
         settingsPage.setVisible(settings);
         settingsPage.setManaged(settings);
+        if (calendar || reports) {
+            pageScroll.setVvalue(pageScroll.getVmin());
+        }
         navigation.pageShown(page);
     }
 }

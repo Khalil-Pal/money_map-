@@ -48,7 +48,7 @@ final class Russian {
         messages.put("Name", "Название");
         messages.put("Color", "Цвет");
         messages.put("Status", "Статус");
-        messages.put("Used", "Использовано");
+        messages.put("Used", "Доля");
         messages.put("spent", "потрачено");
         messages.put("Something went wrong: {0}", "Произошла ошибка: {0}");
         messages.put("Built in Week 6: monthly report and Excel export.", "Будут добавлены месячные отчёты и экспорт в Excel.");
@@ -255,6 +255,7 @@ final class Russian {
         messages.put("End date", "Дата окончания");
         messages.put("Apply", "Применить");
         messages.put("Back to month", "Вернуться к месяцу");
+        messages.put("Back to calendar", "К календарю");
         messages.put("{0} to {1}", "с {0} по {1}");
         messages.put("Choose a valid start and end date.", "Выберите действительные даты начала и окончания.");
         messages.put("The end date must be on or after the start date.", "Дата окончания должна совпадать с датой начала или быть позже.");
@@ -348,6 +349,58 @@ final class Russian {
         messages.put("Clearing transactions…", "Очистка операций…");
         messages.put("Exporting PDF…", "Экспорт PDF…");
         messages.put("A file with that name already exists. Choose a new filename.", "Файл с таким именем уже есть. Выберите новое имя.");
+        messages.put("Close", "Закрыть");
+        messages.put("This month", "Текущий месяц");
+        messages.put("No transactions on this day.", "В этот день операций не было.");
+        messages.put("{0} · Has transactions", "{0} · Есть операции");
+        messages.put("Couldn't load the calendar: {0}", "Не удалось загрузить календарь: {0}");
+        messages.put("Opening the database…", "Открытие базы данных…");
+        messages.put("Database ready · {0} categories · {1}", "База данных готова · категорий: {0} · {1}");
+        messages.put("Couldn't open the database: {0}", "Не удалось открыть базу данных: {0}");
+        messages.put("Budget report", "Отчёт по бюджету");
+        messages.put("Export a spending summary, charts, and all transactions linked to a completed plan.",
+                "Экспортируйте сводку расходов, диаграммы и все операции завершённого плана.");
+        messages.put("Export Excel", "Экспорт в Excel");
+        messages.put("Export PDF", "Экспорт в PDF");
+        messages.put("No budget plans yet.", "Бюджетных планов пока нет.");
+        messages.put("This plan runs through {0}. Export opens the next day.",
+                "План действует по {0}. Экспорт станет доступен на следующий день.");
+        messages.put("Budget limit: {0}", "Лимит бюджета: {0}");
+        messages.put("This budget plan no longer exists.", "Этот бюджетный план больше не существует.");
+        messages.put("Reports are available after the plan ends.", "Отчёты доступны после завершения плана.");
+        messages.put("Save budget report", "Сохранить отчёт по бюджету");
+        messages.put("Excel workbooks", "Книги Excel");
+        messages.put("Use the {0} file extension.", "Укажите расширение файла {0}.");
+        messages.put("Report saved to {0}.", "Отчёт сохранён в {0}.");
+        messages.put("Couldn't export the report: {0}", "Не удалось экспортировать отчёт: {0}");
+        messages.put("Exporting report…", "Экспорт отчёта…");
+        messages.put("Report export status", "Состояние экспорта отчёта");
+        messages.put("Budget vs. spending", "Бюджет и расходы");
+        messages.put("Budget limit", "Лимит бюджета");
+        messages.put("Total spent", "Общие расходы");
+        messages.put("Totals use the exchange rates saved at export.", "Итоги рассчитаны по курсам, сохранённым на момент экспорта.");
+        messages.put("Spending by category", "Расходы по категориям");
+        messages.put("Top spending categories", "Категории с наибольшими расходами");
+        messages.put("No spending to chart.", "Нет расходов для диаграммы.");
+        messages.put("Set limit", "Задать лимит");
+        messages.put("Limits apply to every month and are in {0}.", "Лимиты действуют каждый месяц и указаны в {0}.");
+        messages.put("Back to months", "К выбору месяца");
+        messages.put("Loading transactions…", "Загрузка операций…");
+        messages.put("Today", "Сегодня");
+        messages.put("Today's operations", "Операции за сегодня");
+        messages.put("No operations today.", "Сегодня операций нет.");
+        messages.put("Couldn't load today's operations: {0}", "Не удалось загрузить операции за сегодня: {0}");
+        messages.put("View day", "Открыть день");
+        messages.put("Month", "Месяц");
+        messages.put("Week", "Неделя");
+        messages.put("Year", "Год");
+        messages.put("Previous week", "Предыдущая неделя");
+        messages.put("Next week", "Следующая неделя");
+        messages.put("Budget starts", "Начало бюджета");
+        messages.put("Budget ends", "Конец бюджета");
+        messages.put("Budget starts · {0}", "Начало бюджета · {0}");
+        messages.put("Budget ends · {0}", "Конец бюджета · {0}");
+        messages.put("+{0} more", "Ещё {0}");
         return Map.copyOf(messages);
     }
 }

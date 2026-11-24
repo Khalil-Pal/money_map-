@@ -3,12 +3,15 @@ package com.jeib.service;
 import static com.jeib.i18n.Messages.t;
 
 import com.jeib.model.BudgetPlan;
+import com.jeib.model.Category;
 import com.jeib.model.DateRange;
+import com.jeib.model.ExchangeRates;
 import com.jeib.model.LeftPerDay;
 import com.jeib.model.LimitRules;
 import com.jeib.model.LimitStatus;
 import com.jeib.model.Money;
 import com.jeib.model.SupportedCurrency;
+import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.BudgetPlanRepository;
 import com.jeib.repository.TransactionRepository;
@@ -85,9 +88,14 @@ public final class BudgetPlanService {
     }
 
     public Summary summarize(BudgetPlan plan, LocalDate today) throws SQLException {
-        var rates = currencies.rates();
+        return summarize(plan, today, transactions.findByRange(plan.dates(), plan.id()),
+                categories.list(), currencies.rates());
+    }
+
+    static Summary summarize(BudgetPlan plan, LocalDate today, List<Transaction> transactions,
+                             List<Category> categories, ExchangeRates rates) {
         var totals = new LinkedHashMap<String, Map<SupportedCurrency, Long>>();
-        for (var transaction : transactions.findByRange(plan.dates(), plan.id())) {
+        for (var transaction : transactions) {
             if (transaction.type() == TransactionType.EXPENSE) {
                 totals.computeIfAbsent(transaction.categoryId(), key -> new LinkedHashMap<>())
                         .merge(SupportedCurrency.valueOf(transaction.currency()), transaction.amountMinor(), Math::addExact);
@@ -119,7 +127,7 @@ public final class BudgetPlanService {
         LocalDate firstRemaining = today.isBefore(plan.dates().start()) ? plan.dates().start() : today;
         int days = Math.toIntExact(ChronoUnit.DAYS.between(firstRemaining, plan.dates().end()) + 1);
         long remaining = Math.max(0, plan.limitMinor() - spent);
-        var breakdown = categories.list().stream()
+        var breakdown = categories.stream()
                 .filter(category -> plan.categoryIds().contains(category.id()) || converted.containsKey(category.id()))
                 .map(category -> new BudgetService.CategorySpending(category, converted.getOrDefault(category.id(), 0L)))
                 .toList();

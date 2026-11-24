@@ -22,15 +22,14 @@ import org.junit.jupiter.api.Test;
  */
 class ArabicCoverageTest {
 
-    private static final Pattern CALL = Pattern.compile("\\bt\\(\\s*((?:\"(?:[^\"\\\\]|\\\\.)*\"\\s*\\+?\\s*)+)");
+    private static final Pattern CALL = Pattern.compile(
+            "(?:\\bt\\(\\s*|\\bMessages\\.translate\\(\\s*language,\\s*)((?:\"(?:[^\"\\\\]|\\\\.)*\"\\s*\\+?\\s*)+)");
     private static final Pattern STRING = Pattern.compile("\"((?:[^\"\\\\]|\\\\.)*)\"");
     private static final Pattern FXML_KEY = Pattern.compile("(?:text|promptText|accessibleText)=\"%([^\"]*)\"");
 
     /** Keys that reach t() through a variable or constant rather than a literal. */
     private static final Set<String> INDIRECT = Set.of(
             "Undone: {0}", "Redone: {0}", "Nothing to undo.", "Nothing to redo.", "Can't undo: {0}", "Can't redo: {0}",
-            "Built in Week 6: monthly report and Excel export.",
-            "Built in Week 8: recurring payments and bill reminders.", "Built in Week 8: savings goals.",
             "Orange", "Blue", "Purple", "Teal", "Pink", "Ochre", "Slate", "Lime", "Cyan", "Fuchsia", "Maroon",
             "Brown", "Plum", "Taupe", "US dollar", "Israeli shekel", "Russian ruble", "Unknown category",
             "Dashboard", "Transactions", "Budgets", "Categories", "Reports", "Calendar", "Recurring", "Goals",
@@ -68,7 +67,7 @@ class ArabicCoverageTest {
     void everySentenceHasAnArabicTranslation() throws IOException {
         List<String> missing = new ArrayList<>();
         for (String key : usedKeys()) {
-            if (!Arabic.TEXTS.containsKey(key)) {
+            if (Arabic.TEXTS.getOrDefault(key, "").isBlank()) {
                 missing.add(key);
             }
         }
@@ -78,7 +77,7 @@ class ArabicCoverageTest {
     @Test
     void everySentenceHasARussianTranslation() throws IOException {
         for (String key : usedKeys()) {
-            assertTrue(Russian.TEXTS.containsKey(key), () -> "Add to Russian.java: " + key);
+            assertTrue(!Russian.TEXTS.getOrDefault(key, "").isBlank(), () -> "Add to Russian.java: " + key);
             for (int i = 0; i < 4; i++) {
                 String placeholder = "{" + i + "}";
                 assertEquals(key.contains(placeholder), Russian.TEXTS.get(key).contains(placeholder), key);
@@ -107,5 +106,6 @@ class ArabicCoverageTest {
         assertTrue(keys.size() > 150, "found only " + keys.size());
         assertTrue(keys.contains("Enter an amount."));
         assertTrue(keys.contains("Show all"));
+        assertTrue(keys.contains("Reports are available after the plan ends."));
     }
 }

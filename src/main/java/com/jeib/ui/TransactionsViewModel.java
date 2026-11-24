@@ -33,7 +33,7 @@ public final class TransactionsViewModel {
 
     /** "November 2026", in the app's language. */
     private static DateTimeFormatter month() {
-        return DateTimeFormatter.ofPattern("MMMM yyyy", com.jeib.i18n.Messages.locale());
+        return DateTimeFormatter.ofPattern("LLLL yyyy", com.jeib.i18n.Messages.locale());
     }
 
     private final TransactionService transactions;

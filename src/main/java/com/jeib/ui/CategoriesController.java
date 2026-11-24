@@ -11,13 +11,12 @@ import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-/** Wires categories.fxml to {@link CategoriesViewModel}. Rows open the category dialog. */
+/** Wires categories.fxml to {@link CategoriesViewModel}. */
 public final class CategoriesController {
 
     private final CategoriesViewModel viewModel;
@@ -65,18 +64,9 @@ public final class CategoriesController {
         }
         Region gap = new Region();
         HBox.setHgrow(gap, Priority.ALWAYS);
-        Label edit = new Label(t("Edit"));
-        edit.getStyleClass().add("row-action");
+        Button edit = EditButton.create(() -> dialogs.openCategory(category, category.kind()));
         row.getChildren().addAll(gap, edit);
-        row.getStyleClass().addAll("tx-row", "tx-row-clickable", "category-row");
-        row.setFocusTraversable(true);
-        row.setOnMouseClicked(event -> dialogs.openCategory(category, category.kind()));
-        row.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
-                dialogs.openCategory(category, category.kind());
-                event.consume();
-            }
-        });
+        row.getStyleClass().addAll("tx-row", "category-row");
         return row;
     }
 }

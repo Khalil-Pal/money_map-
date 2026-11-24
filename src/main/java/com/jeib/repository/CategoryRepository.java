@@ -2,6 +2,9 @@ package com.jeib.repository;
 
 import com.jeib.db.Database;
 import com.jeib.db.Timestamps;
+import com.jeib.i18n.DefaultCategories;
+import com.jeib.i18n.Language;
+import com.jeib.i18n.Messages;
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import java.sql.Connection;
@@ -28,25 +31,33 @@ public final class CategoryRepository {
 
     /** Non-deleted categories: expenses first, then income, each in palette order. */
     public List<Category> findActive() throws SQLException {
+        return findActive(Messages.language());
+    }
+
+    public List<Category> findActive(Language language) throws SQLException {
         String sql = "SELECT " + COLUMNS + " FROM categories WHERE deleted = 0 ORDER BY kind, color_index";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet rows = statement.executeQuery()) {
             List<Category> categories = new ArrayList<>();
             while (rows.next()) {
-                categories.add(map(rows));
+                categories.add(localize(mapStored(rows), language));
             }
             return categories;
         }
     }
 
     public Optional<Category> findActiveById(String id) throws SQLException {
+        return findActiveStoredById(id).map(category -> localize(category, Messages.language()));
+    }
+
+    public Optional<Category> findActiveStoredById(String id) throws SQLException {
         String sql = "SELECT " + COLUMNS + " FROM categories WHERE id = ? AND deleted = 0";
         try (Connection connection = database.connect();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id);
             try (ResultSet rows = statement.executeQuery()) {
-                return rows.next() ? Optional.of(map(rows)) : Optional.empty();
+                return rows.next() ? Optional.of(mapStored(rows)) : Optional.empty();
             }
         }
     }
@@ -61,7 +72,7 @@ public final class CategoryRepository {
                 if (!rows.next()) {
                     throw new IllegalStateException("The built-in " + kind + " category is missing");
                 }
-                return map(rows);
+                return localize(mapStored(rows), Messages.language());
             }
         }
     }
@@ -196,13 +207,18 @@ public final class CategoryRepository {
         }
     }
 
-    private static Category map(ResultSet row) throws SQLException {
+    private static Category mapStored(ResultSet row) throws SQLException {
         return new Category(
                 row.getString("id"),
                 // Untouched default categories show in the app's language (Food → طعام).
-                com.jeib.i18n.DefaultCategories.displayName(row.getString("id"), row.getString("name")),
+                row.getString("name"),
                 TransactionType.valueOf(row.getString("kind")),
                 row.getInt("color_index"),
                 row.getInt("built_in") == 1);
+    }
+
+    private static Category localize(Category category, Language language) {
+        return new Category(category.id(), DefaultCategories.displayName(language, category.id(), category.name()),
+                category.kind(), category.colorIndex(), category.builtIn());
     }
 }

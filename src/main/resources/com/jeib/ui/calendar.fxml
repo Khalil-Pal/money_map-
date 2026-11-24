@@ -3,27 +3,48 @@
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.jeib.ui.CalendarController" styleClass="dashboard-page">
-    <VBox styleClass="card,settings-card">
-        <HBox spacing="12" alignment="CENTER_LEFT">
-            <Button fx:id="previousYear" text="%Previous year" styleClass="button-secondary"/>
-            <Label fx:id="calendarYear" styleClass="card-title"/>
-            <Button fx:id="nextYear" text="%Next year" styleClass="button-secondary"/>
-        </HBox>
-        <TilePane fx:id="months" prefColumns="4" hgap="8" vgap="8"/>
-    </VBox>
-    <HBox spacing="12" alignment="CENTER_LEFT">
-        <Label fx:id="period" styleClass="card-title" wrapText="true"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="historyDateRange" text="%Date range" styleClass="button-secondary"/>
-        <Button fx:id="returnToMonth" text="%Back to month" styleClass="button-link"/>
+    <HBox spacing="16" alignment="TOP_LEFT" fillHeight="false">
+        <VBox minWidth="-Infinity" prefWidth="205" maxWidth="-Infinity" spacing="12">
+            <VBox styleClass="card,calendar-mini-card">
+                <HBox spacing="4" alignment="CENTER">
+                    <Button fx:id="miniPrevious" styleClass="icon-button,calendar-mini-arrow"/>
+                    <Label fx:id="miniTitle" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="calendar-mini-title"/>
+                    <Button fx:id="miniNext" styleClass="icon-button,calendar-mini-arrow"/>
+                </HBox>
+                <GridPane fx:id="miniDays" styleClass="calendar-mini-grid"/>
+                <Button fx:id="todayButton" text="%Today" styleClass="button-link"/>
+            </VBox>
+            <VBox styleClass="card,calendar-today-card">
+                <Label text="%Today's operations" styleClass="card-title" wrapText="true"/>
+                <VBox fx:id="todayOperations" spacing="7"/>
+                <Button fx:id="viewToday" text="%View day" styleClass="button-link"/>
+            </VBox>
+        </VBox>
+        <VBox minWidth="0" HBox.hgrow="ALWAYS" styleClass="card,calendar-main-card">
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Button fx:id="previousPeriod" styleClass="icon-button,calendar-nav-button"/>
+                <Button fx:id="nextPeriod" styleClass="icon-button,calendar-nav-button"/>
+                <Label fx:id="periodTitle" styleClass="calendar-heading" wrapText="true" minWidth="0" maxWidth="Infinity"
+                       HBox.hgrow="ALWAYS"/>
+                <HBox minWidth="-Infinity" alignment="CENTER" styleClass="calendar-modes">
+                    <ToggleButton fx:id="monthView" text="%Month" minWidth="-Infinity" styleClass="calendar-mode"/>
+                    <ToggleButton fx:id="weekView" text="%Week" minWidth="-Infinity" styleClass="calendar-mode"/>
+                    <ToggleButton fx:id="yearView" text="%Year" minWidth="-Infinity" styleClass="calendar-mode"/>
+                </HBox>
+            </HBox>
+            <GridPane fx:id="days" styleClass="calendar-grid"/>
+            <GridPane fx:id="months" styleClass="calendar-month-grid"/>
+            <HBox fx:id="budgetLegend" spacing="12" alignment="CENTER_LEFT">
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region styleClass="budget-start-marker"/>
+                    <Label text="%Budget starts" styleClass="muted"/>
+                </HBox>
+                <HBox spacing="5" alignment="CENTER_LEFT">
+                    <Region styleClass="budget-end-marker"/>
+                    <Label text="%Budget ends" styleClass="muted"/>
+                </HBox>
+            </HBox>
+            <Label fx:id="calendarError" styleClass="tx-message" wrapText="true"/>
+        </VBox>
     </HBox>
-    <Label fx:id="message" styleClass="tx-message" wrapText="true"/>
-    <VBox styleClass="card,settings-card">
-        <Label text="%Spent in this period" styleClass="card-title"/>
-        <VBox fx:id="spending" spacing="5"/>
-    </VBox>
-    <VBox styleClass="card,settings-card">
-        <Label text="%Transactions" styleClass="card-title"/>
-        <VBox fx:id="rows"/>
-    </VBox>
 </VBox>

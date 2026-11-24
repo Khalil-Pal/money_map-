@@ -1,8 +1,12 @@
 package com.jeib.ui;
 
+import static com.jeib.i18n.Messages.t;
+
 import com.jeib.db.Database;
+import com.jeib.i18n.Messages;
 import com.jeib.model.Category;
 import com.jeib.model.DateRange;
+import com.jeib.repository.BudgetPlanRepository;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.service.CurrencyService;
 import com.jeib.service.PreferencesService;
@@ -10,7 +14,6 @@ import java.time.Clock;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
@@ -36,14 +39,16 @@ public final class MainViewModel {
     private final Database database;
     private final CategoryRepository categories;
     private final CurrencyService currencies;
+    private final BudgetPlanRepository budgetPlans;
     private final PreferencesService preferences;
     private final Clock clock;
 
     private final ObservableList<Category> categoryList = FXCollections.observableArrayList();
-    private final StringProperty status = new SimpleStringProperty("Opening the database…");
+    private final StringProperty status = new SimpleStringProperty(t("Opening the database…"));
     private final BooleanProperty loading = new SimpleBooleanProperty(false);
     private final BooleanProperty ready = new SimpleBooleanProperty(false);
     private final BooleanProperty setupNeeded = new SimpleBooleanProperty(false);
+    private boolean currencySetupNeeded;
     private final ObjectProperty<ThemeMode> themeMode = new SimpleObjectProperty<>(ThemeMode.LIGHT);
     /** The theme actually shown: the mode, resolved by the clock when it's Automatic. */
     private final ObjectProperty<Theme> theme = new SimpleObjectProperty<>(Theme.LIGHT);
@@ -53,17 +58,19 @@ public final class MainViewModel {
 
     /** @param clock decides which month the app opens on */
     public MainViewModel(Database database, CategoryRepository categories, CurrencyService currencies,
-                         PreferencesService preferences, Clock clock) {
+                         BudgetPlanRepository budgetPlans, PreferencesService preferences, Clock clock) {
         this.preferences = preferences;
         this.clock = clock;
         this.database = database;
         this.categories = categories;
         this.currencies = currencies;
+        this.budgetPlans = budgetPlans;
         this.month = new SimpleObjectProperty<>(YearMonth.now(clock));
-        this.monthLabel = Bindings.createStringBinding(() -> DateTimeFormatter.ofPattern("MMMM yyyy", com.jeib.i18n.Messages.locale()).format(month.get()), month);
+        this.monthLabel = Bindings.createStringBinding(
+                () -> DateTimeFormatter.ofPattern("LLLL yyyy", Messages.locale()).format(month.get()), month);
     }
 
-    private record Loaded(List<Category> categories, boolean hasMainCurrency, String theme) {
+    private record Loaded(List<Category> categories, boolean currencySetupNeeded, boolean firstPlanNeeded, String theme) {
     }
 
     /**
@@ -75,7 +82,9 @@ public final class MainViewModel {
             @Override
             protected Loaded call() throws Exception {
                 database.migrate();
-                return new Loaded(categories.findActive(), currencies.mainCurrency().isPresent(),
+                boolean needsCurrency = currencies.mainCurrency().isEmpty();
+                boolean needsPlan = !needsCurrency && currencies.requiresFirstPlan() && !budgetPlans.hasCreatedPlan();
+                return new Loaded(categories.findActive(), needsCurrency, needsPlan,
                         preferences.theme().orElse(null));
             }
         };
@@ -83,22 +92,29 @@ public final class MainViewModel {
             categoryList.setAll(task.getValue().categories());
             themeMode.set(ThemeMode.parse(task.getValue().theme()));
             refreshTheme();
-            setupNeeded.set(!task.getValue().hasMainCurrency());
-            status.set("Database ready · " + categoryList.size() + " categories · " + database.file());
+            currencySetupNeeded = task.getValue().currencySetupNeeded();
+            setupNeeded.set(currencySetupNeeded || task.getValue().firstPlanNeeded());
+            status.set(t("Database ready · {0} categories · {1}", categoryList.size(),
+                    Messages.ltr(database.file().toString())));
             loading.set(false);
             ready.set(true);
         });
         task.setOnFailed(event -> {
-            status.set("Couldn't open the database: " + task.getException().getMessage());
+            status.set(t("Couldn't open the database: {0}", task.getException().getMessage()));
             loading.set(false);
         });
         loading.set(true);
         Thread.ofVirtual().name("jeib-load").start(task);
     }
 
-    /** Called when the first-launch setup has saved the main currency. */
+    /** Called when the first-launch setup has saved the first plan. */
     public void setupDone() {
+        currencySetupNeeded = false;
         setupNeeded.set(false);
+    }
+
+    boolean currencySetupNeeded() {
+        return currencySetupNeeded;
     }
 
     public void previousMonth() {
@@ -167,7 +183,7 @@ public final class MainViewModel {
         return ready;
     }
 
-    /** True when no main currency has been chosen yet: the first-launch setup must run. */
+    /** True while the first-launch currency or plan still needs to be saved. */
     public ReadOnlyBooleanProperty setupNeededProperty() {
         return setupNeeded;
     }

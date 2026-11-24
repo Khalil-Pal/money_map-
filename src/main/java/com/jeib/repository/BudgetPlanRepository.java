@@ -62,6 +62,15 @@ public final class BudgetPlanRepository {
         return read(null);
     }
 
+    /** Setup is complete once a plan has been created, even if it is later removed. */
+    public boolean hasCreatedPlan() throws SQLException {
+        try (var connection = database.connect();
+             var statement = connection.prepareStatement("SELECT 1 FROM budget_plans LIMIT 1");
+             var rows = statement.executeQuery()) {
+            return rows.next();
+        }
+    }
+
     public Optional<BudgetPlan> find(String id) throws SQLException {
         return read(id).stream().findFirst();
     }

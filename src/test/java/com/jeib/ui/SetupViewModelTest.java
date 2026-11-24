@@ -27,10 +27,12 @@ class SetupViewModelTest {
         SetupViewModel viewModel = new SetupViewModel(currencies, null);
 
         assertFalse(viewModel.canSave().get());
+        assertFalse(currencies.requiresFirstPlan());
         viewModel.choiceProperty().set(SupportedCurrency.ILS);
         assertTrue(viewModel.canSave().get());
 
         viewModel.saveNow(viewModel.choiceProperty().get());
         assertEquals(Optional.of(SupportedCurrency.ILS), currencies.mainCurrency());
+        assertTrue(currencies.requiresFirstPlan());
     }
 }

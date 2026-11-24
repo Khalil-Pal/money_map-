@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.jeib.ui.ReportsController" styleClass="dashboard-page">
+    <VBox styleClass="card,settings-card">
+        <Label text="%Budget report" styleClass="card-title"/>
+        <Label text="%Export a spending summary, charts, and all transactions linked to a completed plan."
+               styleClass="muted" wrapText="true"/>
+        <Label text="%Budget plan"/>
+        <ComboBox fx:id="reportPlan" promptText="%Choose a budget plan" accessibleText="%Budget plan" maxWidth="Infinity"/>
+        <Label fx:id="reportState" styleClass="muted" wrapText="true"/>
+        <HBox spacing="10">
+            <Button fx:id="exportExcel" text="%Export Excel" styleClass="button-primary" disable="true"/>
+            <Button fx:id="exportPdf" text="%Export PDF" styleClass="button-secondary" disable="true"/>
+        </HBox>
+        <Label fx:id="reportMessage" styleClass="tx-message" wrapText="true"/>
+    </VBox>
+</VBox>

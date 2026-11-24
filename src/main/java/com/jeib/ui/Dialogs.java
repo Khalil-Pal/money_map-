@@ -20,12 +20,15 @@ import com.jeib.service.TransactionHistoryReset;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 
 /**
  * Opens the app's dialogs in the {@link DialogHost}. Each opening gets a fresh view-model, so no
@@ -75,7 +78,7 @@ public final class Dialogs {
     }
 
     public void openNewTransaction() {
-        openTransaction(TransactionDialogViewModel::startNew);
+        openTransaction(TransactionDialogViewModel::startNew, () -> {});
     }
 
     public void openTransactionReset(TransactionHistoryReset reset) {
@@ -95,6 +98,23 @@ public final class Dialogs {
         })));
     }
 
+    void openCalendarDay(LocalDate date, ObservableValue<List<TransactionRow>> rows,
+                         ObservableValue<String> error, Button trigger) {
+        if (host.isOpen()) {
+            return;
+        }
+        var dialog = new CalendarDayDialog(date, rows, error, () -> {
+            host.close();
+            trigger.requestFocus();
+        }, transaction -> {
+            host.close();
+            openTransaction(viewModel -> viewModel.startEdit(transaction),
+                    () -> openCalendarDay(date, rows, error, trigger));
+        });
+        host.show(dialog);
+        dialog.focusClose();
+    }
+
     public void openBudgetPlan(BudgetPlanService plans, CategoryService categories, CurrencyService currencies,
                                LocalDate today, boolean firstPlan, Consumer<BudgetPlan> onSaved) {
         if (!host.isOpen()) {
@@ -109,24 +129,22 @@ public final class Dialogs {
     }
 
     public void openEditTransaction(Transaction transaction) {
-        openTransaction(viewModel -> viewModel.startEdit(transaction));
+        openTransaction(viewModel -> viewModel.startEdit(transaction), () -> {});
     }
 
-    private void openTransaction(Consumer<TransactionDialogViewModel> prepare) {
+    private void openTransaction(Consumer<TransactionDialogViewModel> prepare, Runnable onClose) {
         if (host.isOpen()) {
             return;
         }
         TransactionDialogViewModel viewModel = transactionViewModels.get();
         prepare.accept(viewModel);
-        host.show(load("transaction-dialog.fxml", new TransactionDialogController(viewModel, () -> {
+        Runnable finish = () -> {
             host.close();
-            afterChange.run(); // a category may have been added inline
-        }, () -> {
-            host.close();
-            afterChange.run();
-        }, () -> {
-            host.close();
-            afterChange.run();
+            afterChange.run(); // a category may have been added inline before cancellation
+            onClose.run();
+        };
+        host.show(load("transaction-dialog.fxml", new TransactionDialogController(viewModel, finish, finish, () -> {
+            finish.run();
             toasts.show(t("Transaction deleted."), t("Undo"), history::undo);
         })));
         viewModel.load();

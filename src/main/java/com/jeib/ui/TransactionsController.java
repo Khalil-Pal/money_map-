@@ -69,10 +69,7 @@ public final class TransactionsController {
         rowsBox.getChildren().setAll(viewModel.rows().stream().map(this::row).toList());
     }
 
-    /**
-     * A clickable row: click it, or focus it with Tab and press Enter or Space, to edit. Delete
-     * (or Backspace) on a focused row deletes it, with Undo in the toast.
-     */
+    /** The edit button also keeps the row's Delete and Backspace shortcuts available. */
     private Node row(TransactionRow row) {
         Label date = label(row.date(), "tx-col-date", "muted");
 
@@ -87,19 +84,15 @@ public final class TransactionsController {
 
         Label amount = label(row.amount(), "tx-col-amount", row.income() ? "amount-income" : "amount");
 
-        HBox line = new HBox(date, note, category, amount);
-        line.getStyleClass().addAll("tx-row", "tx-row-clickable");
-        line.setFocusTraversable(true);
-        line.setOnMouseClicked(event -> dialogs.openEditTransaction(row.source()));
-        line.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
-                dialogs.openEditTransaction(row.source());
-                event.consume();
-            } else if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
+        Button edit = EditButton.create(() -> dialogs.openEditTransaction(row.source()));
+        edit.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DELETE || event.getCode() == KeyCode.BACK_SPACE) {
                 viewModel.delete(row.id(), () -> toasts.show(t("Transaction deleted."), t("Undo"), history::undo));
                 event.consume();
             }
         });
+        HBox line = new HBox(date, note, category, amount, edit);
+        line.getStyleClass().add("tx-row");
         return line;
     }
 

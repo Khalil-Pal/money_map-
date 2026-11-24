@@ -1,7 +1,10 @@
 package com.jeib.i18n;
 
 import com.jeib.model.DateRange;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DecimalStyle;
+import java.time.format.FormatStyle;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -48,6 +51,10 @@ public final class Messages {
 
     /** {@code english} in the current language, with {0}, {1}… replaced by {@code args}. */
     public static String t(String english, Object... args) {
+        return translate(language, english, args);
+    }
+
+    public static String translate(Language language, String english, Object... args) {
         String text = english;
         Map<String, String> table = TRANSLATIONS.get(language);
         if (table != null) {
@@ -66,6 +73,15 @@ public final class Messages {
     public static String ltr(String text) {
         // LRE ... PDF (left-to-right embedding): supported by java.text.Bidi, which JavaFX uses.
         return rightToLeft() ? "‪" + text + "‬" : text;
+    }
+
+    public static String date(LocalDate date, FormatStyle style) {
+        return date(language, date, style);
+    }
+
+    public static String date(Language language, LocalDate date, FormatStyle style) {
+        return DateTimeFormatter.ofLocalizedDate(style).withLocale(language.locale())
+                .withDecimalStyle(DecimalStyle.STANDARD).format(date);
     }
 
     public static String dateRange(DateRange range) {

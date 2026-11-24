@@ -15,13 +15,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-/** Wires budgets.fxml to {@link BudgetsViewModel}. Every limit row and the overall card open the limit dialog. */
+/** Wires budgets.fxml to {@link BudgetsViewModel}. */
 public final class BudgetsController {
 
     private final BudgetsViewModel viewModel;
@@ -76,7 +75,7 @@ public final class BudgetsController {
             return;
         }
         SupportedCurrency main = budget.mainCurrency();
-        intro.setText(t("Limits apply to every month and are in {0}. Click one to change it.", main));
+        intro.setText(t("Limits apply to every month and are in {0}.", main));
         if (budget.unconverted().isEmpty()) {
             warning.setVisible(false);
             warning.setManaged(false);
@@ -94,10 +93,6 @@ public final class BudgetsController {
     private void renderOverall(LimitLine overall, SupportedCurrency main) {
         Label title = new Label(t("Monthly limit · all spending"));
         title.getStyleClass().add("card-title");
-        overallCard.setOnMouseClicked(null);
-        overallCard.setOnKeyPressed(null);
-        overallCard.setFocusTraversable(false);
-        overallCard.getStyleClass().remove("clickable-card");
         if (overall.limitMinor() == null) {
             Label text = new Label(t("Spent {0} this month. Set an overall limit "
                     + "to see how much is left and how much you can spend per day.", main.format(overall.spentMinor())));
@@ -117,15 +112,17 @@ public final class BudgetsController {
         left.getStyleClass().add("muted");
         HBox top = new HBox(amounts, spacer(), percent(overall), StatusTile.of(overall.status()));
         top.getStyleClass().add("limit-top");
-        overallCard.getChildren().setAll(title, top, bar(overall), left);
-        makeClickable(overallCard, () -> dialogs.openLimit(overall, main));
-        overallCard.getStyleClass().add("clickable-card");
+        var edit = EditButton.create(() -> dialogs.openLimit(overall, main));
+        var heading = new HBox(title, spacer(), edit);
+        heading.getStyleClass().add("limit-top");
+        overallCard.getChildren().setAll(heading, top, bar(overall), left);
     }
 
     private Node row(LimitLine line, SupportedCurrency main) {
         Region swatch = new Region();
         swatch.getStyleClass().addAll("swatch", "swatch-" + line.category().colorIndex());
         Label name = new Label(line.category().name());
+        name.setWrapText(true);
         HBox category = new HBox(swatch, name);
         category.getStyleClass().add("limit-col-category");
 
@@ -148,9 +145,19 @@ public final class BudgetsController {
         HBox statusBox = new HBox(status);
         statusBox.getStyleClass().add("limit-col-status");
 
-        HBox row = new HBox(category, middle, pct, statusBox);
-        row.getStyleClass().addAll("tx-row", "tx-row-clickable", "limit-row");
-        makeClickable(row, () -> dialogs.openLimit(line, main));
+        Button action;
+        if (line.limitMinor() == null) {
+            action = new Button(t("Set limit"));
+            action.getStyleClass().addAll("button-link", "limit-set-action");
+            action.setMinWidth(Region.USE_PREF_SIZE);
+            action.setOnAction(event -> dialogs.openLimit(line, main));
+        } else {
+            action = EditButton.create(() -> dialogs.openLimit(line, main));
+        }
+        var actionBox = new HBox(action);
+        actionBox.getStyleClass().add("limit-action");
+        HBox row = new HBox(category, middle, pct, statusBox, actionBox);
+        row.getStyleClass().addAll("tx-row", "limit-row");
         return row;
     }
 
@@ -179,14 +186,4 @@ public final class BudgetsController {
         return region;
     }
 
-    private static void makeClickable(Region node, Runnable action) {
-        node.setFocusTraversable(true);
-        node.setOnMouseClicked(event -> action.run());
-        node.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.ENTER || event.getCode() == KeyCode.SPACE) {
-                action.run();
-                event.consume();
-            }
-        });
-    }
 }
