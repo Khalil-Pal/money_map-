@@ -89,7 +89,7 @@
                                 content="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6z"/></Group></graphic>
                         </Button>
                         <Button fx:id="themeButton" styleClass="icon-button">
-                            <graphic><Group fx:id="themeIconGroup"><SVGPath fx:id="themeIcon" styleClass="icon" scaleX="0.75" scaleY="0.75"/></Group></graphic>
+                            <graphic><Group><SVGPath fx:id="themeIcon" styleClass="icon" scaleX="0.75" scaleY="0.75"/></Group></graphic>
                         </Button>
                         <Button fx:id="languageButton" styleClass="language-pill" accessibleText="%Language">
                             <graphic><Group><SVGPath styleClass="icon,globe-icon" scaleX="0.75" scaleY="0.75"
@@ -101,7 +101,7 @@
               </VBox>
             </top>
             <center>
-                <ScrollPane fitToWidth="true" styleClass="page-scroll">
+                <ScrollPane fx:id="pageScroll" fitToWidth="true" styleClass="page-scroll">
                     <VBox styleClass="page">
                         <Label fx:id="pageTitle" styleClass="page-title"/>
                         <HBox fx:id="transactionActions" spacing="8" alignment="CENTER_LEFT">
@@ -119,7 +119,6 @@
                             <Label fx:id="selectedDateRange" styleClass="muted" wrapText="true"/>
                             <Button fx:id="clearDateRange" text="%Back to month" styleClass="button-link"/>
                         </HBox>
-                        <Label fx:id="comingSoon" styleClass="coming-soon" wrapText="true" maxWidth="Infinity"/>
                         <fx:include fx:id="transactionsPage" source="transactions.fxml"/>
                         <fx:include fx:id="budgetsPage" source="budgets.fxml"/>
                         <fx:include fx:id="categoriesPage" source="categories.fxml"/>
@@ -128,6 +127,7 @@
                         <fx:include fx:id="calendarPage" source="calendar.fxml"/>
                         <fx:include fx:id="recurringPage" source="recurring.fxml"/>
                         <fx:include fx:id="goalsPage" source="goals.fxml"/>
+                        <fx:include fx:id="reportsPage" source="reports.fxml"/>
                     </VBox>
                 </ScrollPane>
             </center>

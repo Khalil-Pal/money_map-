@@ -2,6 +2,8 @@ package com.jeib.service;
 
 import static com.jeib.i18n.Messages.t;
 
+import com.jeib.i18n.DefaultCategories;
+import com.jeib.i18n.Language;
 import com.jeib.model.Category;
 import com.jeib.model.TransactionType;
 import com.jeib.repository.CategoryRepository;
@@ -34,6 +36,10 @@ public final class CategoryService {
         return categories.findActive();
     }
 
+    public List<Category> list(Language language) throws SQLException {
+        return categories.findActive(language);
+    }
+
     /** How many live categories use each palette color (index = color), for the color picker. */
     public int[] colorUsage() throws SQLException {
         return categories.colorUsage();
@@ -56,15 +62,19 @@ public final class CategoryService {
 
     /** Renames and/or recolors. The kind can't change: existing transactions depend on it. */
     public Category update(String id, String name, int colorIndex) throws SQLException {
-        Category current = requireActive(id);
+        Category current = categories.findActiveStoredById(id)
+                .orElseThrow(() -> new ValidationException(t("This category no longer exists.")));
         String cleanName = cleanName(name);
+        if (cleanName.equals(DefaultCategories.displayName(id, current.name()))) {
+            cleanName = current.name();
+        }
         requireNameFree(current.kind(), cleanName, id);
         int[] usage = categories.colorUsage();
         usage[current.colorIndex()]--; // a category may keep its own color
         requireUsableColor(colorIndex, usage);
 
         categories.update(id, cleanName, colorIndex);
-        return new Category(id, cleanName, current.kind(), colorIndex, current.builtIn());
+        return new Category(id, DefaultCategories.displayName(id, cleanName), current.kind(), colorIndex, current.builtIn());
     }
 
     /**

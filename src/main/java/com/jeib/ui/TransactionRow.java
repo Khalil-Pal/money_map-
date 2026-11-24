@@ -4,9 +4,9 @@ import com.jeib.model.Category;
 import com.jeib.model.SupportedCurrency;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
+import com.jeib.i18n.Messages;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
  *
  * @param note          the user's note, or null (the list then shows a muted "No note")
  * @param colorIndex    the category's palette color, for its swatch
+ * @param fallbackCategory whether the category is the built-in fallback for its transaction type
  * @param amount        e.g. "$12.50" for an expense, "+950.00 ₽" for income
  * @param source        the transaction itself, for opening it in the edit dialog
  */
@@ -28,6 +29,7 @@ public record TransactionRow(
         int colorIndex,
         String amount,
         boolean income,
+        boolean fallbackCategory,
         Transaction source) {
 
     static final String UNKNOWN_CATEGORY = "Unknown category";
@@ -44,13 +46,17 @@ public record TransactionRow(
         boolean income = t.type() == TransactionType.INCOME;
         return new TransactionRow(
                 t.id(),
-                DateTimeFormatter.ofPattern(com.jeib.i18n.Messages.rightToLeft() ? "EEEE، d MMMM" : "EEE, MMM d",
-                        com.jeib.i18n.Messages.locale()).format(t.occurredOn()), // Arabic: الخميس، 12 نوفمبر
+                DateTimeFormatter.ofPattern(switch (Messages.language()) {
+                    case ENGLISH -> "EEE, MMM d";
+                    case ARABIC -> "EEEE، d MMMM";
+                    case RUSSIAN -> "EEE, d MMM";
+                }, Messages.locale()).format(t.occurredOn()),
                 t.note(),
                 category == null ? com.jeib.i18n.Messages.t(UNKNOWN_CATEGORY) : category.name(),
                 category == null ? UNKNOWN_COLOR : category.colorIndex(),
                 com.jeib.i18n.Messages.ltr((income ? "+" : "") + formatAmount(t.amountMinor(), t.currency())),
                 income,
+                category != null && category.builtIn(),
                 t);
     }
 

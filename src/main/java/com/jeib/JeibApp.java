@@ -13,6 +13,7 @@ import com.jeib.repository.TransactionRepository;
 import com.jeib.service.BackupService;
 import com.jeib.service.BudgetService;
 import com.jeib.service.BudgetPlanService;
+import com.jeib.service.BudgetReportService;
 import com.jeib.service.CrashLog;
 import com.jeib.service.CategoryService;
 import com.jeib.service.CurrencyService;
@@ -40,6 +41,7 @@ import com.jeib.ui.HistoryViewModel;
 import com.jeib.ui.GoalsController;
 import com.jeib.ui.PlanningViewModel;
 import com.jeib.ui.RecurringController;
+import com.jeib.ui.ReportsController;
 import com.jeib.ui.LanguageSwitcher;
 import com.jeib.ui.LimitDialogViewModel;
 import com.jeib.ui.LimitWatcher;
@@ -101,16 +103,18 @@ public class JeibApp extends Application {
                 categoryRepository, currencyService);
         BudgetPlanService planService = new BudgetPlanService(planRepository, transactionRepository,
                 categoryService, currencyService);
+        var reports = new BudgetReportService(planRepository, transactionRepository, categoryService, currencyService, clock);
         BudgetPlansViewModel plans = new BudgetPlansViewModel(planService, clock);
         CalendarViewModel calendar = new CalendarViewModel(new SettingsRepository(database), transactionRepository,
-                budgetService, categoryService, clock);
+                categoryService, clock);
         // One undo history for the session; every UI change goes through these commands.
         TransactionCommands transactionCommands = new TransactionCommands(transactionService, new UndoManager());
         var historyReset = new TransactionHistoryReset(database, transactionCommands.history(), clock);
         var planning = new PlanningViewModel(new PlanningService(new RecurringRepository(database, clock),
                 new SavingsGoalRepository(database, clock), categoryService, currencyService, clock));
 
-        MainViewModel main = new MainViewModel(database, categoryRepository, currencyService, preferences, clock);
+        MainViewModel main = new MainViewModel(database, categoryRepository, currencyService, planRepository,
+                preferences, clock);
         // Any save, delete, undo, or limit change fires this; every page that shows data listens.
         DataChanged dataChanged = new DataChanged();
         TransactionsViewModel transactions = new TransactionsViewModel(transactionService, transactionCommands,
@@ -139,11 +143,6 @@ public class JeibApp extends Application {
                 if (!main.setupNeededProperty().get()) {
                     planning.reload();
                 }
-            }
-        });
-        main.setupNeededProperty().addListener((obs, was, needed) -> {
-            if (!needed) {
-                dataChanged.run();
             }
         });
         HistoryViewModel history = new HistoryViewModel(transactionCommands.history(), dataChanged, toasts::show);
@@ -175,7 +174,12 @@ public class JeibApp extends Application {
                 (category, kind) -> new CategoryDialogViewModel(categoryService, category, kind),
                 dataChanged, toasts, history);
         Consumer<Boolean> openPlan = firstPlan -> dialogs.openBudgetPlan(planService, categoryService,
-                currencyService, LocalDate.now(clock), firstPlan, plans::selectCreatedPlan);
+                currencyService, LocalDate.now(clock), firstPlan, plan -> {
+                    plans.selectCreatedPlan(plan);
+                    if (firstPlan) {
+                        main.setupDone();
+                    }
+                });
 
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(JeibApp.class.getResource("ui/main.fxml")));
         loader.setResources(Messages.bundle()); // text="%Show all" in FXML is translated
@@ -205,7 +209,10 @@ public class JeibApp extends Application {
                 return new BudgetsController(budgets, dialogs, plans, () -> openPlan.accept(false));
             }
             if (type == CalendarController.class) {
-                return new CalendarController(calendar, dialogs);
+                return new CalendarController(calendar, dialogs, plans);
+            }
+            if (type == ReportsController.class) {
+                return new ReportsController(plans, reports, toasts);
             }
             if (type == TransactionsController.class) {
                 return new TransactionsController(transactions, dialogs, toasts, history);

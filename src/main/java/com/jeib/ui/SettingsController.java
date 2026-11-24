@@ -188,10 +188,7 @@ public final class SettingsController {
     }
 
     private static String longDate(java.time.LocalDate day) {
-        return java.time.format.DateTimeFormatter.ofPattern(
-                        com.jeib.i18n.Messages.rightToLeft() ? "EEEE، d MMMM yyyy" : "EEEE, d MMMM yyyy",
-                        com.jeib.i18n.Messages.locale())
-                .format(day);
+        return com.jeib.i18n.Messages.date(day, java.time.format.FormatStyle.FULL);
     }
 
     private void selectCurrency(SupportedCurrency currency) {

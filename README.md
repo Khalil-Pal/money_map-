@@ -12,7 +12,8 @@ still spend each day. In English, Arabic, and Russian.</p>
 - **Add spending in seconds:** type `250 food lunch` and press Enter, or use the New transaction form.
 - **Monthly limits** for each category and overall, with a warning at 80% and an alert at 100%.
 - **Budget plans** with their own dates, expense categories, and spending totals.
-- **Calendar** for monthly history and spending over a custom date range.
+- **Calendar** shows today's operations, budget start and end dates, and Month, Week, and Year views. Open a day to see or edit its transactions and notes.
+- **Budget reports** for completed plans, with spending charts and transaction details exported to Excel or PDF.
 - **Left per day:** how much you can still spend each day until the month ends.
 - **Dashboard:** where your money went, as a chart, plus your limits at a glance.
 - **Your own categories,** each with its own color.

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.jeib.db.Database;
 import com.jeib.model.DateRange;
+import com.jeib.repository.BudgetPlanRepository;
 import com.jeib.repository.CategoryRepository;
 import com.jeib.repository.SettingsRepository;
 import com.jeib.service.CurrencyService;
@@ -25,6 +26,7 @@ class MainViewModelTest {
         Clock clock = Clock.fixed(Instant.parse(instant), ZoneId.of(zone));
         return new MainViewModel(unused, new CategoryRepository(unused, clock),
                 new CurrencyService(new SettingsRepository(unused)),
+                new BudgetPlanRepository(unused, clock),
                 new PreferencesService(new SettingsRepository(unused)), clock);
     }
 

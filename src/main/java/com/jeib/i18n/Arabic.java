@@ -318,6 +318,7 @@ final class Arabic {
         m.put("End date", "تاريخ النهاية");
         m.put("Apply", "تطبيق");
         m.put("Back to month", "العودة إلى الشهر");
+        m.put("Back to calendar", "العودة إلى التقويم");
         m.put("{0} to {1}", "من {0} إلى {1}");
         m.put("Choose a valid start and end date.", "اختر تاريخ بداية وتاريخ نهاية صالحين.");
         m.put("The end date must be on or after the start date.", "يجب أن يكون تاريخ النهاية في يوم البداية أو بعده.");
@@ -432,6 +433,58 @@ final class Arabic {
         m.put("Clearing transactions…", "جارٍ مسح المعاملات…");
         m.put("Exporting PDF…", "جارٍ تصدير ملف PDF…");
         m.put("A file with that name already exists. Choose a new filename.", "يوجد ملف بهذا الاسم بالفعل. اختر اسمًا جديدًا.");
+        m.put("Close", "إغلاق");
+        m.put("This month", "هذا الشهر");
+        m.put("No transactions on this day.", "لا توجد معاملات في هذا اليوم.");
+        m.put("{0} · Has transactions", "{0} · توجد معاملات");
+        m.put("Couldn't load the calendar: {0}", "تعذّر تحميل التقويم: {0}");
+        m.put("Opening the database…", "جارٍ فتح قاعدة البيانات…");
+        m.put("Database ready · {0} categories · {1}", "قاعدة البيانات جاهزة · {0} من الفئات · {1}");
+        m.put("Couldn't open the database: {0}", "تعذّر فتح قاعدة البيانات: {0}");
+        m.put("Budget report", "تقرير الميزانية");
+        m.put("Export a spending summary, charts, and all transactions linked to a completed plan.",
+                "صدّر ملخص الإنفاق والرسوم البيانية وجميع المعاملات المرتبطة بخطة مكتملة.");
+        m.put("Export Excel", "تصدير إلى Excel");
+        m.put("Export PDF", "تصدير بصيغة PDF");
+        m.put("No budget plans yet.", "لا توجد خطط ميزانية بعد.");
+        m.put("This plan runs through {0}. Export opens the next day.",
+                "تستمر هذه الخطة حتى {0}. يتاح التصدير في اليوم التالي.");
+        m.put("Budget limit: {0}", "حد الميزانية: {0}");
+        m.put("This budget plan no longer exists.", "لم تعد خطة الميزانية هذه موجودة.");
+        m.put("Reports are available after the plan ends.", "تتاح التقارير بعد انتهاء الخطة.");
+        m.put("Save budget report", "حفظ تقرير الميزانية");
+        m.put("Excel workbooks", "مصنفات Excel");
+        m.put("Use the {0} file extension.", "استخدم امتداد الملف {0}.");
+        m.put("Report saved to {0}.", "حُفظ التقرير في {0}.");
+        m.put("Couldn't export the report: {0}", "تعذّر تصدير التقرير: {0}");
+        m.put("Exporting report…", "جارٍ تصدير التقرير…");
+        m.put("Report export status", "حالة تصدير التقرير");
+        m.put("Budget vs. spending", "الميزانية مقابل الإنفاق");
+        m.put("Budget limit", "حد الميزانية");
+        m.put("Total spent", "إجمالي الإنفاق");
+        m.put("Totals use the exchange rates saved at export.", "تُحسب الإجماليات بأسعار الصرف المحفوظة وقت التصدير.");
+        m.put("Spending by category", "الإنفاق حسب الفئة");
+        m.put("Top spending categories", "الفئات الأعلى إنفاقًا");
+        m.put("No spending to chart.", "لا توجد مصروفات لعرضها في الرسم البياني.");
+        m.put("Set limit", "تعيين حد");
+        m.put("Limits apply to every month and are in {0}.", "تنطبق الحدود على كل شهر، وهي بعملة {0}.");
+        m.put("Back to months", "العودة إلى الأشهر");
+        m.put("Loading transactions…", "جارٍ تحميل المعاملات…");
+        m.put("Today", "اليوم");
+        m.put("Today's operations", "معاملات اليوم");
+        m.put("No operations today.", "لا توجد معاملات اليوم.");
+        m.put("Couldn't load today's operations: {0}", "تعذّر تحميل معاملات اليوم: {0}");
+        m.put("View day", "عرض اليوم");
+        m.put("Month", "الشهر");
+        m.put("Week", "الأسبوع");
+        m.put("Year", "السنة");
+        m.put("Previous week", "الأسبوع السابق");
+        m.put("Next week", "الأسبوع التالي");
+        m.put("Budget starts", "بداية الميزانية");
+        m.put("Budget ends", "نهاية الميزانية");
+        m.put("Budget starts · {0}", "بداية الميزانية · {0}");
+        m.put("Budget ends · {0}", "نهاية الميزانية · {0}");
+        m.put("+{0} more", "و{0} أخرى");
         return Map.copyOf(m);
     }
 }

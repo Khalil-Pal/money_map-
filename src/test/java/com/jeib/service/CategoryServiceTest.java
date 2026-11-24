@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.jeib.db.Database;
+import com.jeib.i18n.Language;
+import com.jeib.i18n.Messages;
 import com.jeib.model.Category;
 import com.jeib.model.Transaction;
 import com.jeib.model.TransactionType;
@@ -60,6 +62,22 @@ class CategoryServiceTest {
 
     private CategoryService service() {
         return serviceAt(CREATED);
+    }
+
+    @Test
+    void recoloringADefaultCategoryKeepsItsNameTranslatable() throws SQLException {
+        var originalLanguage = Messages.language();
+        try {
+            Messages.setLanguage(Language.RUSSIAN);
+            var service = service();
+            String displayed = service.list().stream().filter(category -> category.id().equals(FOOD))
+                    .findFirst().orElseThrow().name();
+            assertEquals(Messages.t("Food"), service.update(FOOD, displayed, 10).name());
+            assertEquals("Food", service.list(Language.ENGLISH).stream()
+                    .filter(category -> category.id().equals(FOOD)).findFirst().orElseThrow().name());
+        } finally {
+            Messages.setLanguage(originalLanguage);
+        }
     }
 
     // ---- create ----------------------------------------------------------

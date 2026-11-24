@@ -22,6 +22,7 @@ public final class CurrencyService {
 
     static final String MAIN_KEY = "main_currency";
     static final String RATE_PREFIX = "rate.";
+    private static final String FIRST_PLAN_REQUIRED = "setup.first_plan_required";
 
     /** A positive number with at most 6 decimals; a comma also works as the decimal separator. */
     private static final Pattern RATE = Pattern.compile("\\d{1,7}([.,]\\d{1,6})?");
@@ -36,6 +37,15 @@ public final class CurrencyService {
     /** Empty until the user has chosen one. */
     public Optional<SupportedCurrency> mainCurrency() throws SQLException {
         return settings.get(MAIN_KEY).map(SupportedCurrency::valueOf);
+    }
+
+    /** Records both steps of the new setup so a restart can resume after currency selection. */
+    public void setInitialCurrency(SupportedCurrency currency) throws SQLException {
+        settings.save(Map.of(MAIN_KEY, currency.name(), FIRST_PLAN_REQUIRED, "true"));
+    }
+
+    public boolean requiresFirstPlan() throws SQLException {
+        return settings.get(FIRST_PLAN_REQUIRED).isPresent();
     }
 
     /** The current rates. Throws a ValidationException if no main currency has been chosen yet. */

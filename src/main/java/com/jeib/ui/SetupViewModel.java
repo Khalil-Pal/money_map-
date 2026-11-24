@@ -33,7 +33,7 @@ public final class SetupViewModel {
 
     /** The database work, run off the JavaFX thread by {@link #save}; tests call it directly. */
     void saveNow(SupportedCurrency currency) throws SQLException {
-        currencies.setMainCurrency(currency);
+        currencies.setInitialCurrency(currency);
     }
 
     /** Saves the chosen currency in the background, then runs {@code onDone} on the JavaFX thread. */

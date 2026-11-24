@@ -27,7 +27,11 @@ public final class DefaultCategories {
 
     /** The name to show for a category with this id and stored name. */
     public static String displayName(String id, String storedName) {
+        return displayName(Messages.language(), id, storedName);
+    }
+
+    public static String displayName(Language language, String id, String storedName) {
         String original = ORIGINAL_NAMES.get(id);
-        return original != null && original.equals(storedName) ? Messages.t(original) : storedName;
+        return original != null && original.equals(storedName) ? Messages.translate(language, original) : storedName;
     }
 }

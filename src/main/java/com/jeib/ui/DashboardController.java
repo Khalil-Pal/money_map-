@@ -28,14 +28,14 @@ import javafx.scene.shape.ArcType;
 import javafx.scene.shape.Circle;
 
 /**
- * Wires dashboard.fxml to {@link DashboardViewModel}. Every card, legend row, and limit row is a
- * drill-down (CLAUDE.md: hover only on clickable things, and these all are).
+ * Wires dashboard.fxml to {@link DashboardViewModel}. The spending and limit summaries link
+ * to their detail pages.
  */
 public final class DashboardController {
 
     /** "November 2026", in the app's language. */
     private static DateTimeFormatter month() {
-        return DateTimeFormatter.ofPattern("MMMM yyyy", com.jeib.i18n.Messages.locale());
+        return DateTimeFormatter.ofPattern("LLLL yyyy", com.jeib.i18n.Messages.locale());
     }
     private static final double DONUT_RADIUS = 76;
 
@@ -124,7 +124,7 @@ public final class DashboardController {
         LimitLine overall = data.overall();
         if (overall.limitMinor() == null) {
             return kpi(t("Remaining"), "—", false, muted(t("Set a monthly limit to see what's left")),
-                    "remainingCard", () -> dialogs.openLimit(overall, main));
+                    "remainingCard", navigation::openBudgets);
         }
         long remaining = overall.remainingMinor();
         String value = remaining >= 0 ? main.format(remaining) : t("Over by {0}", main.format(-remaining));
@@ -144,7 +144,7 @@ public final class DashboardController {
             set.getStyleClass().add("button-primary");
             set.setOnAction(event -> dialogs.openLimit(overall, main));
             VBox sub = new VBox(10, muted(t("Your daily budget comes from your monthly limit.")), set);
-            return kpi(t("Left per day"), "—", false, sub, "perDayCard", () -> dialogs.openLimit(overall, main));
+            return kpi(t("Left per day"), "—", false, sub, "perDayCard", null);
         }
         LeftPerDay perDay = data.leftPerDay();
         String days = perDay.daysLeft() == 1 ? t("1 day left") : t("{0} days left", perDay.daysLeft());
@@ -160,11 +160,14 @@ public final class DashboardController {
         Label valueLabel = styled(value, danger ? "kpi-value-danger" : "kpi-value");
         VBox card = new VBox(captionLabel, valueLabel, sub);
         card.setId(id);
-        card.getStyleClass().addAll("card", "kpi-card", "clickable-card");
+        card.getStyleClass().addAll("card", "kpi-card");
         card.setPrefWidth(0);
         card.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(card, Priority.ALWAYS);
-        clickable(card, onClick);
+        if (onClick != null) {
+            card.getStyleClass().add("clickable-card");
+            clickable(card, onClick);
+        }
         return card;
     }
 

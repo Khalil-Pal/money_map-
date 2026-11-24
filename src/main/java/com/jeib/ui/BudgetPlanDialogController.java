@@ -61,7 +61,9 @@ public final class BudgetPlanDialogController {
         endDate.setValue(today.withDayOfMonth(today.lengthOfMonth()));
         if (firstPlan) {
             planTitle.setText(t("Create your first budget plan"));
-            cancelPlan.setText(t("Skip for now"));
+            cancelPlan.setCancelButton(false);
+            cancelPlan.setVisible(false);
+            cancelPlan.setManaged(false);
         }
         savePlan.disableProperty().bind(viewModel.busy().or(planCurrency.valueProperty().isNull()));
         cancelPlan.disableProperty().bind(viewModel.busy());
